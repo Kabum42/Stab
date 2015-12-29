@@ -12,6 +12,7 @@ public class MenuScript : MonoBehaviour {
 	private float initialMenuMainTextScale;
 
 	private GameObject menuJoin;
+	private GameObject canvasJoin;
 	private GameObject menuJoinBack;
 
 	private GameObject menuCreate;
@@ -35,6 +36,8 @@ public class MenuScript : MonoBehaviour {
 		menuJoinBack = GameObject.Find ("MenuJoin/Back");
 		menuJoin = GameObject.Find ("MenuJoin");
 		menuJoin.SetActive (false);
+		canvasJoin = GameObject.Find ("Canvas/CanvasJoin");
+		canvasJoin.SetActive (false);
 
 		menuCreateGo = GameObject.Find ("MenuCreate/Details/Go");
 		menuCreateBack = GameObject.Find ("MenuCreate/Back");
@@ -73,6 +76,7 @@ public class MenuScript : MonoBehaviour {
 			if (Hacks.isOver(join)) {
 				menuMode = "join";
 				menuJoin.SetActive(true);
+				canvasJoin.SetActive(true);
 				menuMain.SetActive(false);
 			}
 			else if (Hacks.isOver(create)) {
@@ -133,6 +137,7 @@ public class MenuScript : MonoBehaviour {
 			else if (Hacks.isOver(menuJoinBack)) {
 				menuMode = "main";
 				menuMain.SetActive(true);
+				canvasJoin.SetActive(false);
 				menuJoin.SetActive(false);
 			}
 		}
