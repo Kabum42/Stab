@@ -107,4 +107,28 @@ public static class Hacks {
 
 	}
 
+	// DETECT MOUSE OVER GAMEOBJECT
+	public static bool isOver(GameObject target) {
+		return isOver (target, "Clickable");
+	}
+
+	public static bool isOver(GameObject target, string mask)
+	{
+		
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		
+		// CLICKABLE MASK
+		RaycastHit2D[] hits = Physics2D.RaycastAll(new Vector2(ray.origin.x, ray.origin.y), Vector2.zero, 0f, LayerMask.GetMask(mask));
+		
+		for (int i = 0; i < hits.Length; i++)
+		{
+
+			if (hits[i].collider.gameObject == target) { return true; }
+			
+		}
+		
+		return false;
+		
+	}
+
 }
