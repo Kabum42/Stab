@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class MenuScript : MonoBehaviour {
 
@@ -13,11 +15,16 @@ public class MenuScript : MonoBehaviour {
 
 	private GameObject menuJoin;
 	private GameObject canvasJoin;
+	public GameObject canvasJoinContent;
 	private GameObject menuJoinBack;
 
 	private GameObject menuCreate;
 	private GameObject menuCreateGo;
 	private GameObject menuCreateBack;
+
+	private List<Match> currentMatches = new List<Match> ();
+
+	private GameObject test;
 
 	void OnServerInitialized()
 	{
@@ -37,6 +44,7 @@ public class MenuScript : MonoBehaviour {
 		menuJoin = GameObject.Find ("MenuJoin");
 		menuJoin.SetActive (false);
 		canvasJoin = GameObject.Find ("Canvas/CanvasJoin");
+		canvasJoinContent = GameObject.Find ("Canvas/CanvasJoin/Panel/ScrollRect/Content");
 		canvasJoin.SetActive (false);
 
 		menuCreateGo = GameObject.Find ("MenuCreate/Details/Go");
@@ -78,6 +86,24 @@ public class MenuScript : MonoBehaviour {
 				menuJoin.SetActive(true);
 				canvasJoin.SetActive(true);
 				menuMain.SetActive(false);
+
+				flushMatches();
+
+				int num = Random.Range(10, 101);
+
+				for (int i = 1; i <= num; i++) {
+					
+					Match m = new Match (this, "Partida "+i);
+					currentMatches.Add (m);
+					m.adjustPosition();
+					
+				}
+				
+				float size = (currentMatches.Count -17)*24f;
+				if (size < 0f) { size = 0f; }
+				canvasJoinContent.GetComponent<RectTransform> ().sizeDelta = new Vector2 (0f, size);
+				canvasJoinContent.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, -canvasJoinContent.GetComponent<RectTransform> ().sizeDelta.y/2f);
+
 			}
 			else if (Hacks.isOver(create)) {
 				menuMode = "create";
@@ -142,6 +168,47 @@ public class MenuScript : MonoBehaviour {
 			}
 		}
 		
+	}
+
+	private void flushMatches() {
+
+		while (currentMatches.Count > 0) {
+
+			Destroy(currentMatches[0].root);
+			currentMatches[0] = null;
+			currentMatches.RemoveAt(0);
+
+		}
+
+	}
+
+	private class Match {
+
+		private MenuScript owner;
+		public GameObject root;
+		public string matchName;
+
+		public Match(MenuScript auxOwner, string auxMatchName) {
+
+			owner = auxOwner;
+			matchName = auxMatchName;
+
+			root = Instantiate (Resources.Load("Prefabs/CanvasJoinMatch") as GameObject);
+			root.gameObject.transform.parent = owner.canvasJoinContent.transform;
+			root.GetComponent<Text>().text = matchName;
+			root.transform.localScale = new Vector3 (1f, 1f, 1f);
+
+
+		}
+
+		public void adjustPosition() {
+
+			int auxPosition = owner.currentMatches.IndexOf(this);
+			root.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, -490f -auxPosition*24f);
+			root.GetComponent<RectTransform> ().sizeDelta = new Vector2 (720f, 964f);
+
+		}
+
 	}
 
 
