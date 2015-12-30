@@ -7,6 +7,8 @@ public class MenuScript : MonoBehaviour {
 
 	private string menuMode = "main";
 
+	private GameObject canvas;
+
 	private GameObject menuMain;
 	private GameObject join;
 	private GameObject create;
@@ -23,6 +25,7 @@ public class MenuScript : MonoBehaviour {
 	private GameObject menuCreateBack;
 
 	private List<Match> currentMatches = new List<Match> ();
+	private int selectedMatch = -1;
 
 	private GameObject test;
 
@@ -33,6 +36,8 @@ public class MenuScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
+		canvas = GameObject.Find ("Canvas");
 
 		menuMain = GameObject.Find ("MenuMain");
 		join = GameObject.Find ("Join");
@@ -64,6 +69,7 @@ public class MenuScript : MonoBehaviour {
 		} else if (menuMode == "join") {
 
 			checkMenuJoinOptions();
+			checkMouseMatches();
 
 		} else if (menuMode == "create") {
 
@@ -93,7 +99,7 @@ public class MenuScript : MonoBehaviour {
 
 				for (int i = 1; i <= num; i++) {
 					
-					Match m = new Match (this, "Partida "+i);
+					Match m = new Match (this, "Partida "+i, currentMatches.Count);
 					currentMatches.Add (m);
 					m.adjustPosition();
 					
@@ -170,7 +176,44 @@ public class MenuScript : MonoBehaviour {
 		
 	}
 
+	private void checkMouseMatches() {
+
+		for (int i = 0; i < currentMatches.Count; i++) {
+
+			float scaleFactor = canvas.GetComponent<Canvas>().scaleFactor;
+			
+			float xCenter = currentMatches[i].root.GetComponent<RectTransform>().transform.TransformPoint(currentMatches[i].root.GetComponent<RectTransform>().rect.center).x;
+			float xStart = xCenter - (currentMatches[i].root.GetComponent<RectTransform>().rect.width/2f)*scaleFactor;
+			float xEnd = xCenter + (currentMatches[i].root.GetComponent<RectTransform>().rect.width/2f)*scaleFactor;
+			
+			float yCenter = currentMatches[i].root.GetComponent<RectTransform>().transform.TransformPoint(currentMatches[i].root.GetComponent<RectTransform>().rect.center).y;
+			float yStart = yCenter + 481f*scaleFactor;
+			float yEnd = yStart - 22f*scaleFactor;
+
+			if (i == selectedMatch) {
+				currentMatches[i].root.GetComponent<Text>().color = new Color (192f/255f, 192f/255f, 0f);
+			}
+			else if (Input.mousePosition.x >= xStart && Input.mousePosition.x <= xEnd
+			    && Input.mousePosition.y <= yStart && Input.mousePosition.y >= yEnd
+			    && Input.mousePosition.y >= 105f*scaleFactor && Input.mousePosition.y <= 523f*scaleFactor) {
+
+				currentMatches[i].root.GetComponent<Text>().color = new Color (192f/255f, 20f/255f, 20f/255f);
+				if (Input.GetMouseButtonDown(0)) {
+					selectedMatch = i;
+				}
+
+			}
+			else {
+				currentMatches[i].root.GetComponent<Text>().color = new Color (1f, 1f, 1f);
+			}
+			
+		}
+
+	}
+
 	private void flushMatches() {
+
+		selectedMatch = -1;
 
 		while (currentMatches.Count > 0) {
 
@@ -187,11 +230,13 @@ public class MenuScript : MonoBehaviour {
 		private MenuScript owner;
 		public GameObject root;
 		public string matchName;
+		public int position;
 
-		public Match(MenuScript auxOwner, string auxMatchName) {
+		public Match(MenuScript auxOwner, string auxMatchName, int auxPosition) {
 
 			owner = auxOwner;
 			matchName = auxMatchName;
+			position = auxPosition;
 
 			root = Instantiate (Resources.Load("Prefabs/CanvasJoinMatch") as GameObject);
 			root.gameObject.transform.parent = owner.canvasJoinContent.transform;
@@ -203,11 +248,11 @@ public class MenuScript : MonoBehaviour {
 
 		public void adjustPosition() {
 
-			int auxPosition = owner.currentMatches.IndexOf(this);
-			root.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, -490f -auxPosition*24f);
+			root.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, -490f -position*24f);
 			root.GetComponent<RectTransform> ().sizeDelta = new Vector2 (720f, 964f);
 
 		}
+
 
 	}
 
