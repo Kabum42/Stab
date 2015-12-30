@@ -16,9 +16,11 @@ public class MenuScript : MonoBehaviour {
 	private float initialMenuMainTextScale;
 
 	private GameObject menuJoin;
+	private GameObject menuJoinBack;
+	private GameObject menuJoinRefresh;
+	private GameObject menuJoinPlay;
 	private GameObject canvasJoin;
 	public GameObject canvasJoinContent;
-	private GameObject menuJoinBack;
 
 	private GameObject menuCreate;
 	private GameObject menuCreateGo;
@@ -34,6 +36,35 @@ public class MenuScript : MonoBehaviour {
 		Debug.Log("Server Initializied");
 	}
 
+	void OnMasterServerEvent(MasterServerEvent msEvent)
+	{
+		if (msEvent == MasterServerEvent.HostListReceived)
+		{
+			NetworkManager.hostList = MasterServer.PollHostList();
+
+			flushMatches();
+
+			for (int i = 0; i < NetworkManager.hostList.Length; i++) {
+				
+				Match m = new Match (this, ref NetworkManager.hostList[i], currentMatches.Count);
+				currentMatches.Add (m);
+				m.adjustPosition();
+				
+			}
+			
+			float size = (currentMatches.Count -17)*24f;
+			if (size < 0f) { size = 0f; }
+			canvasJoinContent.GetComponent<RectTransform> ().sizeDelta = new Vector2 (0f, size);
+			canvasJoinContent.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, -canvasJoinContent.GetComponent<RectTransform> ().sizeDelta.y/2f);
+		}
+	}
+
+	void OnConnectedToServer()
+	{
+		Debug.Log("Server Joined");
+		Application.LoadLevel ("Game");
+	}
+
 	// Use this for initialization
 	void Start () {
 
@@ -46,6 +77,8 @@ public class MenuScript : MonoBehaviour {
 		initialMenuMainTextScale = join.transform.localScale.x;
 
 		menuJoinBack = GameObject.Find ("MenuJoin/Back");
+		menuJoinRefresh = GameObject.Find ("MenuJoin/Matches/Refresh");
+		menuJoinPlay = GameObject.Find ("MenuJoin/Matches/Play");
 		menuJoin = GameObject.Find ("MenuJoin");
 		menuJoin.SetActive (false);
 		canvasJoin = GameObject.Find ("Canvas/CanvasJoin");
@@ -93,23 +126,7 @@ public class MenuScript : MonoBehaviour {
 				canvasJoin.SetActive(true);
 				menuMain.SetActive(false);
 
-				flushMatches();
-
-				int num = Random.Range(10, 101);
-
-				for (int i = 1; i <= num; i++) {
-					
-					Match m = new Match (this, "Partida "+i, currentMatches.Count);
-					currentMatches.Add (m);
-					m.adjustPosition();
-					
-				}
-				
-				float size = (currentMatches.Count -17)*24f;
-				if (size < 0f) { size = 0f; }
-				canvasJoinContent.GetComponent<RectTransform> ().sizeDelta = new Vector2 (0f, size);
-				canvasJoinContent.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, -canvasJoinContent.GetComponent<RectTransform> ().sizeDelta.y/2f);
-
+				reloadMatches();
 			}
 			else if (Hacks.isOver(create)) {
 				menuMode = "create";
@@ -162,15 +179,17 @@ public class MenuScript : MonoBehaviour {
 		
 		// CHECK FOR CLICK
 		if (Input.GetMouseButtonDown (0)) {
-			if (false) {
-				//NetworkManager.StartServer("Test");
-				Application.LoadLevel("Game");
+			if (Hacks.isOver(menuJoinPlay) && selectedMatch != -1) {
+				NetworkManager.JoinServer(NetworkManager.hostList[selectedMatch]);
 			}
 			else if (Hacks.isOver(menuJoinBack)) {
 				menuMode = "main";
 				menuMain.SetActive(true);
 				canvasJoin.SetActive(false);
 				menuJoin.SetActive(false);
+			}
+			else if (Hacks.isOver(menuJoinRefresh)) {
+				reloadMatches();
 			}
 		}
 		
@@ -191,13 +210,13 @@ public class MenuScript : MonoBehaviour {
 			float yEnd = yStart - 22f*scaleFactor;
 
 			if (i == selectedMatch) {
-				currentMatches[i].root.GetComponent<Text>().color = new Color (192f/255f, 192f/255f, 0f);
+				currentMatches[i].root.GetComponent<Text>().color = new Color (192f/255f, 20f/255f, 20f/255f);
 			}
 			else if (Input.mousePosition.x >= xStart && Input.mousePosition.x <= xEnd
 			    && Input.mousePosition.y <= yStart && Input.mousePosition.y >= yEnd
 			    && Input.mousePosition.y >= 105f*scaleFactor && Input.mousePosition.y <= 523f*scaleFactor) {
 
-				currentMatches[i].root.GetComponent<Text>().color = new Color (192f/255f, 20f/255f, 20f/255f);
+				currentMatches[i].root.GetComponent<Text>().color = new Color (192f/255f, 192f/255f, 0f);
 				if (Input.GetMouseButtonDown(0)) {
 					selectedMatch = i;
 				}
@@ -208,6 +227,12 @@ public class MenuScript : MonoBehaviour {
 			}
 			
 		}
+
+	}
+
+	private void reloadMatches() {
+
+		NetworkManager.RefreshHostList ();
 
 	}
 
@@ -231,16 +256,18 @@ public class MenuScript : MonoBehaviour {
 		public GameObject root;
 		public string matchName;
 		public int position;
+		public int players;
 
-		public Match(MenuScript auxOwner, string auxMatchName, int auxPosition) {
+		public Match(MenuScript auxOwner, ref HostData hData, int auxPosition) {
 
 			owner = auxOwner;
-			matchName = auxMatchName;
+			matchName = hData.gameName;
+			players = hData.connectedPlayers;
 			position = auxPosition;
 
 			root = Instantiate (Resources.Load("Prefabs/CanvasJoinMatch") as GameObject);
 			root.gameObject.transform.parent = owner.canvasJoinContent.transform;
-			root.GetComponent<Text>().text = matchName;
+			root.GetComponent<Text>().text = matchName + "  " + players +"/20";
 			root.transform.localScale = new Vector3 (1f, 1f, 1f);
 
 
