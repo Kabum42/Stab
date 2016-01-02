@@ -25,6 +25,7 @@ public class MenuScript : MonoBehaviour {
 	private GameObject menuCreate;
 	private GameObject menuCreateGo;
 	private GameObject menuCreateBack;
+	private GameObject canvasCreate;
 
 	private List<Match> currentMatches = new List<Match> ();
 	private int selectedMatch = -1;
@@ -89,6 +90,8 @@ public class MenuScript : MonoBehaviour {
 		menuCreateBack = GameObject.Find ("MenuCreate/Back");
 		menuCreate = GameObject.Find ("MenuCreate");
 		menuCreate.SetActive (false);
+		canvasCreate = GameObject.Find ("Canvas/CanvasCreate");
+		canvasCreate.SetActive (false);
 	
 	}
 	
@@ -131,6 +134,7 @@ public class MenuScript : MonoBehaviour {
 			else if (Hacks.isOver(create)) {
 				menuMode = "create";
 				menuCreate.SetActive(true);
+				canvasCreate.SetActive(true);
 				menuMain.SetActive(false);
 			}
 			else if (Hacks.isOver(exit)) {
@@ -163,13 +167,25 @@ public class MenuScript : MonoBehaviour {
 		// CHECK FOR CLICK
 		if (Input.GetMouseButtonDown (0)) {
 			if (Hacks.isOver(menuCreateGo)) {
-				NetworkManager.StartServer("Test");
-				Application.LoadLevel("Game");
+				if (canvasCreate.transform.FindChild("NameField").GetComponent<InputField>().text != "") {
+					string roomName = canvasCreate.transform.FindChild("NameField").GetComponent<InputField>().text;
+					string password = canvasCreate.transform.FindChild("PasswordField").GetComponent<InputField>().text;
+					if (password != "") {
+						// WITH PASSWORD
+						NetworkManager.StartServer(roomName, password);
+					}
+					else {
+						// WITHOUT PASSWORD
+						NetworkManager.StartServer(roomName);
+					}
+					Application.LoadLevel("Game");
+				}
 			}
 			else if (Hacks.isOver(menuCreateBack)) {
 				menuMode = "main";
 				menuMain.SetActive(true);
 				menuCreate.SetActive(false);
+				canvasCreate.SetActive(false);
 			}
 		}
 		
