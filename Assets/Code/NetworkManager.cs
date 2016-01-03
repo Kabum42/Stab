@@ -6,7 +6,7 @@ public static class NetworkManager {
     private const string typeName = "StabTFG";
     //private const string gameName = "RoomName";
     public static HostData[] hostList;
-	public static string noPassword = "nO_pAsSwOrD";
+	public static string noPassword = "#NoPassword";
 
     public static void StartServer(string roomName)
     {

@@ -47,8 +47,6 @@ public class GameScript : MonoBehaviour {
 			chatInputField.GetComponent<InputField> ().OnPointerClick(new PointerEventData(EventSystem.current));
 
 		}
-		
-		chatManager.Update ();
 
 		lastTimeChatInputFocused = chatInputField.GetComponent<InputField> ().isFocused;
 
@@ -57,6 +55,7 @@ public class GameScript : MonoBehaviour {
 	void addChatMessage(ChatMessage chatMessage) {
 
 		chatManager.Add(chatMessage);
+		chatManager.Update ();
 
 	}
 
