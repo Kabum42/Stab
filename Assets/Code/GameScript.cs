@@ -34,6 +34,14 @@ public class GameScript : MonoBehaviour {
 
 	}
 
+	[RPC]
+	void addChatMessageRPC(string owner, string text)
+	{
+		if (owner == Network.player.externalIP) { owner = "You"; }
+
+		addChatMessage (new ChatMessage (owner, text));
+	}
+
 	void updateChat() {
 
 		if (Input.GetKeyDown(KeyCode.Return)
@@ -41,7 +49,9 @@ public class GameScript : MonoBehaviour {
 		    && chatInputField.GetComponent<InputField> ().text != "") {
 
 			string info = chatInputField.GetComponent<InputField> ().text;
-			addChatMessage(new ChatMessage("kabum42", info));
+			//addChatMessage(new ChatMessage("kabum42", info));
+			GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, Network.player.externalIP, info);
+
 			chatInputField.GetComponent<InputField> ().text = "";
 			EventSystem.current.SetSelectedGameObject(chatInputField, null);
 			chatInputField.GetComponent<InputField> ().OnPointerClick(new PointerEventData(EventSystem.current));
