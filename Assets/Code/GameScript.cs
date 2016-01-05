@@ -13,6 +13,8 @@ public class GameScript : MonoBehaviour {
 	private GameObject localPlayer;
 	private List<OtherPlayer> listOtherPlayers = new List<OtherPlayer>();
 
+	private bool test = false;
+
 	// Use this for initialization
 	void Start () {
 
@@ -29,10 +31,27 @@ public class GameScript : MonoBehaviour {
 	void Update () {
 
 		updateChat ();
+		updateMyPositionInOtherClients ();
 
-		GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
-		GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
+	}
 
+	void OnDisconnectedFromServer(NetworkDisconnection info) {
+		if (Network.isServer)
+			Debug.Log("Local server connection disconnected");
+		else
+			if (info == NetworkDisconnection.LostConnection)
+				Debug.Log("Lost connection to the server");
+		else
+			Debug.Log("Successfully diconnected from the server");
+
+		Application.LoadLevel ("Menu");
+	}
+
+	void OnPlayerDisconnected(NetworkPlayer player) {
+		Debug.Log("Clean up after player " + player);
+		Network.RemoveRPCs(player);
+		//Network.DestroyPlayerObjects(player);
+		GetComponent<NetworkView>().RPC("removePlayerRPC", RPCMode.All, player.ToString());
 	}
 
 	[RPC]
@@ -42,6 +61,23 @@ public class GameScript : MonoBehaviour {
 		if (playerCode == Network.player.ToString()) { owner = "You"; }
 
 		addChatMessage (new ChatMessage (owner, text));
+	}
+
+	[RPC]
+	void removePlayerRPC(string playerCode) {
+
+		for (int i = 0; i < listOtherPlayers.Count; i++) {
+			
+			if (listOtherPlayers[i].playerCode == playerCode) {
+
+				Destroy(listOtherPlayers[i].visualAvatar);
+				listOtherPlayers.RemoveAt(i);
+
+				break;
+			}
+			
+		}
+
 	}
 
 	[RPC]
@@ -97,6 +133,17 @@ public class GameScript : MonoBehaviour {
 
 		chatManager.Add(chatMessage);
 		chatManager.Update ();
+
+	}
+
+	void updateMyPositionInOtherClients() {
+
+		if (localPlayer != null && GetComponent<NetworkView> () != null) {
+
+			GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
+			GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
+
+		}
 
 	}
 
