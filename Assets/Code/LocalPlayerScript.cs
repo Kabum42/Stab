@@ -16,13 +16,15 @@ public class LocalPlayerScript : MonoBehaviour {
 	private Vector3 centerOfCamera = new Vector3 (0.5f, 1.3f, 0f);
 	private Vector3 lastPositionCursor;
 	private float sensitivityX = 0.5f;
-	private float sensitivityY = 0.75f;
+	private float sensitivityY = 0.5f;
 
 	private float characterSpeed = 3f;
 
-	private string lastAnimationOrder = "Idle01";
+	public string lastAnimationOrder = "Idle01";
 
-	private GameObject visualAvatar;
+	public GameObject visualAvatar;
+
+	private bool debugging = false;
 
 	// Use this for initialization
 	void Start () {
@@ -48,6 +50,10 @@ public class LocalPlayerScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			debugging = !debugging;
+		}
 
 		handleCameraChanges ();
 		handleInput ();
@@ -107,9 +113,10 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleCameraChanges() {
 
+		if (debugging) { lastPositionCursor = Input.mousePosition; }
 
 		cameraValueY += (Input.mousePosition.y - lastPositionCursor.y)*sensitivityY;
-		cameraValueY = Mathf.Clamp (cameraValueY, -90f, 90f);
+		cameraValueY = Mathf.Clamp (cameraValueY, -60f, 60f);
 
 		float compoundValueX = cameraValueX;
 		float compoundValueY = cameraValueY;
