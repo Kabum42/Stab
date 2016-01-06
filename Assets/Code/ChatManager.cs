@@ -7,7 +7,7 @@ public class ChatManager {
 
 	private GameObject physicalChat;
 	public List<ChatMessage> listMessages = new List<ChatMessage>();
-	private int maxMessages = 100;
+	private int maxMessages = 10;
 
 	public ChatManager(GameObject auxPhysicalChat) {
 

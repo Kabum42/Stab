@@ -13,7 +13,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	[SerializeField]
 	private float cameraValueY = -17f;
 	[SerializeField]
-	private Vector3 centerOfCamera = new Vector3 (0.5f, 1.3f, 0f);
+	private Vector3 centerOfCamera = new Vector3 (0.25f, 1.3f, 0f);
 	private Vector3 lastPositionCursor;
 	private float sensitivityX = 10f;
 	private float sensitivityY = 5f;
