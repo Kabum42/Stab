@@ -13,6 +13,9 @@ public class GameScript : MonoBehaviour {
 	private GameObject localPlayer;
 	private List<OtherPlayer> listOtherPlayers = new List<OtherPlayer>();
 
+	private int positionUpdatesPerSecond = 15;
+	private float currentUpdateCooldown = 0f;
+
 	private bool test = false;
 
 	// Use this for initialization
@@ -32,6 +35,7 @@ public class GameScript : MonoBehaviour {
 
 		updateChat ();
 		updateMyPositionInOtherClients ();
+		synchronizeOtherPlayers ();
 
 	}
 
@@ -88,9 +92,8 @@ public class GameScript : MonoBehaviour {
 		for (int i = 0; i < listOtherPlayers.Count; i++) {
 
 			if (listOtherPlayers[i].playerCode == playerCode) {
-
-				listOtherPlayers[i].visualAvatar.transform.position = position;
-				listOtherPlayers[i].visualAvatar.transform.eulerAngles = rotation;
+				listOtherPlayers[i].targetPosition = position;
+				listOtherPlayers[i].targetRotation = rotation;
 				listOtherPlayers[i].SmartCrossfade(currentAnimation);
 				foundPlayer = true;
 				break;
@@ -103,7 +106,9 @@ public class GameScript : MonoBehaviour {
 			OtherPlayer aux = new OtherPlayer(playerCode);
 			listOtherPlayers.Add(aux);
 			aux.visualAvatar.transform.position = position;
-			aux.visualAvatar.transform.localEulerAngles = rotation;
+			aux.visualAvatar.transform.eulerAngles = rotation;
+			aux.targetPosition = position;
+			aux.targetRotation = rotation;
 			aux.SmartCrossfade(currentAnimation);
 
 		}
@@ -138,11 +143,34 @@ public class GameScript : MonoBehaviour {
 
 	void updateMyPositionInOtherClients() {
 
-		if (localPlayer != null && GetComponent<NetworkView> () != null) {
 
-			GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
-			GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
+		if (currentUpdateCooldown >= 1f / (float)positionUpdatesPerSecond) {
+			
+			currentUpdateCooldown = 0f;
 
+			if (localPlayer != null && GetComponent<NetworkView> () != null) {
+				
+				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
+				
+			}
+			
+			
+		} else {
+
+			currentUpdateCooldown += Time.deltaTime;
+
+		}
+
+	}
+
+	void synchronizeOtherPlayers () {
+
+		for (int i = 0; i < listOtherPlayers.Count; i++) {
+
+			listOtherPlayers[i].visualAvatar.transform.position = Hacks.LerpVector3(listOtherPlayers[i].visualAvatar.transform.position, listOtherPlayers[i].targetPosition, Time.deltaTime*10f);
+			listOtherPlayers[i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle(listOtherPlayers[i].visualAvatar.transform.eulerAngles, listOtherPlayers[i].targetRotation, Time.deltaTime*10f);
+			
 		}
 
 	}
@@ -153,11 +181,17 @@ public class GameScript : MonoBehaviour {
 		public GameObject visualAvatar;
 		public string lastAnimationOrder = "Idle01";
 
+		public Vector3 targetPosition;
+		public Vector3 targetRotation;
+
 		public OtherPlayer(string auxPlayerCode) {
 
 			playerCode = auxPlayerCode;
 			visualAvatar = Instantiate (Resources.Load("Prefabs/ToonSoldier") as GameObject);
 			visualAvatar.name = "VisualAvatar "+playerCode;
+
+			targetPosition = visualAvatar.transform.position;
+			targetRotation = visualAvatar.transform.eulerAngles;
 
 		}
 

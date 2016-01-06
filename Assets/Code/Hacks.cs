@@ -37,6 +37,27 @@ public static class Hacks {
         s.color = new Color(c.r, c.g, c.b, s.color.a);
     }
 
+	// LERP VECTOR
+	public static Vector3 LerpVector3(Vector3 origin, Vector3 target, float delta) {
+
+		float resultX = Mathf.Lerp(origin.x, target.x, delta);
+		float resultY = Mathf.Lerp(origin.y, target.y, delta);
+		float resultZ = Mathf.Lerp(origin.z, target.z, delta);
+
+		return new Vector3 (resultX, resultY, resultZ);
+
+	}
+
+	public static Vector3 LerpVector3Angle(Vector3 origin, Vector3 target, float delta) {
+		
+		float resultX = Mathf.LerpAngle(origin.x, target.x, delta);
+		float resultY = Mathf.LerpAngle(origin.y, target.y, delta);
+		float resultZ = Mathf.LerpAngle(origin.z, target.z, delta);
+		
+		return new Vector3 (resultX, resultY, resultZ);
+		
+	}
+
     // BINARY PERLIN
     public static int BinaryPerlin(int bits, float seedX, float seedY)
     {
