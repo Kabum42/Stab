@@ -16,10 +16,13 @@ public class GameScript : MonoBehaviour {
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
-	private bool test = false;
+
 
 	// Use this for initialization
 	void Start () {
+
+		Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.Locked;
 
 		// AQUI HAY QUE PASARLE AL CHATMANAGER EL GAMEOBJECT QUE ES EL CONTENT DONDE IRAN LOS MENSAJES
 		chatManager = new ChatManager(GameObject.Find ("Canvas/ChatPanel/ScrollRect/AllChat"));
@@ -33,6 +36,7 @@ public class GameScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		checkIfActivateChat ();
 		updateChat ();
 		updateMyPositionInOtherClients ();
 		synchronizeOtherPlayers ();
@@ -115,18 +119,34 @@ public class GameScript : MonoBehaviour {
 
 	}
 
+	void checkIfActivateChat() {
+
+		if (Input.GetKeyDown (KeyCode.Y) && localPlayer.GetComponent<LocalPlayerScript> ().receiveInput) {
+			
+			localPlayer.GetComponent<LocalPlayerScript> ().receiveInput = false;
+			
+			EventSystem.current.SetSelectedGameObject(chatInputField, null);
+			chatInputField.GetComponent<InputField> ().OnPointerClick(new PointerEventData(EventSystem.current));
+			
+		}
+
+	}
+
 	void updateChat() {
 
 		if (Input.GetKeyDown(KeyCode.Return)
-			&& lastTimeChatInputFocused
-		    && chatInputField.GetComponent<InputField> ().text != "") {
+			&& lastTimeChatInputFocused) {
 
-			string info = chatInputField.GetComponent<InputField> ().text;
-			GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, Network.player.ToString(), info);
+			if (chatInputField.GetComponent<InputField> ().text != "") {
 
-			chatInputField.GetComponent<InputField> ().text = "";
-			EventSystem.current.SetSelectedGameObject(chatInputField, null);
-			chatInputField.GetComponent<InputField> ().OnPointerClick(new PointerEventData(EventSystem.current));
+				string info = chatInputField.GetComponent<InputField> ().text;
+				GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, Network.player.ToString(), info);
+				chatInputField.GetComponent<InputField> ().text = "";
+
+			}
+
+			EventSystem.current.SetSelectedGameObject(null);
+			localPlayer.GetComponent<LocalPlayerScript> ().receiveInput = true;
 
 		}
 

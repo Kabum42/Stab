@@ -15,8 +15,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	[SerializeField]
 	private Vector3 centerOfCamera = new Vector3 (0.5f, 1.3f, 0f);
 	private Vector3 lastPositionCursor;
-	private float sensitivityX = 0.5f;
-	private float sensitivityY = 0.5f;
+	private float sensitivityX = 10f;
+	private float sensitivityY = 5f;
 
 	private float characterSpeed = 3f;
 
@@ -24,14 +24,12 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public GameObject visualAvatar;
 
-	private bool debugging = false;
+	public bool receiveInput = true;
 
 	// Use this for initialization
 	void Start () {
 
 		GlobalData.Start ();
-
-		//Cursor.visible = false;
 
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
 		visualAvatar = Instantiate (Resources.Load("Prefabs/ToonSoldier") as GameObject);
@@ -51,12 +49,10 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.Escape)) {
-			debugging = !debugging;
-		}
-
 		handleCameraChanges ();
-		handleInput ();
+		if (receiveInput) {
+			handleInput ();
+		}
 	
 	}
 
@@ -113,9 +109,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleCameraChanges() {
 
-		if (debugging) { lastPositionCursor = Input.mousePosition; }
-
-		cameraValueY += (Input.mousePosition.y - lastPositionCursor.y)*sensitivityY;
+		if (receiveInput) {
+			cameraValueY += (Input.GetAxis("Mouse Y"))*sensitivityY;
+		}
 		cameraValueY = Mathf.Clamp (cameraValueY, -60f, 60f);
 
 		float compoundValueX = cameraValueX;
@@ -127,8 +123,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		personalCamera.transform.localPosition = centerOfCamera;
 		personalCamera.transform.position = personalCamera.transform.position +(-personalCamera.transform.forward*cameraDistance);
 
+		float changeX = 0f;
+		if (receiveInput) { changeX = (Input.GetAxis("Mouse X"))*sensitivityX; }
 
-		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +(Input.mousePosition.x - lastPositionCursor.x)*sensitivityX, this.gameObject.transform.localEulerAngles.z);
+		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 
 		lastPositionCursor = Input.mousePosition;
 
