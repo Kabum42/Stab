@@ -10,6 +10,7 @@ public class GameScript : MonoBehaviour {
 	private GameObject chatInputField;
 	private bool lastTimeChatInputFocused = false;
 
+	private GameObject map;
 	private GameObject localPlayer;
 	private List<OtherPlayer> listOtherPlayers = new List<OtherPlayer>();
 
@@ -28,6 +29,8 @@ public class GameScript : MonoBehaviour {
 		chatManager = new ChatManager(GameObject.Find ("Canvas/ChatPanel/ScrollRect/AllChat"));
 
 		chatInputField = GameObject.Find ("Canvas/ChatPanel/InputField");
+
+		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Test") as GameObject);
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject);
 	
