@@ -124,7 +124,7 @@ public class GameScript : MonoBehaviour {
 
 	void checkIfActivateChat() {
 
-		if (Input.GetKeyDown (KeyCode.Y) && localPlayer.GetComponent<LocalPlayerScript> ().receiveInput) {
+		if (Input.GetKeyDown (KeyCode.Return) && localPlayer.GetComponent<LocalPlayerScript> ().receiveInput) {
 			
 			localPlayer.GetComponent<LocalPlayerScript> ().receiveInput = false;
 			

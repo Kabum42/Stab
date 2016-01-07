@@ -4,27 +4,26 @@ using System.Collections;
 public class LocalPlayerScript : MonoBehaviour {
 
 	private GameObject personalCamera;
-	[SerializeField]
 	private float cameraDistance = 2f;
-	[SerializeField]
 	private float allPlayerRotationX = 0f;
-	[SerializeField]
 	private float cameraValueX = 0f;
-	[SerializeField]
 	private float cameraValueY = -17f;
-	[SerializeField]
-	private Vector3 centerOfCamera = new Vector3 (0.25f, 1.3f, 0f);
+	private Vector3 centerOfCamera = new Vector3 (0.3f, 1.3f, 0f);
 	private Vector3 lastPositionCursor;
 	private float sensitivityX = 10f;
 	private float sensitivityY = 5f;
 
-	private float characterSpeed = 3f;
+	private static float baseSpeed = 4f;
+	private float turboSpeed = baseSpeed*(1.7f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
+	private float characterSpeed = baseSpeed;
 
 	public string lastAnimationOrder = "Idle01";
 
 	public GameObject visualAvatar;
 
 	public bool receiveInput = true;
+
+	private float notMoving = 0f;
 
 	// Use this for initialization
 	void Start () {
@@ -50,9 +49,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	void Update () {
 
 		handleCameraChanges ();
-		if (receiveInput) {
-			handleInput ();
-		}
+		handleInput ();
 	
 	}
 
@@ -60,28 +57,55 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		Vector2 movement = new Vector3 (0, 0);
 
-		if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
-			movement = new Vector3(movement.x, 1f);
-		} 
-		else if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow)) {
-			movement = new Vector3(movement.x, -1f);
+		if (receiveInput) {
+
+			if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
+				movement = new Vector3(movement.x, 1f);
+			} 
+			else if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow)) {
+				movement = new Vector3(movement.x, -1f);
+			}
+			if (Input.GetKey (KeyCode.A) || Input.GetKey (KeyCode.LeftArrow)) {
+				movement = new Vector3(movement.x +1f, movement.y);
+			}
+			if (Input.GetKey (KeyCode.D) || Input.GetKey (KeyCode.RightArrow)) {
+				movement = new Vector3(movement.x -1f, movement.y);
+			}
+
+			if (Input.GetKey(KeyCode.LeftShift)) {
+				characterSpeed = turboSpeed;
+			}
+			else {
+				characterSpeed = baseSpeed;
+			}
+
+			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
+				this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
+			}
 		}
-		if (Input.GetKey (KeyCode.A) || Input.GetKey (KeyCode.LeftArrow)) {
-			movement = new Vector3(movement.x +1f, movement.y);
-		}
-		if (Input.GetKey (KeyCode.D) || Input.GetKey (KeyCode.RightArrow)) {
-			movement = new Vector3(movement.x -1f, movement.y);
-		}
+
 
 		if (movement.x == 0 && movement.y == 0) {
 			// NO INPUT
 			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle01");
 
+			float aux = this.gameObject.GetComponent<Rigidbody>().velocity.y;
+
+			if (notMoving <= 0f) {
+
+				notMoving += Time.deltaTime;
+				// ESTO ES PARA QUE AL SUBIR COLINAS Y PARAR NO HAGA UN BOUNCE HACIA ARRIBA RARO, ASI LE PERMITE REAJUSTARSE PERO DE FORMA SUAVE
+				if (aux > 0.3f && IsGrounded()) { aux = 0.3f; }
+
+			}
+
+			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, aux, 0f);
 
 		} else {
 
+			notMoving = 0f;
+
 			movement.Normalize();
-			movement = movement*Time.deltaTime*characterSpeed;
 
 			if (Mathf.Abs (movement.x) >= Mathf.Abs(movement.y)) {
 				if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move01_L"); }
@@ -92,10 +116,15 @@ public class LocalPlayerScript : MonoBehaviour {
 				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move01_B"); }
 			}
 
-			this.gameObject.transform.position = this.gameObject.transform.position + this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x;
+			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, this.gameObject.GetComponent<Rigidbody>().velocity.y, 0f) + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed;
 
 		}
 
+	}
+
+	bool IsGrounded()  {
+		float distToGround = (float)this.gameObject.GetComponent<CapsuleCollider>().bounds.extents.y;
+		return Physics.Raycast(this.gameObject.transform.position + this.gameObject.GetComponent<CapsuleCollider>().center, -Vector3.up, distToGround + 0.3f);
 	}
 
 	void SmartCrossfade(Animator animator, string animation) {
