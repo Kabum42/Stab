@@ -13,7 +13,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float sensitivityX = 10f;
 	private float sensitivityY = 5f;
 
-	private static float baseSpeed = 4f;
+	private static float baseSpeed = 3f;
 	private float turboSpeed = baseSpeed*(1.7f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
 	private float characterSpeed = baseSpeed;
 
@@ -150,7 +150,16 @@ public class LocalPlayerScript : MonoBehaviour {
 
 
 		personalCamera.transform.localPosition = centerOfCamera;
-		personalCamera.transform.position = personalCamera.transform.position +(-personalCamera.transform.forward*cameraDistance);
+
+		RaycastHit hit;
+		Vector3 direction = -personalCamera.transform.forward;
+		if (Physics.Raycast (personalCamera.transform.position, direction, out hit, cameraDistance)) {
+			personalCamera.transform.position = hit.point;
+		}
+		else {
+			personalCamera.transform.position = personalCamera.transform.position +(-personalCamera.transform.forward*cameraDistance);
+		}
+
 
 		float changeX = 0f;
 		if (receiveInput) { changeX = (Input.GetAxis("Mouse X"))*sensitivityX; }
