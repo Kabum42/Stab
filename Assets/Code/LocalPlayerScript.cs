@@ -49,11 +49,32 @@ public class LocalPlayerScript : MonoBehaviour {
 	void Update () {
 
 		handleCameraChanges ();
-		handleInput ();
+		handleRegularInput();
 	
 	}
 
-	void handleInput() {
+	void FixedUpdate() {
+
+		handleMovementInput ();
+
+	}
+
+	void handleRegularInput() {
+
+		if (Input.GetKey(KeyCode.LeftShift)) {
+			characterSpeed = turboSpeed;
+		}
+		else {
+			characterSpeed = baseSpeed;
+		}
+
+		if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
+			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
+		}
+
+	}
+
+	void handleMovementInput() {
 
 		Vector2 movement = new Vector3 (0, 0);
 
@@ -70,17 +91,6 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 			if (Input.GetKey (KeyCode.D) || Input.GetKey (KeyCode.RightArrow)) {
 				movement = new Vector3(movement.x -1f, movement.y);
-			}
-
-			if (Input.GetKey(KeyCode.LeftShift)) {
-				characterSpeed = turboSpeed;
-			}
-			else {
-				characterSpeed = baseSpeed;
-			}
-
-			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
-				this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
 			}
 		}
 
@@ -116,7 +126,8 @@ public class LocalPlayerScript : MonoBehaviour {
 				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move01_B"); }
 			}
 
-			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, this.gameObject.GetComponent<Rigidbody>().velocity.y, 0f) + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed;
+			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);
+			//this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, this.gameObject.GetComponent<Rigidbody>().velocity.y, 0f) + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed;
 
 		}
 
@@ -125,6 +136,15 @@ public class LocalPlayerScript : MonoBehaviour {
 	bool IsGrounded()  {
 		float distToGround = (float)this.gameObject.GetComponent<CapsuleCollider>().bounds.extents.y;
 		return Physics.Raycast(this.gameObject.transform.position + this.gameObject.GetComponent<CapsuleCollider>().center, -Vector3.up, distToGround + 0.3f);
+	}
+
+	Vector3 IsGroundedVector3() {
+		float distToGround = (float)this.gameObject.GetComponent<CapsuleCollider>().bounds.extents.y;
+		RaycastHit hit;
+		if (Physics.Raycast(this.gameObject.transform.position + this.gameObject.GetComponent<CapsuleCollider>().center, -Vector3.up, out hit, distToGround + 5f)) {
+			return hit.normal;
+		}
+		return Vector3.up;
 	}
 
 	void SmartCrossfade(Animator animator, string animation) {
