@@ -15,7 +15,6 @@ public class GameScript : MonoBehaviour {
 
 	public List<RankingPlayer> allRankingPlayers = new List<RankingPlayer>();
 	private GameObject rankingBackground;
-	private bool rankingClearedSinceLastCheck = false;
 
 	private GameObject map;
 	private GameObject localPlayer;
@@ -47,8 +46,9 @@ public class GameScript : MonoBehaviour {
 
 		if (Network.isServer) {
 			// SI TU ERES EL SERVER, TE AGREGAS A TI MISMO COMO UN RANKINGPLAYER
-			allRankingPlayers.Add(new RankingPlayer(Network.player.ToString()));
-			rankingClearedSinceLastCheck = true;
+			RankingPlayer rp = new RankingPlayer(Network.player.ToString());
+			rp.ping = 0;
+			allRankingPlayers.Add(rp);
 		}
 	
 	}
@@ -155,7 +155,9 @@ public class GameScript : MonoBehaviour {
 
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
-				allRankingPlayers.Add(new RankingPlayer(playerCode));
+				RankingPlayer rp = new RankingPlayer(playerCode);
+				rp.ping = Network.GetAveragePing(NetworkPlayerByCode(playerCode));
+				allRankingPlayers.Add(rp);
 				allRankingPlayers.Sort (CompareListByKills);
 
 				serverSendRankingData();
@@ -169,14 +171,12 @@ public class GameScript : MonoBehaviour {
 	void serverSendRankingData() {
 
 		GetComponent<NetworkView>().RPC("clearRankingRPC", RPCMode.Others);
-		
+
 		for (int i = 0; i < allRankingPlayers.Count; i++) {
-			GetComponent<NetworkView>().RPC("addRankingRPC", RPCMode.Others, allRankingPlayers[i].playerCode, allRankingPlayers[i].kills);
+			allRankingPlayers[i].ping = Network.GetAveragePing(NetworkPlayerByCode(allRankingPlayers[i].playerCode));
+			if (allRankingPlayers[i].ping == -1) { allRankingPlayers[i].ping = 0; }
+			GetComponent<NetworkView>().RPC("addRankingRPC", RPCMode.Others, allRankingPlayers[i].playerCode, allRankingPlayers[i].kills, allRankingPlayers[i].ping);
 		}
-
-		GetComponent<NetworkView>().RPC("endedRankingRPC", RPCMode.Others);
-
-		rankingClearedSinceLastCheck = true;
 		
 	}
 
@@ -187,17 +187,28 @@ public class GameScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void addRankingRPC(string playerCode, int kills) 
+	void addRankingRPC(string playerCode, int kills, int ping) 
 	{
 		RankingPlayer rp = new RankingPlayer (playerCode);
 		rp.kills = kills;
+		rp.ping = ping;
 		allRankingPlayers.Add (rp);
 	}
 
-	[RPC]
-	void endedRankingRPC()
-	{
-		rankingClearedSinceLastCheck = true;
+	NetworkPlayer NetworkPlayerByCode(string playerCode) {
+
+		if (Network.player.ToString () == playerCode) {
+			return Network.player;
+		}
+
+		for (int i = 0; i < Network.connections.Length; i++) {
+			if (Network.connections[i].ToString() == playerCode) {
+				return Network.connections[i];
+			}
+		}
+
+		return Network.connections[0];
+
 	}
 
 	void checkIfActivateChat() {
@@ -252,10 +263,7 @@ public class GameScript : MonoBehaviour {
 
 		if (Input.GetKey (KeyCode.Tab)) {
 
-			if (rankingClearedSinceLastCheck) {
-				rankingClearedSinceLastCheck = false;
-				updateRankingText();
-			}
+			updateRankingText();
 
 			if (!rankingBackground.activeInHierarchy) {
 				rankingBackground.SetActive (true);
@@ -276,21 +284,25 @@ public class GameScript : MonoBehaviour {
 
 	void updateRankingText() {
 
-		string auxPlayers = "PLAYERS\n\n";
-		string auxKills = "KILLS\n\n";
+		string auxPlayers = "Player\n\n";
+		string auxKills = "Kills\n\n";
+		string auxPings = "Ping\n\n";
 
 		
 		for (int i = 0; i < allRankingPlayers.Count; i++) {
 			auxPlayers += "Player"+allRankingPlayers[i].playerCode;
 			auxKills += "<color=#FF8C8CFF>"+ allRankingPlayers[i].kills + "</color>";
+			auxPings += allRankingPlayers[i].ping +"";
 			if (i != allRankingPlayers.Count -1) { 
 				auxPlayers += "\n"; 
 				auxKills += "\n"; 
+				auxPings += "\n";
 			}
 		}
 
 		rankingBackground.transform.FindChild ("TextPlayers").GetComponent<Text> ().text = auxPlayers;
 		rankingBackground.transform.FindChild ("TextKills").GetComponent<Text> ().text = auxKills;
+		rankingBackground.transform.FindChild ("TextPings").GetComponent<Text> ().text = auxPings;
 
 	}
 
@@ -319,7 +331,11 @@ public class GameScript : MonoBehaviour {
 				
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
 				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
-				
+
+				if (Network.isServer) {
+					serverSendRankingData();
+				}
+
 			}
 			
 			
@@ -379,11 +395,13 @@ public class GameScript : MonoBehaviour {
 
 		public string playerCode;
 		public int kills;
+		public int ping;
 
 		public RankingPlayer(string auxPlayerCode) {
 
 			playerCode = auxPlayerCode;
 			kills = 0;
+			ping = 0;
 
 		}
 
