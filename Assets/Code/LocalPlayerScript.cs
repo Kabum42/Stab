@@ -61,15 +61,19 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleRegularInput() {
 
-		if (Input.GetKey(KeyCode.LeftShift)) {
-			characterSpeed = turboSpeed;
-		}
-		else {
-			characterSpeed = baseSpeed;
-		}
+		if (receiveInput) {
 
-		if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
-			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
+			if (Input.GetKey(KeyCode.LeftShift)) {
+				characterSpeed = turboSpeed;
+			}
+			else {
+				characterSpeed = baseSpeed;
+			}
+			
+			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
+				this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
+			}
+
 		}
 
 	}
