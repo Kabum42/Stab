@@ -15,6 +15,7 @@ public class GameScript : MonoBehaviour {
 
 	public List<RankingPlayer> allRankingPlayers = new List<RankingPlayer>();
 	private GameObject rankingBackground;
+	private float currentRankingCooldown = 0f;
 
 	private GameObject map;
 	private GameObject localPlayer;
@@ -22,6 +23,7 @@ public class GameScript : MonoBehaviour {
 
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
+
 
 
 
@@ -64,6 +66,7 @@ public class GameScript : MonoBehaviour {
 
 		checkIfActivateChat ();
 		updateChat ();
+		if (Network.isServer) { checkIfSendRankingData(); }
 		checkRanking ();
 		updateMyPositionInOtherClients ();
 		synchronizeOtherPlayers ();
@@ -259,6 +262,22 @@ public class GameScript : MonoBehaviour {
 
 	}
 
+	void checkIfSendRankingData() {
+
+		// SE VUELVE A COMPROBAR POR SI ACASO
+		if (Network.isServer) {
+
+			if (currentRankingCooldown >= 1f) {
+				currentRankingCooldown = 0f;
+				serverSendRankingData ();
+			} else {
+				currentRankingCooldown += Time.deltaTime;
+			}
+
+		}
+
+	}
+
 	void checkRanking() {
 
 		if (Input.GetKey (KeyCode.Tab)) {
@@ -331,10 +350,6 @@ public class GameScript : MonoBehaviour {
 				
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
 				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
-
-				if (Network.isServer) {
-					serverSendRankingData();
-				}
 
 			}
 			
