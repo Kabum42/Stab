@@ -173,6 +173,8 @@ public class GameScript : MonoBehaviour {
 
 	void serverSendRankingData() {
 
+		currentRankingCooldown = 0f;
+
 		GetComponent<NetworkView>().RPC("clearRankingRPC", RPCMode.Others);
 
 		for (int i = 0; i < allRankingPlayers.Count; i++) {
@@ -268,7 +270,6 @@ public class GameScript : MonoBehaviour {
 		if (Network.isServer) {
 
 			if (currentRankingCooldown >= 1f) {
-				currentRankingCooldown = 0f;
 				serverSendRankingData ();
 			} else {
 				currentRankingCooldown += Time.deltaTime;

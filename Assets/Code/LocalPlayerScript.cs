@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityStandardAssets.ImageEffects;
 
 public class LocalPlayerScript : MonoBehaviour {
 
@@ -42,6 +43,14 @@ public class LocalPlayerScript : MonoBehaviour {
 		crossHair.name = "CanvasCrossHair";
 
 		lastPositionCursor = Input.mousePosition;
+
+		GameObject sun = GameObject.Find ("Sun");
+		if (sun != null) {
+			SunShafts s = personalCamera.GetComponent<SunShafts> ();
+			s.sunTransform = sun.transform;
+		} else {
+			Destroy(personalCamera.GetComponent<SunShafts>());
+		}
 	
 	}
 	
