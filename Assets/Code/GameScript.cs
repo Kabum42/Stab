@@ -44,7 +44,7 @@ public class GameScript : MonoBehaviour {
 		rankingBackground = GameObject.Find ("Canvas/RankingBackground");
 		rankingBackground.SetActive (false);
 
-		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Test") as GameObject);
+		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Dust3") as GameObject);
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject);
 

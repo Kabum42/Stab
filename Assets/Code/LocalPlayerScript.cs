@@ -14,8 +14,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float sensitivityX = 10f;
 	private float sensitivityY = 5f;
 
-	private static float baseSpeed = 3f;
-	private float turboSpeed = baseSpeed*(1.7f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
+	private static float baseSpeed = 5f;
+	private float turboSpeed = baseSpeed*(1.5f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
 	private float characterSpeed = baseSpeed;
 
 	public string lastAnimationOrder = "Idle01";
@@ -89,10 +89,10 @@ public class LocalPlayerScript : MonoBehaviour {
 
 				this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
 			
-				if (currentMode == "stealth") {
-					timeStealth = 0f;
-					currentMode = "regular";
-				}
+
+				timeStealth = 0f;
+				currentMode = "regular";
+
 
 			}
 
