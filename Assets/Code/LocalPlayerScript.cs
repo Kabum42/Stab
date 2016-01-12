@@ -21,10 +21,14 @@ public class LocalPlayerScript : MonoBehaviour {
 	public string lastAnimationOrder = "Idle01";
 
 	public GameObject visualAvatar;
+	public GameObject materialCarrier;
 
 	public bool receiveInput = true;
 
 	private float notMoving = 0f;
+
+	private float timeStealth = 0f;
+	private string currentMode = "regular";
 
 	// Use this for initialization
 	void Start () {
@@ -36,6 +40,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
 		visualAvatar.name = "VisualAvatar";
+		materialCarrier = visualAvatar.transform.FindChild ("MaterialCarrier").gameObject;
 
 		GameObject crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
 		crossHair.transform.SetParent(GameObject.Find ("Canvas").transform);
@@ -65,6 +70,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	void FixedUpdate() {
 
 		handleMovementInput ();
+		handleStealth ();
 
 	}
 
@@ -80,7 +86,21 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 			
 			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
+
 				this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
+			
+				if (currentMode == "stealth") {
+					timeStealth = 0f;
+					currentMode = "regular";
+				}
+
+			}
+
+			if (currentMode == "regular") {
+				timeStealth += Time.deltaTime;
+				if (timeStealth > 2f) {
+					currentMode = "stealth";
+				}
 			}
 
 		}
@@ -140,7 +160,27 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 
 			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);
-			//this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, this.gameObject.GetComponent<Rigidbody>().velocity.y, 0f) + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed;
+
+		}
+
+	}
+
+	void handleStealth() {
+
+
+		if (currentMode == "regular") {
+
+			Color c = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_Color"), new Color(1f, 1f, 1f, 1f), Time.fixedDeltaTime*5f);
+			materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_Color", c);
+			Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0f), Time.fixedDeltaTime*5f);
+			materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
+
+		} else if (currentMode == "stealth") {
+
+			Color c = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_Color"), new Color(1f, 1f, 1f, 0.25f), Time.fixedDeltaTime*5f);
+			materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_Color", c);
+			Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0.65f), Time.fixedDeltaTime*5f);
+			materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
 
 		}
 

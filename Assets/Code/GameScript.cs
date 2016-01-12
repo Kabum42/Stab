@@ -30,6 +30,8 @@ public class GameScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
+		GlobalData.Start ();
+
 		Cursor.visible = false;
 		Cursor.lockState = CursorLockMode.Locked;
 

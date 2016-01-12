@@ -69,6 +69,8 @@ public class MenuScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
+		GlobalData.Start ();
+
 		Cursor.SetCursor (Resources.Load ("Sprites/cursorWoW") as Texture2D, Vector2.zero, CursorMode.Auto);
 
 		canvas = GameObject.Find ("Canvas");
