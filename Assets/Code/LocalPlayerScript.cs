@@ -28,7 +28,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float notMoving = 0f;
 
 	private float timeStealth = 0f;
-	private string currentMode = "regular";
+	public string currentMode = "regular";
 
 	// Use this for initialization
 	void Start () {

@@ -70,8 +70,32 @@ public class GameScript : MonoBehaviour {
 		updateChat ();
 		if (Network.isServer) { checkIfSendRankingData(); }
 		checkRanking ();
-		updateMyPositionInOtherClients ();
+		updateMyInfoInOtherClients ();
 		synchronizeOtherPlayers ();
+
+	}
+
+	void FixedUpdate() {
+
+		for (int i = 0; i < listOtherPlayers.Count; i++) {
+
+			if (listOtherPlayers[i].currentMode == "regular") {
+				
+				Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 1f), Time.fixedDeltaTime*5f);
+				listOtherPlayers[i].visualMaterial.SetColor("_Color", c);
+				//Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0f), Time.fixedDeltaTime*5f);
+				//materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
+				
+			} else if (listOtherPlayers[i].currentMode == "stealth") {
+				
+				Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 0.4f), Time.fixedDeltaTime*5f);
+				listOtherPlayers[i].visualMaterial.SetColor("_Color", c);
+				//Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0.65f), Time.fixedDeltaTime*5f);
+				//materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
+				
+			}
+
+		}
 
 	}
 
@@ -132,7 +156,7 @@ public class GameScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation)
+	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation, string currentMode)
 	{
 		bool foundPlayer = false;
 
@@ -142,6 +166,7 @@ public class GameScript : MonoBehaviour {
 				listOtherPlayers[i].targetPosition = position;
 				listOtherPlayers[i].targetRotation = rotation;
 				listOtherPlayers[i].SmartCrossfade(currentAnimation);
+				listOtherPlayers[i].currentMode = currentMode;
 				foundPlayer = true;
 				break;
 			}
@@ -157,6 +182,7 @@ public class GameScript : MonoBehaviour {
 			aux.targetPosition = position;
 			aux.targetRotation = rotation;
 			aux.SmartCrossfade(currentAnimation);
+			aux.currentMode = currentMode;
 
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
@@ -342,7 +368,7 @@ public class GameScript : MonoBehaviour {
 
 	}
 
-	void updateMyPositionInOtherClients() {
+	void updateMyInfoInOtherClients() {
 
 
 		if (currentUpdateCooldown >= 1f / (float)positionUpdatesPerSecond) {
@@ -352,7 +378,8 @@ public class GameScript : MonoBehaviour {
 			if (localPlayer != null && GetComponent<NetworkView> () != null) {
 				
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
+				string currentMode = localPlayer.GetComponent<LocalPlayerScript>().currentMode;
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, currentMode);
 
 			}
 			
@@ -381,6 +408,8 @@ public class GameScript : MonoBehaviour {
 		public string playerCode;
 		public GameObject visualAvatar;
 		public string lastAnimationOrder = "Idle01";
+		public Material visualMaterial;
+		public string currentMode = "regular";
 
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
@@ -390,6 +419,7 @@ public class GameScript : MonoBehaviour {
 			playerCode = auxPlayerCode;
 			visualAvatar = Instantiate (Resources.Load("Prefabs/ToonSoldier") as GameObject);
 			visualAvatar.name = "VisualAvatar "+playerCode;
+			visualMaterial = visualAvatar.transform.FindChild("MaterialCarrier").GetComponent<SkinnedMeshRenderer>().material;
 
 			targetPosition = visualAvatar.transform.position;
 			targetRotation = visualAvatar.transform.eulerAngles;
