@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityStandardAssets.ImageEffects;
+using UnityEngine.UI;
 
 public class LocalPlayerScript : MonoBehaviour {
 
@@ -30,6 +31,14 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float timeStealth = 0f;
 	public string currentMode = "regular";
 
+	public Skills skills;
+
+	public float sprintCooldownCurrent = 0f;
+	public float sprintCooldownMax = 5f;
+	public float sprintActive = 0f;
+
+	public MeleeWeaponTrail sprintTrail;
+
 	// Use this for initialization
 	void Start () {
 
@@ -41,11 +50,14 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
 		visualAvatar.name = "VisualAvatar";
 		materialCarrier = visualAvatar.transform.FindChild ("MaterialCarrier").gameObject;
+		sprintTrail = visualAvatar.transform.FindChild ("Bip01/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
 		GameObject crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
 		crossHair.transform.SetParent(GameObject.Find ("Canvas").transform);
 		crossHair.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0, 0);
 		crossHair.name = "CanvasCrossHair";
+
+		skills = new Skills (this);
 
 		lastPositionCursor = Input.mousePosition;
 
@@ -62,8 +74,21 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		if (sprintActive > 0f) {
+			sprintActive -= Time.deltaTime;
+			if (sprintActive < 0f) {
+				sprintActive = 0f;
+			}
+		} else if (sprintCooldownCurrent > 0f) {
+			sprintCooldownCurrent -= Time.deltaTime;
+			if (sprintCooldownCurrent < 0f) {
+				sprintCooldownCurrent = 0f;
+			}
+		}
+
 		handleCameraChanges ();
 		handleRegularInput();
+		skills.Update ();
 	
 	}
 
@@ -78,12 +103,20 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (receiveInput) {
 
-			if (Input.GetKey(KeyCode.LeftShift)) {
+			if (Input.GetKeyDown(KeyCode.LeftShift) && sprintCooldownCurrent == 0f) {
+				sprintActive = 2.5f;
+				sprintCooldownCurrent = sprintCooldownMax;
+			}
+
+			if (sprintActive > 0f) {
 				characterSpeed = turboSpeed;
+				if (!sprintTrail.Emit) { sprintTrail.Emit = true; }
 			}
 			else {
 				characterSpeed = baseSpeed;
+				if (sprintTrail.Emit) { sprintTrail.Emit = false; }
 			}
+
 			
 			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
 
@@ -98,7 +131,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (currentMode == "regular") {
 				timeStealth += Time.deltaTime;
-				if (timeStealth > 2f) {
+				if (timeStealth > 5f) {
 					currentMode = "stealth";
 				}
 			}
@@ -240,6 +273,45 @@ public class LocalPlayerScript : MonoBehaviour {
 		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 
 		lastPositionCursor = Input.mousePosition;
+
+	}
+
+	public class Skills {
+
+		public LocalPlayerScript parent;
+
+		public GameObject root;
+
+		public GameObject sprintBase;
+		public GameObject sprintCooldown;
+		public Material sprintCooldownMaterial;
+
+		private float minCutoff = 0.09f;
+		private float maxCutoff = 0.90f;
+
+		public Skills(LocalPlayerScript auxParent) {
+
+			parent = auxParent;
+
+			root = Instantiate (Resources.Load("Prefabs/CanvasSkills") as GameObject);
+			root.GetComponent<RectTransform>().SetParent(GameObject.Find("Canvas").transform);
+			root.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
+			root.transform.localScale = new Vector3(1f, 1f, 1f);
+
+
+			sprintBase = root.transform.FindChild("SprintBase").gameObject;
+			sprintCooldown = root.transform.FindChild("SprintCooldown").gameObject;
+			sprintCooldownMaterial = sprintCooldown.GetComponent<Image>().material;
+
+		}
+
+		public void Update() {
+
+			float currentSprintCutoff = minCutoff + (maxCutoff - minCutoff)*(1f - parent.sprintCooldownCurrent/parent.sprintCooldownMax);
+
+			sprintCooldownMaterial.SetFloat("_Cutoff", currentSprintCutoff);
+
+		}
 
 	}
 
