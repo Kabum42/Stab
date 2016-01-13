@@ -24,7 +24,7 @@ public class GameScript : MonoBehaviour {
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
-
+	private float remainingSeconds = 600f;
 
 
 	// Use this for initialization
@@ -50,9 +50,9 @@ public class GameScript : MonoBehaviour {
 
 		if (Network.isServer) {
 			// SI TU ERES EL SERVER, TE AGREGAS A TI MISMO COMO UN RANKINGPLAYER
-			RankingPlayer rp = new RankingPlayer(Network.player.ToString());
+			RankingPlayer rp = new RankingPlayer (Network.player.ToString ());
 			rp.ping = 0;
-			allRankingPlayers.Add(rp);
+			allRankingPlayers.Add (rp);
 		}
 	
 	}
@@ -65,6 +65,9 @@ public class GameScript : MonoBehaviour {
 		} else if (lastChatPannelInteraction < chatPannelInteractionThreshold) {
 			lastChatPannelInteraction += Time.deltaTime;
 		}
+
+		remainingSeconds -= Time.deltaTime;
+		if (remainingSeconds < 0f) { remainingSeconds = 0f; }
 
 		checkIfActivateChat ();
 		updateChat ();
@@ -116,6 +119,14 @@ public class GameScript : MonoBehaviour {
 		Network.RemoveRPCs(player);
 		//Network.DestroyPlayerObjects(player);
 		GetComponent<NetworkView>().RPC("removePlayerRPC", RPCMode.All, player.ToString());
+	}
+
+	[RPC]
+	void sendRemainingSecondsRPC(string playerCode, float auxRemainingSeconds)
+	{
+		if (playerCode == Network.player.ToString()) {
+			remainingSeconds = auxRemainingSeconds;
+		}
 	}
 
 	[RPC]
@@ -192,6 +203,8 @@ public class GameScript : MonoBehaviour {
 				allRankingPlayers.Sort (CompareListByKills);
 
 				serverSendRankingData();
+
+				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, playerCode, remainingSeconds);
 
 			}
 
@@ -335,10 +348,19 @@ public class GameScript : MonoBehaviour {
 		string auxPlayers = "Player\n\n";
 		string auxKills = "Kills\n\n";
 		string auxPings = "Ping\n\n";
+		int totalSeconds = (int) Mathf.Floor(remainingSeconds);
+		int seconds = totalSeconds % 60;
+		int minutes = totalSeconds / 60;
+		string auxTime = minutes.ToString("00") + ":" + seconds.ToString("00");
 
 		
 		for (int i = 0; i < allRankingPlayers.Count; i++) {
-			auxPlayers += "Player"+allRankingPlayers[i].playerCode;
+			if (Network.player.ToString() == allRankingPlayers[i].playerCode) {
+				auxPlayers += "<color=#D7D520>" + "Player"+allRankingPlayers[i].playerCode + "</color>";
+			}
+			else {
+				auxPlayers += "Player"+allRankingPlayers[i].playerCode;
+			}
 			auxKills += "<color=#FF8C8CFF>"+ allRankingPlayers[i].kills + "</color>";
 			auxPings += allRankingPlayers[i].ping +"";
 			if (i != allRankingPlayers.Count -1) { 
@@ -351,6 +373,7 @@ public class GameScript : MonoBehaviour {
 		rankingBackground.transform.FindChild ("TextPlayers").GetComponent<Text> ().text = auxPlayers;
 		rankingBackground.transform.FindChild ("TextKills").GetComponent<Text> ().text = auxKills;
 		rankingBackground.transform.FindChild ("TextPings").GetComponent<Text> ().text = auxPings;
+		rankingBackground.transform.FindChild("TimeBackground/TextTime").GetComponent<Text> ().text = auxTime;
 
 	}
 
