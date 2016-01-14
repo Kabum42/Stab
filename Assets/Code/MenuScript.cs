@@ -32,6 +32,8 @@ public class MenuScript : MonoBehaviour {
 
 	private GameObject test;
 
+	private List<PingMatch> unresolvedPingMatches = new List<PingMatch>();
+
 	void OnServerInitialized()
 	{
 		Debug.Log("Server Initializied");
@@ -198,6 +200,10 @@ public class MenuScript : MonoBehaviour {
 	}
 
 	private void checkMenuJoinOptions() {
+
+		for (int i = 0; i < unresolvedPingMatches.Count; i++) {
+			unresolvedPingMatches[i].Check();
+		}
 		
 		// CHECK FOR CLICK
 		if (Input.GetMouseButtonDown (0)) {
@@ -270,15 +276,23 @@ public class MenuScript : MonoBehaviour {
 
 		}
 
+		while (unresolvedPingMatches.Count > 0) {
+
+			unresolvedPingMatches[0] = null;
+			unresolvedPingMatches.RemoveAt(0);
+
+		}
+
 	}
 
 	private class Match {
 
-		private MenuScript owner;
+		public MenuScript owner;
 		public GameObject root;
 		public string matchName;
 		public int position;
 		public int players;
+		public int pingTime = -1;
 
 		public Match(MenuScript auxOwner, ref HostData hData, int auxPosition) {
 
@@ -286,6 +300,8 @@ public class MenuScript : MonoBehaviour {
 			matchName = hData.gameName;
 			players = hData.connectedPlayers;
 			position = auxPosition;
+
+			owner.unresolvedPingMatches.Add(new PingMatch(this, hData.ip[0]));
 
 			root = Instantiate (Resources.Load("Prefabs/CanvasJoinMatch") as GameObject);
 			root.gameObject.transform.parent = owner.canvasJoinContent.transform;
@@ -302,6 +318,35 @@ public class MenuScript : MonoBehaviour {
 
 		}
 
+		public void UpdatePingTime(int auxPingTime) {
+			pingTime = auxPingTime;
+			root.GetComponent<Text>().text = matchName + "  " + players +"/20" + "  "+pingTime+ "ms";
+		}
+
+
+	}
+
+	private class PingMatch {
+
+		public Match match;
+		public Ping ping;
+
+		public PingMatch(Match auxMatch, string auxIpAdress) {
+
+			match = auxMatch;
+			Debug.Log(auxIpAdress);
+			ping = new Ping(auxIpAdress);
+
+		}
+
+		public void Check() {
+
+			if (ping.isDone) {
+				match.UpdatePingTime(ping.time);
+				match.owner.unresolvedPingMatches.Remove(this);
+			}
+
+		}
 
 	}
 
