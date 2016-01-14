@@ -1,0 +1,37 @@
+mdl 1.1;
+
+import ::alg::materials::physically_metallic_roughness::physically_metallic_roughness;
+import ::base::file_texture;
+import ::base::mono_mode;
+import ::base::rotation_translation_scale;
+import ::base::tangent_space_normal_texture;
+import ::base::texture_coordinate_info;
+import ::base::texture_return;
+import ::base::transform_coordinate;
+import ::state::texture_coordinate;
+import ::state::texture_tangent_u;
+import ::state::texture_tangent_v;
+import ::tex::gamma_mode;
+import ::tex::wrap_mode;
+import ::state::normal;
+
+export material A_Moment_of_Zen(*)
+ = ::alg::materials::physically_metallic_roughness::physically_metallic_roughness(
+    ambientOcclusion: ::base::file_texture(texture_2d("" /* tag 4306, version 0 */, ::tex::gamma_default), color(0.f, 0.f, 0.f), color(1.f, 1.f, 1.f), ::base::mono_average, ::base::transform_coordinate(::base::rotation_translation_scale(float3(0.f), float3(0.f), float3(1.f)), ::base::texture_coordinate_info(::state::texture_coordinate(0), ::state::texture_tangent_u(0), ::state::texture_tangent_v(0))), float2(0.f, 1.f), float2(0.f, 1.f), ::tex::wrap_repeat, ::tex::wrap_repeat, false).mono,
+    baseColor: ::base::file_texture(texture_2d("" /* tag 4319, version 0 */, ::tex::gamma_default), color(0.f, 0.f, 0.f), color(1.f, 1.f, 1.f), ::base::mono_average, ::base::transform_coordinate(::base::rotation_translation_scale(float3(0.f), float3(0.f), float3(1.f)), ::base::texture_coordinate_info(::state::texture_coordinate(0), ::state::texture_tangent_u(0), ::state::texture_tangent_v(0))), float2(0.f, 1.f), float2(0.f, 1.f), ::tex::wrap_repeat, ::tex::wrap_repeat, false).tint,
+    emissiveColor: ::base::file_texture(texture_2d("" /* tag 4332, version 0 */, ::tex::gamma_default), color(0.f, 0.f, 0.f), color(1.f, 1.f, 1.f), ::base::mono_average, ::base::transform_coordinate(::base::rotation_translation_scale(float3(0.f), float3(0.f), float3(1.f)), ::base::texture_coordinate_info(::state::texture_coordinate(0), ::state::texture_tangent_u(0), ::state::texture_tangent_v(0))), float2(0.f, 1.f), float2(0.f, 1.f), ::tex::wrap_repeat, ::tex::wrap_repeat, false).tint,
+    emissiveIntensity: 100.f,
+    height: ::base::file_texture(texture_2d("" /* tag 4345, version 0 */, ::tex::gamma_default), color(0.f, 0.f, 0.f), color(1.f, 1.f, 1.f), ::base::mono_average, ::base::transform_coordinate(::base::rotation_translation_scale(float3(0.f), float3(0.f), float3(1.f)), ::base::texture_coordinate_info(::state::texture_coordinate(0), ::state::texture_tangent_u(0), ::state::texture_tangent_v(0))), float2(0.f, 1.f), float2(0.f, 1.f), ::tex::wrap_repeat, ::tex::wrap_repeat, false).mono,
+    heightScale: 1.8f,
+    metallic: ::base::file_texture(texture_2d("" /* tag 4358, version 0 */, ::tex::gamma_default), color(0.f, 0.f, 0.f), color(1.f, 1.f, 1.f), ::base::mono_average, ::base::transform_coordinate(::base::rotation_translation_scale(float3(0.f), float3(0.f), float3(1.f)), ::base::texture_coordinate_info(::state::texture_coordinate(0), ::state::texture_tangent_u(0), ::state::texture_tangent_v(0))), float2(0.f, 1.f), float2(0.f, 1.f), ::tex::wrap_repeat, ::tex::wrap_repeat, false).mono,
+    normal: ::base::tangent_space_normal_texture(texture_2d("" /* tag 4371, version 0 */, ::tex::gamma_default), 1.f, false, true, ::base::transform_coordinate(::base::rotation_translation_scale(float3(0.f), float3(0.f), float3(1.f)), ::base::texture_coordinate_info(::state::texture_coordinate(0), ::state::texture_tangent_u(0), ::state::texture_tangent_v(0))), float2(0.f, 1.f), float2(0.f, 1.f), ::tex::wrap_repeat, ::tex::wrap_repeat, false, 1.f, 0.f),
+    roughness: ::base::file_texture(texture_2d("" /* tag 4383, version 0 */, ::tex::gamma_default), color(0.f, 0.f, 0.f), color(1.f, 1.f, 1.f), ::base::mono_average, ::base::transform_coordinate(::base::rotation_translation_scale(float3(0.f), float3(0.f), float3(1.f)), ::base::texture_coordinate_info(::state::texture_coordinate(0), ::state::texture_tangent_u(0), ::state::texture_tangent_v(0))), float2(0.f, 1.f), float2(0.f, 1.f), ::tex::wrap_repeat, ::tex::wrap_repeat, false).mono,
+    opacity: 1.f,
+    specularLevel: 0.5f,
+    anisotropyLevel: 0.f,
+    anisotropyAngle: 0.f,
+    refraction: 0.f,
+    refractionIOR: 1.5f,
+    scattering: 0.f,
+    absorption: 0.f,
+    absorptionColor: color(1.f, 1.f, 1.f));

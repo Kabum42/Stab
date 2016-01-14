@@ -100,7 +100,7 @@ public class MeleeWeaponTrail : MonoBehaviour
 		Destroy(_trailObject);
 	}
 
-	void Update()
+	void FixedUpdate()
 	{
 		if (!_use)
 		{
