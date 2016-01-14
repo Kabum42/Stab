@@ -26,6 +26,7 @@ public class GameScript : MonoBehaviour {
 
 	private float remainingSeconds = 600f;
 
+	private GameObject textTargeted;
 
 	// Use this for initialization
 	void Start () {
@@ -43,6 +44,9 @@ public class GameScript : MonoBehaviour {
 
 		rankingBackground = GameObject.Find ("Canvas/RankingBackground");
 		rankingBackground.SetActive (false);
+
+		textTargeted = GameObject.Find ("Canvas/TextTargeted");
+		textTargeted.SetActive (false);
 
 		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Dust3") as GameObject);
 
@@ -95,7 +99,27 @@ public class GameScript : MonoBehaviour {
 				listOtherPlayers[i].visualMaterial.SetColor("_Color", c);
 				//Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0.65f), Time.fixedDeltaTime*5f);
 				//materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
-				
+
+			}
+
+			if (listOtherPlayers[i].sprintActive && !listOtherPlayers[i].sprintTrail.Emit) {
+				listOtherPlayers[i].sprintTrail.Emit = true;
+			}
+			else if (!listOtherPlayers[i].sprintActive && listOtherPlayers[i].sprintTrail.Emit) {
+				listOtherPlayers[i].sprintTrail.Emit = false;
+			}
+
+
+			if (localPlayer.GetComponent<LocalPlayerScript>().crossHairTargeted == null) {
+				textTargeted.SetActive(false);
+			}
+			else {
+				textTargeted.SetActive(true);
+				for (int j = 0; j < listOtherPlayers.Count; j++) {
+					if (listOtherPlayers[j].visualAvatar == localPlayer.GetComponent<LocalPlayerScript>().crossHairTargeted) {
+						textTargeted.GetComponent<Text>().text = "<Player "+listOtherPlayers[j].playerCode+">";
+					}
+				}
 			}
 
 		}
@@ -167,7 +191,7 @@ public class GameScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation, string currentMode)
+	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation, string currentMode, bool sprintActive)
 	{
 		bool foundPlayer = false;
 
@@ -178,6 +202,7 @@ public class GameScript : MonoBehaviour {
 				listOtherPlayers[i].targetRotation = rotation;
 				listOtherPlayers[i].SmartCrossfade(currentAnimation);
 				listOtherPlayers[i].currentMode = currentMode;
+				listOtherPlayers[i].sprintActive = sprintActive;
 				foundPlayer = true;
 				break;
 			}
@@ -402,7 +427,8 @@ public class GameScript : MonoBehaviour {
 				
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
 				string currentMode = localPlayer.GetComponent<LocalPlayerScript>().currentMode;
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, currentMode);
+				bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, currentMode, sprintActive);
 
 			}
 			
@@ -433,6 +459,8 @@ public class GameScript : MonoBehaviour {
 		public string lastAnimationOrder = "Idle01";
 		public Material visualMaterial;
 		public string currentMode = "regular";
+		public bool sprintActive = false;
+		public MeleeWeaponTrail sprintTrail;
 
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
@@ -443,6 +471,8 @@ public class GameScript : MonoBehaviour {
 			visualAvatar = Instantiate (Resources.Load("Prefabs/ToonSoldier") as GameObject);
 			visualAvatar.name = "VisualAvatar "+playerCode;
 			visualMaterial = visualAvatar.transform.FindChild("MaterialCarrier").GetComponent<SkinnedMeshRenderer>().material;
+			sprintTrail = visualAvatar.transform.FindChild ("Bip01/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
+			sprintTrail.Emit = false;
 
 			targetPosition = visualAvatar.transform.position;
 			targetRotation = visualAvatar.transform.eulerAngles;

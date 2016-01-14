@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityStandardAssets.ImageEffects;
 using UnityEngine.UI;
+using System;
 
 public class LocalPlayerScript : MonoBehaviour {
 
@@ -39,6 +40,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public MeleeWeaponTrail sprintTrail;
 
+	private GameObject crossHair;
+	public GameObject crossHairTargeted;
+
 	// Use this for initialization
 	void Start () {
 
@@ -52,7 +56,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		materialCarrier = visualAvatar.transform.FindChild ("MaterialCarrier").gameObject;
 		sprintTrail = visualAvatar.transform.FindChild ("Bip01/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
-		GameObject crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
+		crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
 		crossHair.transform.SetParent(GameObject.Find ("Canvas").transform);
 		crossHair.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0, 0);
 		crossHair.name = "CanvasCrossHair";
@@ -96,6 +100,33 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		handleMovementInput ();
 		handleStealth ();
+		checkIfLookingAtPlayer ();
+
+	}
+
+	void checkIfLookingAtPlayer() {
+
+		crossHair.GetComponent<Image>().color = new Color(1f, 1f, 1f);
+		crossHairTargeted = null;
+
+		RaycastHit[] hits;
+		hits = Physics.RaycastAll (personalCamera.transform.position, personalCamera.transform.forward, 100f);
+		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
+
+		for (int i = 0; i < hits.Length; i++) {
+			if (hits[i].collider.gameObject != this.visualAvatar && hits[i].collider.gameObject != this.gameObject) {
+
+				if (hits[i].collider.gameObject.GetComponent<PlayerMarker>() != null) {
+					crossHair.GetComponent<Image>().color = new Color(1f, 0f, 0f);
+					crossHairTargeted = hits[i].collider.gameObject;
+					break;
+				}
+				else {
+					break;
+				}
+
+			}
+		}
 
 	}
 
