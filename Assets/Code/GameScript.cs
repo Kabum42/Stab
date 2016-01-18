@@ -48,7 +48,7 @@ public class GameScript : MonoBehaviour {
 		textTargeted = GameObject.Find ("Canvas/TextTargeted");
 		textTargeted.SetActive (false);
 
-		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Dust3") as GameObject);
+		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject);
 
