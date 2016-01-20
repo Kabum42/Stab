@@ -468,10 +468,10 @@ public class GameScript : MonoBehaviour {
 		public OtherPlayer(string auxPlayerCode) {
 
 			playerCode = auxPlayerCode;
-			visualAvatar = Instantiate (Resources.Load("Prefabs/ToonSoldier") as GameObject);
+			visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
 			visualAvatar.name = "VisualAvatar "+playerCode;
-			visualMaterial = visualAvatar.transform.FindChild("MaterialCarrier").GetComponent<SkinnedMeshRenderer>().material;
-			sprintTrail = visualAvatar.transform.FindChild ("Bip01/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
+			visualMaterial = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;
+			sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 			sprintTrail.Emit = false;
 
 			targetPosition = visualAvatar.transform.position;

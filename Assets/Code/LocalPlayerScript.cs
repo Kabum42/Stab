@@ -52,6 +52,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
+		visualAvatar.transform.localScale = new Vector3 (0.9f, 0.9f, 0.9f);
 		visualAvatar.name = "VisualAvatar";
 		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
 		sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
@@ -162,7 +163,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (currentMode == "regular") {
 				timeStealth += Time.deltaTime;
-				if (timeStealth > 5f) {
+				if (timeStealth > 30f) {
 					currentMode = "stealth";
 				}
 			}

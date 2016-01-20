@@ -8,10 +8,12 @@ public class ChatManager {
 	private GameObject physicalChat;
 	public List<ChatMessage> listMessages = new List<ChatMessage>();
 	private int maxMessages = 10;
+	private ScrollRect scrollRect;
 
 	public ChatManager(GameObject auxPhysicalChat) {
 
 		physicalChat = auxPhysicalChat;
+		scrollRect = auxPhysicalChat.transform.parent.gameObject.GetComponent<ScrollRect> ();
 
 	}
 
@@ -43,6 +45,14 @@ public class ChatManager {
 		}
 
 		physicalChat.GetComponent<Text> ().text = aux;
+
+		Canvas.ForceUpdateCanvases ();
+
+		if (physicalChat.GetComponent<RectTransform> ().sizeDelta.y > 342f) {
+			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 60 + (physicalChat.GetComponent<RectTransform> ().sizeDelta.y - 342f)/2.87f);
+		} else {
+			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 60);
+		}
 
 	}
 
