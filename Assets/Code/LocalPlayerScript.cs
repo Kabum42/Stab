@@ -7,11 +7,11 @@ using System;
 public class LocalPlayerScript : MonoBehaviour {
 
 	private GameObject personalCamera;
-	private float cameraDistance = 2f;
+	private float cameraDistance = 3.2f;
 	private float allPlayerRotationX = 0f;
 	private float cameraValueX = 0f;
 	private float cameraValueY = -17f;
-	private Vector3 centerOfCamera = new Vector3 (0.2f, 1.2f, 0f);
+	private Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
 	private Vector3 lastPositionCursor;
 	private float sensitivityX = 10f;
 	private float sensitivityY = 5f;
@@ -49,12 +49,12 @@ public class LocalPlayerScript : MonoBehaviour {
 		GlobalData.Start ();
 
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
-		visualAvatar = Instantiate (Resources.Load("Prefabs/ToonSoldier") as GameObject);
+		visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
 		visualAvatar.name = "VisualAvatar";
-		materialCarrier = visualAvatar.transform.FindChild ("MaterialCarrier").gameObject;
-		sprintTrail = visualAvatar.transform.FindChild ("Bip01/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
+		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
+		sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
 		crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
 		crossHair.transform.SetParent(GameObject.Find ("Canvas").transform);
@@ -194,7 +194,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (movement.x == 0 && movement.y == 0) {
 			// NO INPUT
-			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle01");
+			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle");
 
 			float aux = this.gameObject.GetComponent<Rigidbody>().velocity.y;
 
@@ -215,12 +215,12 @@ public class LocalPlayerScript : MonoBehaviour {
 			movement.Normalize();
 
 			if (Mathf.Abs (movement.x) >= Mathf.Abs(movement.y)) {
-				if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move01_L"); }
-				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move01_R"); }
+				if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_L"); }
+				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_R"); }
 			}
 			else {
-				if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move01_F"); }
-				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move01_B"); }
+				if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_F"); }
+				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_B"); }
 			}
 
 			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);
