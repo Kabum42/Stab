@@ -3,18 +3,23 @@ using System.Collections;
 using UnityStandardAssets.ImageEffects;
 using UnityEngine.UI;
 using System;
+using System.Collections.Generic;
 
 public class LocalPlayerScript : MonoBehaviour {
 
+    public GameScript gameScript;
 	private GameObject personalCamera;
-	private float cameraDistance = 3.2f;
+	//private float cameraDistance = 3.2f;
+    private float cameraDistance = 0f;
 	private float allPlayerRotationX = 0f;
 	private float cameraValueX = 0f;
 	private float cameraValueY = -17f;
-	private Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
+	//private Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
+    public static Vector3 centerOfCamera = new Vector3(0f, 1.4f, 0f);
 	private Vector3 lastPositionCursor;
 	private float sensitivityX = 10f;
 	private float sensitivityY = 5f;
+    public static float stabbingDistance = 2.5f;
 
 	private static float baseSpeed = 5f;
 	private float turboSpeed = baseSpeed*(1.5f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
@@ -43,6 +48,10 @@ public class LocalPlayerScript : MonoBehaviour {
 	private GameObject crossHair;
 	public GameObject crossHairTargeted;
 
+    public AudioSource audioSource1;
+
+    private List<AudioClip> stabbingClips = new List<AudioClip>();
+
 	// Use this for initialization
 	void Start () {
 
@@ -65,6 +74,12 @@ public class LocalPlayerScript : MonoBehaviour {
 		skills = new Skills (this);
 
 		lastPositionCursor = Input.mousePosition;
+
+        audioSource1 = this.gameObject.AddComponent<AudioSource>();
+
+        stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_001") as AudioClip);
+        stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_002") as AudioClip);
+        stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_003") as AudioClip);
 
 		GameObject sun = GameObject.Find ("Sun");
 		if (sun != null) {
@@ -111,7 +126,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		crossHairTargeted = null;
 
 		RaycastHit[] hits;
-		hits = Physics.RaycastAll (personalCamera.transform.position, personalCamera.transform.forward, 100f);
+		hits = Physics.RaycastAll (personalCamera.transform.position, personalCamera.transform.forward, stabbingDistance);
 		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
 
 		for (int i = 0; i < hits.Length; i++) {
@@ -153,13 +168,24 @@ public class LocalPlayerScript : MonoBehaviour {
 			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
 
 				this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
-			
 
 				timeStealth = 0f;
 				currentMode = "regular";
 
-
 			}
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (!audioSource1.isPlaying)
+                {
+                    audioSource1.clip = stabbingClips[UnityEngine.Random.Range(0, stabbingClips.Count)];
+                    audioSource1.Play();
+                }
+                if (gameScript != null)
+                {
+                    gameScript.requestAttack(personalCamera.transform.forward);
+                }
+            }
 
 			if (currentMode == "regular") {
 				timeStealth += Time.deltaTime;

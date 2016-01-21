@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System;
 
 public class GameScript : MonoBehaviour {
 
@@ -51,6 +52,7 @@ public class GameScript : MonoBehaviour {
 		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject);
+        localPlayer.GetComponent<LocalPlayerScript>().gameScript = this;
 
 		if (Network.isServer) {
 			// SI TU ERES EL SERVER, TE AGREGAS A TI MISMO COMO UN RANKINGPLAYER
@@ -266,6 +268,60 @@ public class GameScript : MonoBehaviour {
 		allRankingPlayers.Add (rp);
 	}
 
+    [RPC]
+    void requestedAttackRPC(string playerCode, Vector3 lookingAt)
+    {
+        requestedAttack(playerCode, lookingAt);
+    }
+
+    void requestedAttack(string playerCode, Vector3 lookingAt)
+    {
+        GameObject attackerVisualAvatar = null;
+        if (playerCode != Network.player.ToString())
+        {
+            for (int i = 0; i < listOtherPlayers.Count; i++)
+            {
+                if (listOtherPlayers[i].playerCode == playerCode)
+                {
+                    attackerVisualAvatar = listOtherPlayers[i].visualAvatar;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            attackerVisualAvatar = localPlayer.GetComponent<LocalPlayerScript>().visualAvatar;
+        }
+
+        if (attackerVisualAvatar != null)
+        {
+
+            RaycastHit[] hits;
+            hits = Physics.RaycastAll(attackerVisualAvatar.transform.position + LocalPlayerScript.centerOfCamera, lookingAt, LocalPlayerScript.stabbingDistance);
+            Array.Sort(hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
+
+            for (int i = 0; i < hits.Length; i++)
+            {
+                if (hits[i].collider.gameObject != attackerVisualAvatar && hits[i].collider.gameObject != localPlayer)
+                {
+
+                    if (hits[i].collider.gameObject.GetComponent<PlayerMarker>() != null)
+                    {
+                        // DEAD
+                        RankingPlayerByCode(playerCode).kills++;
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                }
+            }
+
+        }
+    }
+
 	NetworkPlayer NetworkPlayerByCode(string playerCode) {
 
 		if (Network.player.ToString () == playerCode) {
@@ -281,6 +337,21 @@ public class GameScript : MonoBehaviour {
 		return Network.connections[0];
 
 	}
+
+    RankingPlayer RankingPlayerByCode(string playerCode)
+    {
+
+        for (int i = 0; i < allRankingPlayers.Count; i++)
+        {
+            if (allRankingPlayers[i].playerCode == playerCode)
+            {
+                return allRankingPlayers[i];
+            }
+        }
+
+        return null;
+
+    }
 
 	void checkIfActivateChat() {
 
@@ -451,6 +522,18 @@ public class GameScript : MonoBehaviour {
 		}
 
 	}
+
+    public void requestAttack(Vector3 lookingAt)
+    {
+        if (Network.isServer)
+        {
+            requestedAttack(Network.player.ToString(), lookingAt);
+        }
+        else
+        {
+            GetComponent<NetworkView>().RPC("requestedAttackRPC", RPCMode.Server, Network.player.ToString(), lookingAt);
+        }
+    }
 
 	public class OtherPlayer {
 
