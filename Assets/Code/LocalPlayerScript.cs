@@ -9,13 +9,13 @@ public class LocalPlayerScript : MonoBehaviour {
 
     public GameScript gameScript;
 	private GameObject personalCamera;
-	//private float cameraDistance = 3.2f;
-    private float cameraDistance = 0f;
+	private float cameraDistance = 3.2f;
+    //private float cameraDistance = 0f;
 	private float allPlayerRotationX = 0f;
 	private float cameraValueX = 0f;
 	private float cameraValueY = -17f;
-	//private Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
-    public static Vector3 centerOfCamera = new Vector3(0f, 1.4f, 0f);
+	public static Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
+    //public static Vector3 centerOfCamera = new Vector3(0f, 1.4f, 0f);
 	private Vector3 lastPositionCursor;
 	private float sensitivityX = 10f;
 	private float sensitivityY = 5f;
