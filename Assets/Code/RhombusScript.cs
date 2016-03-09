@@ -12,6 +12,7 @@ public class RhombusScript : MonoBehaviour {
     public GameObject boneSW;
     public GameObject boneSE;
 
+    
     private Neuron NW;
     private Neuron NE;
     private Neuron SW;
@@ -67,6 +68,11 @@ public class RhombusScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+        NW.Update();
+        NE.Update();
+        SW.Update();
+        SE.Update();
+
         for (int i = 0; i < synapsisList.Count; i++)
         {
             synapsisList[i].Update();
@@ -87,13 +93,15 @@ public class RhombusScript : MonoBehaviour {
         private Vector3 newPosition = new Vector3(0f, 0f, 0f);
         private float cooldown = 0f;
         private float interpolationNumber = 0f;
+        private Vector3 randomRotation;
 
         public Neuron(RhombusScript rS)
         {
             root = GameObject.Instantiate(rS.neuronSource);
-            root.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);
             root.SetActive(true);
             root.transform.SetParent(rS.transform);
+            randomRotation = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
+            randomRotation.Normalize();
         }
 
         public void SetOriginal()
@@ -103,6 +111,8 @@ public class RhombusScript : MonoBehaviour {
 
         public void Update()
         {
+            root.transform.Rotate(randomRotation * Time.deltaTime * 180f);
+
             cooldown -= Time.deltaTime;
 
             if (cooldown <= 0f)
@@ -110,12 +120,12 @@ public class RhombusScript : MonoBehaviour {
                 cooldown = Random.Range(0.5f, 1f);
                 Vector3 direction = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
                 direction.Normalize();
-                float distance = Random.Range(2f, 5f);
+                float distance = Random.Range(0f, 0.5f);
                 newPosition = root.transform.localPosition + direction * distance;
-                if (Vector3.Distance(newPosition, originalPosition) > 20f)
+                if (Vector3.Distance(newPosition, originalPosition) > 1f)
                 {
                     Vector3 direction2 = (newPosition - originalPosition).normalized;
-                    newPosition = originalPosition + direction2 * 20f;
+                    newPosition = originalPosition + direction2 * 1f;
                 }
                 interpolationNumber = Mathf.Pow(Random.Range(1f, 2f), 4f);
             }
@@ -139,7 +149,6 @@ public class RhombusScript : MonoBehaviour {
             root.SetActive(true);
             root.transform.SetParent(rS.transform);
             cylinder = root.transform.FindChild("Cylinder").gameObject;
-            cylinder.transform.localScale = new Vector3(0.1f, 1f, 0.1f);
         }
 
         public bool HasNeuron(Neuron n)

@@ -6,6 +6,8 @@ public class PositronicBrain : MonoBehaviour {
 
     public GameObject neuronSource;
     public GameObject synapsisSource;
+    public GameObject emitter;
+    protected ParticleSystem emitterParticleSystem;
 
     public int maxSynapsisPerNeuron = 5;
     public int neurons = 10;
@@ -16,6 +18,9 @@ public class PositronicBrain : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
+        emitterParticleSystem = emitter.transform.FindChild("ParticleSystem").gameObject.GetComponent<ParticleSystem>();
+        emitterParticleSystem.emissionRate = 0f;
 
         Neuron n = new Neuron(this);
         n.root.transform.localPosition = new Vector3(0f, 0f, 0f);
@@ -137,12 +142,15 @@ public class PositronicBrain : MonoBehaviour {
         private Vector3 newPosition = new Vector3(0f, 0f, 0f);
         private float cooldown = 0f;
         private float interpolationNumber = 0f;
+        private Vector3 randomRotation;
 
         public Neuron(PositronicBrain pB)
         {
             root = GameObject.Instantiate(pB.neuronSource);
             root.SetActive(true);
             root.transform.SetParent(pB.transform);
+            randomRotation = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
+            randomRotation.Normalize();
         }
 
         public void SetOriginal()
@@ -164,6 +172,8 @@ public class PositronicBrain : MonoBehaviour {
 
         public void Update()
         {
+            root.transform.Rotate(randomRotation * Time.deltaTime *180f);
+
             cooldown -= Time.deltaTime;
 
             if (cooldown <= 0f)
@@ -245,6 +255,11 @@ public class PositronicBrain : MonoBehaviour {
         {
             if (Vector3.Distance(root.transform.position, targetNeuron.root.transform.position) < 1f)
             {
+                if (Random.Range(0f, 100f) < 25f)
+                {
+                    parent.emitterParticleSystem.gameObject.transform.position = targetNeuron.root.transform.position;
+                    parent.emitterParticleSystem.Emit(1);
+                }
                 Neuron randomNeuron = parent.neuronList[Random.Range(0, parent.neuronList.Count)];
                 root.transform.position = randomNeuron.root.transform.position;
                 Synapsis s = randomNeuron.synapsisList[Random.Range(0, randomNeuron.synapsisList.Count)];

@@ -47,7 +47,8 @@ public class MenuBackBone : MonoBehaviour {
 			auxNeuronOption.text.GetComponent<TextMesh> ().text = "JEJE_"+i;
 			auxNeuron.options.Add (auxNeuronOption);
 		}
-		*/
+        */
+		
 
 		auxSynapsis.end = auxNeuron;
 	
@@ -72,29 +73,34 @@ public class MenuBackBone : MonoBehaviour {
 		public GameObject root;
 		public List<MenuNeuronOption> options = new List<MenuNeuronOption> ();
 		public int optionSelected = 0;
-
+        private Vector3 randomRotation;
 
 		public MenuNeuron(MenuBackBone mBB) {
 			parent = mBB;
 			root = GameObject.Instantiate(parent.neuronSource);
 			root.SetActive(true);
 			root.transform.SetParent(parent.gameObject.transform);
+            randomRotation = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
+            randomRotation.Normalize();
 		}
 
 		public void Update() {
 
 			// ESTO ES PROVISIONAL, NO DEBERIA IR AQUI, SINO EN EL UPDATE DE BACKBONE
-			if (Input.GetKeyDown (KeyCode.W)) {
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+            {
 
 				optionSelected--;
 				if (optionSelected < 0) { optionSelected = options.Count -1; }
 
-			} else if (Input.GetKeyDown (KeyCode.S)) {
+			} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
 
 				optionSelected++;
 				if (optionSelected > (options.Count -1)) { optionSelected = 0; }
 
 			}
+
+            root.transform.Rotate(randomRotation * Time.deltaTime * 180f);
 
 			for (int i = 0; i < options.Count; i++) {
 
@@ -116,7 +122,7 @@ public class MenuBackBone : MonoBehaviour {
 
 				options [i].text.GetComponent<TextMesh> ().color = Color.Lerp (options [i].text.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 10f);
 
-				options[i].root.transform.localPosition = new Vector3(0f, 0f, 0f);
+				options[i].root.transform.position = root.transform.position;
 				float auxRotation = Mathf.LerpAngle (options [i].root.transform.localEulerAngles.z, (360f / options.Count) * (optionSelected -i), Time.deltaTime * 20f);
 				options [i].root.transform.localEulerAngles = new Vector3 (0f, 0f, auxRotation);
 				options [i].root.transform.position = options[i].root.transform.position + options[i].root.transform.right * distance;
@@ -141,7 +147,7 @@ public class MenuBackBone : MonoBehaviour {
 			parent = mN;
 			root = GameObject.Instantiate(parent.root.transform.parent.GetComponent<MenuBackBone>().optionSource);
 			root.SetActive(true);
-			root.transform.SetParent(parent.root.transform);
+			root.transform.SetParent(parent.parent.transform);
 			text = root.transform.FindChild("Text").gameObject;
 			textOriginalScale = text.transform.localScale;
 		}
