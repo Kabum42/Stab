@@ -122,14 +122,14 @@ public class MenuBackBone : MonoBehaviour {
 
 	private void ProcessInput() {
 
-		if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
+		if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
 		{
 			
 			currentMenuNeuron.optionSelected--;
 			if (currentMenuNeuron.optionSelected < 0) { currentMenuNeuron.optionSelected = currentMenuNeuron.options.Count -1; }
 			currentMenuNeuron.clockwise = true;
 
-		} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
+		} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) {
 			
 			currentMenuNeuron.optionSelected++;
 			if (currentMenuNeuron.optionSelected > (currentMenuNeuron.options.Count -1)) { currentMenuNeuron.optionSelected = 0; }
