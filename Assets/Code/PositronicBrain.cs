@@ -16,6 +16,8 @@ public class PositronicBrain : MonoBehaviour {
     private List<Synapsis> synapsisList = new List<Synapsis>();
     private List<Message> messageList = new List<Message>();
 
+    private float menuInfluence = 0f;
+
 	// Use this for initialization
 	void Start () {
 
@@ -103,15 +105,8 @@ public class PositronicBrain : MonoBehaviour {
 
         this.transform.Rotate(new Vector3(0f, Time.deltaTime*2.5f, 0f));
 
-        /*
-        for (int i = 0; i < neuronList.Count; i++)
-        {
-            float amount = 0.1f;
-            neuronList[i].root.transform.position = neuronList[i].root.transform.position + new Vector3(Random.Range(-1f, 1f), Random.RandomRange(-1f, 1f), Random.Range(-1f, 1f))*amount;
-        }
-        */
-
-        
+        this.transform.Rotate(new Vector3(0f, 1f, 0f) * menuInfluence * Time.deltaTime * 60f);
+        menuInfluence = Mathf.Lerp(menuInfluence, 0f, Time.deltaTime*5f);
 
 	}
 
@@ -131,6 +126,16 @@ public class PositronicBrain : MonoBehaviour {
         {
             messageList[i].Update();
         }
+    }
+
+    public void MenuForward()
+    {
+        menuInfluence = 1f;
+    }
+
+    public void MenuBack()
+    {
+        menuInfluence = -1f;
     }
 
     public class Neuron

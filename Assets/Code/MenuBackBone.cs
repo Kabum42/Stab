@@ -18,8 +18,12 @@ public class MenuBackBone : MonoBehaviour {
 
 	private bool lastActionAddition = false;
 
+    private PositronicBrain pB;
+
 	// Use this for initialization
 	void Start () {
+
+        pB = GameObject.Find("PositronicBrain").GetComponent<PositronicBrain>();
 
 		CreateBaseNeuron ();
 
@@ -94,6 +98,9 @@ public class MenuBackBone : MonoBehaviour {
 		parentSynapsis.cylinder.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
 		newNeuron.visible = false;
 
+        newNeuron.AddOption("/..", "back", null);
+        newNeuron.optionSelected = 1;
+
 		return newNeuron;
 
 	}
@@ -159,31 +166,49 @@ public class MenuBackBone : MonoBehaviour {
 				currentMenuNeuron = nextNeuron;
 				listPathNeurons.Push (currentMenuNeuron);
 
+                currentMenuNeuron.CorrectZ();
 				currentMenuNeuron.visible = true;
 				currentMenuNeuron.root.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
 				currentMenuNeuron.parentSynapsis.cylinder.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
 
 				lastActionAddition = true;
 
-			}
+                pB.MenuForward();
+
+            }
+            else if (action == "back")
+            {
+
+                Back();
+
+            }
 
 		} else if (Input.GetKeyDown (KeyCode.Escape)) {
-			
-			if (listPathNeurons.Count > 1) {
 
-				currentMenuNeuron.visible = false;
-
-				listPathNeurons.Pop ();
-
-				currentMenuNeuron = listPathNeurons.Peek ();
-
-				lastActionAddition = false;
-
-			}
+            Back();
 
 		}
 
 	}
+
+    private void Back()
+    {
+        if (listPathNeurons.Count > 1)
+        {
+
+            if (currentMenuNeuron.optionSelected == 0)
+            {
+                currentMenuNeuron.optionSelected = 1;
+            }
+            currentMenuNeuron.visible = false;
+            listPathNeurons.Pop();
+            currentMenuNeuron = listPathNeurons.Peek();
+            lastActionAddition = false;
+
+            pB.MenuBack();
+
+        }
+    }
 
 	public class MenuNeuron {
 
@@ -206,6 +231,12 @@ public class MenuBackBone : MonoBehaviour {
             randomRotation.Normalize();
 			parent.listMenuNeurons.Add(this);
 		}
+
+        public void CorrectZ()
+        {
+            float targetZ = (360f / options.Count) * (optionSelected);
+            auxZ = targetZ;
+        }
 
 		public void AddOption(string textToShow, string action, MenuNeuron connectedNeuron) {
 
