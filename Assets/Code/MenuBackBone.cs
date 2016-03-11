@@ -29,13 +29,13 @@ public class MenuBackBone : MonoBehaviour {
 
 		MenuNeuron baseNeuron = new MenuNeuron(this);
 		baseNeuron.root.transform.localPosition = new Vector3 (-8f, -7f, -6f);
+		baseNeuron.visible = true;
 
 		MenuSynapsis baseSynapsis = new MenuSynapsis (this);
 		baseSynapsis.start = baseNeuron;
 
 		CreateFirstNeuron (baseSynapsis);
-
-	}
+ }
 
 	private void CreateFirstNeuron(MenuSynapsis parentSynapsis) {
 
@@ -43,6 +43,7 @@ public class MenuBackBone : MonoBehaviour {
 		parentSynapsis.end = firstNeuron;
 		firstNeuron.parentSynapsis = parentSynapsis;
 		firstNeuron.root.transform.position = parentSynapsis.start.root.transform.position + new Vector3 (0f, 3.5f, 7f);
+		firstNeuron.visible = true;
 
 		currentMenuNeuron = firstNeuron;
 		listPathNeurons.Push (firstNeuron);
@@ -54,14 +55,6 @@ public class MenuBackBone : MonoBehaviour {
 		firstNeuron.AddOption ("Options", "neuron", optionsNeuron);
 
 		firstNeuron.AddOption ("Shut down system", "exit", null);
-
-		/*
-		for (int i = 0; i < 10; i++) {
-			auxNeuronOption = new MenuNeuronOption(auxNeuron);
-			auxNeuronOption.text.GetComponent<TextMesh> ().text = "JEJE_"+i;
-			auxNeuron.options.Add (auxNeuronOption);
-		}
-        */
 
 	}
 
@@ -81,7 +74,7 @@ public class MenuBackBone : MonoBehaviour {
 		MenuNeuron auxNeuron = GenerateMenuNeuron (parentNeuron);
 
 		for (int i = 0; i < 10; i++) {
-			auxNeuron.AddOption ("JEJE_"+i, "none", null);
+			auxNeuron.AddOption ("HEHE_"+i, "none", null);
 		}
 
 		return auxNeuron;
@@ -97,8 +90,9 @@ public class MenuBackBone : MonoBehaviour {
 		parentSynapsis.end = newNeuron;
 		newNeuron.parentSynapsis = parentSynapsis;
 
-		newNeuron.root.SetActive (false);
-		parentSynapsis.root.SetActive (false);
+		newNeuron.root.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
+		parentSynapsis.cylinder.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
+		newNeuron.visible = false;
 
 		return newNeuron;
 
@@ -133,11 +127,13 @@ public class MenuBackBone : MonoBehaviour {
 			
 			currentMenuNeuron.optionSelected--;
 			if (currentMenuNeuron.optionSelected < 0) { currentMenuNeuron.optionSelected = currentMenuNeuron.options.Count -1; }
+			currentMenuNeuron.clockwise = true;
 
 		} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
 			
 			currentMenuNeuron.optionSelected++;
 			if (currentMenuNeuron.optionSelected > (currentMenuNeuron.options.Count -1)) { currentMenuNeuron.optionSelected = 0; }
+			currentMenuNeuron.clockwise = false;
 
 		}
 
@@ -162,8 +158,10 @@ public class MenuBackBone : MonoBehaviour {
 
 				currentMenuNeuron = nextNeuron;
 				listPathNeurons.Push (currentMenuNeuron);
-				currentMenuNeuron.parentSynapsis.root.SetActive (true);
-				currentMenuNeuron.root.SetActive (true);
+
+				currentMenuNeuron.visible = true;
+				currentMenuNeuron.root.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
+				currentMenuNeuron.parentSynapsis.cylinder.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
 
 				lastActionAddition = true;
 
@@ -173,8 +171,8 @@ public class MenuBackBone : MonoBehaviour {
 			
 			if (listPathNeurons.Count > 1) {
 
-				currentMenuNeuron.root.SetActive (false);
-				currentMenuNeuron.parentSynapsis.root.SetActive (false);
+				currentMenuNeuron.visible = false;
+
 				listPathNeurons.Pop ();
 
 				currentMenuNeuron = listPathNeurons.Peek ();
@@ -195,6 +193,9 @@ public class MenuBackBone : MonoBehaviour {
 		public int optionSelected = 0;
         private Vector3 randomRotation;
 		public MenuSynapsis parentSynapsis;
+		private float auxZ = 0f;
+		public bool clockwise = true;
+		public bool visible = false;
 
 		public MenuNeuron(MenuBackBone mBB) {
 			parent = mBB;
@@ -220,6 +221,18 @@ public class MenuBackBone : MonoBehaviour {
 		public void Update() {
 
             root.transform.Rotate(randomRotation * Time.deltaTime * 180f);
+
+			float speedVisibility = 7.5f;
+			Color targetVisibilityColor = new Color (1f, 1f, 1f, 0f);
+			if (visible) { 
+				targetVisibilityColor = new Color (1f, 1f, 1f, 1f);
+				speedVisibility = 5f;
+			}
+
+			root.GetComponent<MeshRenderer> ().material.color = Color.Lerp (root.GetComponent<MeshRenderer> ().material.color, targetVisibilityColor, Time.deltaTime * speedVisibility);
+			if (parentSynapsis != null) {
+				parentSynapsis.cylinder.GetComponent<MeshRenderer> ().material.color = Color.Lerp (parentSynapsis.cylinder.GetComponent<MeshRenderer> ().material.color, targetVisibilityColor, Time.deltaTime * speedVisibility);
+			}
 
 			if (parent.currentMenuNeuron != this) {
 
@@ -252,8 +265,23 @@ public class MenuBackBone : MonoBehaviour {
 					options [i].text.GetComponent<TextMesh> ().color = Color.Lerp (options [i].text.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 10f);
 
 					options[i].root.transform.position = root.transform.position;
-					float auxRotation = Mathf.LerpAngle (options [i].root.transform.localEulerAngles.z, (360f / options.Count) * (optionSelected -i), Time.deltaTime * 20f);
-					options [i].root.transform.localEulerAngles = new Vector3 (0f, 0f, auxRotation);
+
+					float targetZ = (360f / options.Count) * (optionSelected);
+
+					if (clockwise && targetZ > auxZ) {
+
+						auxZ += 360f;
+
+					} else if (!clockwise && targetZ < auxZ) {
+
+						auxZ -= 360f;
+
+					}
+
+					auxZ = Mathf.Lerp(auxZ, targetZ, Time.deltaTime * 5f);
+					if (auxZ != targetZ && Mathf.Abs(auxZ - targetZ) < 0.1f) { auxZ = targetZ; } 
+
+					options [i].root.transform.localEulerAngles = new Vector3 (0f, 0f, auxZ - (360f / options.Count)*i );
 					options [i].root.transform.position = options[i].root.transform.position + options[i].root.transform.right * distance;
 
 				}
