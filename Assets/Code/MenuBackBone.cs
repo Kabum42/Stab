@@ -192,6 +192,15 @@ public class MenuBackBone : MonoBehaviour {
 				rhombus.gameObject.transform.position = currentMenuNeuron.root.transform.position +new Vector3(4f, -4f, 0f);
 				//rhombus.Collapse ();
 
+			} else if (action == "create") {
+
+				NetworkManager.StartServer("test");
+				Application.LoadLevel("Game");
+
+			} else if (action == "join") {
+
+				NetworkManager.RefreshHostList ();
+
 			}
 
 		} else if (Input.GetKeyDown (KeyCode.Escape)) {
@@ -200,6 +209,15 @@ public class MenuBackBone : MonoBehaviour {
 
 		}
 
+	}
+
+	void OnMasterServerEvent(MasterServerEvent msEvent)
+	{
+		if (msEvent == MasterServerEvent.HostListReceived)
+		{
+			NetworkManager.hostList = MasterServer.PollHostList();
+			NetworkManager.JoinServer(NetworkManager.hostList[0]);
+		}
 	}
 
     private void Back()
