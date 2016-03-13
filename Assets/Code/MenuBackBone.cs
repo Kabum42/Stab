@@ -7,6 +7,7 @@ public class MenuBackBone : MonoBehaviour {
 	public GameObject neuronSource;
 	public GameObject synapsisSource;
 	public GameObject optionSource;
+	public RhombusScript rhombus;
 	public Color optionDeselectedColor;
 	public Color optionSelectedColor;
 
@@ -20,9 +21,12 @@ public class MenuBackBone : MonoBehaviour {
 
     private PositronicBrain pB;
 
+	public Vector3 neuronOffset = new Vector3(-8f, -3.5f, 1f);
+
 	// Use this for initialization
 	void Start () {
 
+		rhombus.gameObject.SetActive (false);
         pB = GameObject.Find("PositronicBrain").GetComponent<PositronicBrain>();
 
 		CreateBaseNeuron ();
@@ -39,6 +43,7 @@ public class MenuBackBone : MonoBehaviour {
 		baseSynapsis.start = baseNeuron;
 
 		CreateFirstNeuron (baseSynapsis);
+
  }
 
 	private void CreateFirstNeuron(MenuSynapsis parentSynapsis) {
@@ -66,7 +71,7 @@ public class MenuBackBone : MonoBehaviour {
 
 		MenuNeuron auxNeuron = GenerateMenuNeuron (parentNeuron);
 
-		auxNeuron.AddOption ("Join match", "none", null);
+		auxNeuron.AddOption ("Join match", "menu", null);
 		auxNeuron.AddOption ("Create match", "none", null);
 
 		return auxNeuron;
@@ -118,7 +123,7 @@ public class MenuBackBone : MonoBehaviour {
 			listMenuSynapsis [i].Update ();
 		}
 
-		Vector3 targetPosition = -currentMenuNeuron.root.transform.localPosition + new Vector3(-8f, -3.5f, 1f);
+		Vector3 targetPosition = -currentMenuNeuron.root.transform.localPosition + neuronOffset;
 		float speedTransition;
 		if (lastActionAddition) { speedTransition = 4f; }
 		else { speedTransition = 10f; }
@@ -159,9 +164,9 @@ public class MenuBackBone : MonoBehaviour {
 			} else if (action == "neuron") {
 
 				MenuNeuron nextNeuron = currentMenuNeuron.options [currentMenuNeuron.optionSelected].connectedNeuron;
-				Vector3 direction = new Vector3 (Random.Range (0.00000001f, 1f), 0f, Random.Range (0.00000001f, 1f));
+				Vector3 direction = new Vector3 (Random.Range (0f, 1f), 0f, Random.Range (0f, 1f));
 				direction.Normalize ();
-				nextNeuron.root.transform.position = currentMenuNeuron.root.transform.position + direction * 7f + new Vector3 (0f, 3.5f, 0f);
+				nextNeuron.root.transform.position = currentMenuNeuron.root.transform.position + direction * 7f + new Vector3 (0f, Random.Range(2f, 4.5f), 0f);
 
 				currentMenuNeuron = nextNeuron;
 				listPathNeurons.Push (currentMenuNeuron);
@@ -175,13 +180,19 @@ public class MenuBackBone : MonoBehaviour {
 
                 pB.MenuForward();
 
-            }
-            else if (action == "back")
-            {
+            } else if (action == "back") {
 
                 Back();
 
-            }
+			} else if (action == "menu") {
+
+				neuronOffset = new Vector3(-8f, 3.5f, 1f);
+				rhombus.gameObject.SetActive (true);
+				//rhombus.synapsisToBackBone.start = currentMenuNeuron;
+				rhombus.gameObject.transform.position = currentMenuNeuron.root.transform.position +new Vector3(4f, -4f, 0f);
+				//rhombus.Collapse ();
+
+			}
 
 		} else if (Input.GetKeyDown (KeyCode.Escape)) {
 

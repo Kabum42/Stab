@@ -12,6 +12,7 @@ public class RhombusScript : MonoBehaviour {
     public GameObject boneSW;
     public GameObject boneSE;
 
+	public Synapsis synapsisToBackBone;
     
     private Neuron NW;
     private Neuron NE;
@@ -62,7 +63,23 @@ public class RhombusScript : MonoBehaviour {
         s4.start = SW;
         s4.end = NW;
         synapsisList.Add(s4);
+
+		synapsisToBackBone = new Synapsis (this);
+		synapsisToBackBone.start = NW;
+		synapsisToBackBone.end = NW;
+		synapsisList.Add (synapsisToBackBone);
+
+		//Collapse ();
 	
+	}
+
+	public void Collapse() {
+
+		NW.root.transform.localPosition = new Vector3(0f, 0f, 0f);
+		NE.root.transform.localPosition = new Vector3(0f, 0f, 0f);
+		SW.root.transform.localPosition = new Vector3(0f, 0f, 0f);
+		SE.root.transform.localPosition = new Vector3(0f, 0f, 0f);
+
 	}
 	
 	// Update is called once per frame
@@ -100,6 +117,7 @@ public class RhombusScript : MonoBehaviour {
             root = GameObject.Instantiate(rS.neuronSource);
             root.SetActive(true);
             root.transform.SetParent(rS.transform);
+			root.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
             randomRotation = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
             randomRotation.Normalize();
         }
@@ -112,7 +130,7 @@ public class RhombusScript : MonoBehaviour {
         public void Update()
         {
             root.transform.Rotate(randomRotation * Time.deltaTime * 180f);
-
+			/*
             cooldown -= Time.deltaTime;
 
             if (cooldown <= 0f)
@@ -131,6 +149,7 @@ public class RhombusScript : MonoBehaviour {
             }
 
             root.transform.localPosition = Vector3.Lerp(root.transform.localPosition, newPosition, Time.deltaTime * interpolationNumber);
+            */
         }
 
     }
@@ -149,6 +168,7 @@ public class RhombusScript : MonoBehaviour {
             root.SetActive(true);
             root.transform.SetParent(rS.transform);
             cylinder = root.transform.FindChild("Cylinder").gameObject;
+			cylinder.transform.localScale = new Vector3(0.1f, 1f, 0.1f);
         }
 
         public bool HasNeuron(Neuron n)
