@@ -9,12 +9,13 @@ public class LocalPlayerScript : MonoBehaviour {
 
     public GameScript gameScript;
 	private GameObject personalCamera;
-	private float cameraDistance = 3.2f;
-    //private float cameraDistance = 0f;
+	//private float cameraDistance = 3.2f;
+    private float cameraDistance = 0f;
 	private float allPlayerRotationX = 0f;
 	private float cameraValueX = 0f;
 	private float cameraValueY = -17f;
-	public static Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
+	public static Vector3 centerOfCamera = new Vector3 (0f, 1.4f, 0f);
+	//public static Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
     //public static Vector3 centerOfCamera = new Vector3(0f, 1.4f, 0f);
 	private Vector3 lastPositionCursor;
 	private float sensitivityX = 10f;
@@ -52,6 +53,18 @@ public class LocalPlayerScript : MonoBehaviour {
 
     private List<AudioClip> stabbingClips = new List<AudioClip>();
 
+	private static float attackChargeCooldownMax = 2f;
+	private float attackChargeCooldown = 0f;
+	private bool attackCharging = false;
+	private static float attackChargeMax = 0.5f;
+	private float attackCharge = 0f;
+	private float attacking = 0f;
+	private float attackingMax = 0.5f;
+	private Vector3 attackOldPosition;
+	private Vector3 attackTargetPosition;
+
+	private GameObject armRight;
+
 	// Use this for initialization
 	void Start () {
 
@@ -64,6 +77,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar.transform.localScale = new Vector3 (0.9f, 0.9f, 0.9f);
 		visualAvatar.name = "VisualAvatar";
 		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
+		materialCarrier.GetComponent<SkinnedMeshRenderer> ().enabled = false;
 		sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
 		crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
@@ -88,11 +102,100 @@ public class LocalPlayerScript : MonoBehaviour {
 		} else {
 			Destroy(personalCamera.GetComponent<SunShafts>());
 		}
+
+		armRight = this.transform.FindChild ("PersonalCamera/FirstPersonCamera/FirstPersonObjects/Arm_2").gameObject;
 	
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		handleAttack ();
+		handleSprintCooldown ();
+		handleCameraChanges ();
+		handleRegularInput();
+		skills.Update ();
+	
+	}
+
+	void FixedUpdate() {
+
+		handleMovementInput ();
+		handleStealth ();
+		checkIfLookingAtPlayer ();
+
+	}
+
+	void handleAttack() {
+
+		if (attacking > 0f) {
+
+			receiveInput = false;
+
+			attacking += Time.deltaTime;
+			if (attacking >= attackingMax) { attacking = attackingMax; }
+
+			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
+			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 10f);
+
+			if (attacking == attackingMax) { attacking = 0f; }
+
+		} else {
+
+			receiveInput = true;
+
+			if (attackChargeCooldown > 0f) {
+				attackChargeCooldown -= Time.deltaTime;
+				if (attackChargeCooldown <= 0f) { attackChargeCooldown = 0f; }
+			}
+
+			if (attackChargeCooldown <= 0f) {
+				if (Input.GetMouseButtonDown (0)) {
+					attackCharging = true;
+				}
+			}
+
+			if (Input.GetMouseButtonDown (0) && attackCharge > 0.1f) {
+				dashAttack ();
+			}
+
+			if (attackCharging) {
+
+				attackCharge += Time.deltaTime;
+
+				if (attackCharge >= attackChargeMax) {
+					attackCharge = attackChargeMax;
+					dashAttack ();
+				}
+
+			}
+
+			if (attackChargeCooldown > 0f) {
+
+				armRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (new Color (1f, 1f, 1f), new Color (0f, 0f, 1f), attackChargeCooldown/attackChargeCooldownMax);
+
+			} else {
+
+				armRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (new Color (1f, 1f, 1f), new Color (1f, 0f, 0f), attackCharge);
+
+			}
+
+		}
+
+
+	}
+
+	void dashAttack() {
+
+		attackingMax = (attackCharge/attackChargeMax) * (0.5f);
+		attackCharge = 0f;
+		attackChargeCooldown = attackChargeCooldownMax;
+		attackCharging = false;
+		attacking += Time.deltaTime;
+
+	}
+
+	void handleSprintCooldown() {
 
 		if (sprintActive > 0f) {
 			sprintActive -= Time.deltaTime;
@@ -105,18 +208,6 @@ public class LocalPlayerScript : MonoBehaviour {
 				sprintCooldownCurrent = 0f;
 			}
 		}
-
-		handleCameraChanges ();
-		handleRegularInput();
-		skills.Update ();
-	
-	}
-
-	void FixedUpdate() {
-
-		handleMovementInput ();
-		handleStealth ();
-		checkIfLookingAtPlayer ();
 
 	}
 
@@ -174,6 +265,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			}
 
+			/*
             if (Input.GetMouseButtonDown(0))
             {
                 if (!audioSource1.isPlaying)
@@ -186,6 +278,7 @@ public class LocalPlayerScript : MonoBehaviour {
                     gameScript.requestAttack(personalCamera.transform.forward);
                 }
             }
+			*/
 
 			if (currentMode == "regular") {
 				timeStealth += Time.deltaTime;

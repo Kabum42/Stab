@@ -71,8 +71,8 @@ public class MenuBackBone : MonoBehaviour {
 
 		MenuNeuron auxNeuron = GenerateMenuNeuron (parentNeuron);
 
-		auxNeuron.AddOption ("Join match", "menu", null);
-		auxNeuron.AddOption ("Create match", "none", null);
+		auxNeuron.AddOption ("Join match", "join", null);
+		auxNeuron.AddOption ("Create match", "create", null);
 
 		return auxNeuron;
 
