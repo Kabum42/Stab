@@ -53,6 +53,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
     private List<AudioClip> stabbingClips = new List<AudioClip>();
 
+	public AnimationCurve attackCameraDistance;
+
 	private static float attackChargeCooldownMax = 2f;
 	private float attackChargeCooldown = 0f;
 	private bool attackCharging = false;
@@ -63,6 +65,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private Vector3 attackOldPosition;
 	private Vector3 attackTargetPosition;
 
+	private GameObject firstPersonObjects;
 	private GameObject armRight;
 
 	// Use this for initialization
@@ -77,7 +80,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar.transform.localScale = new Vector3 (0.9f, 0.9f, 0.9f);
 		visualAvatar.name = "VisualAvatar";
 		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
-		materialCarrier.GetComponent<SkinnedMeshRenderer> ().enabled = false;
+		materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
 		sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
 		crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
@@ -103,6 +106,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			Destroy(personalCamera.GetComponent<SunShafts>());
 		}
 
+		firstPersonObjects = this.transform.FindChild ("PersonalCamera/FirstPersonCamera/FirstPersonObjects").gameObject;
 		armRight = this.transform.FindChild ("PersonalCamera/FirstPersonCamera/FirstPersonObjects/Arm_2").gameObject;
 	
 	}
@@ -137,6 +141,19 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 10f);
+
+			float aux = attacking / attackingMax;
+			aux = Mathf.Clamp(attackCameraDistance.Evaluate (aux), 0f, 1f);
+
+			if (aux > 0f) {
+				firstPersonObjects.SetActive (false);
+				materialCarrier.layer = LayerMask.NameToLayer ("Default");
+				cameraDistance = aux*attackingMax*6f;
+			} else {
+				firstPersonObjects.SetActive (true);
+				materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
+				cameraDistance = 0f;
+			}
 
 			if (attacking == attackingMax) { attacking = 0f; }
 
@@ -398,7 +415,9 @@ public class LocalPlayerScript : MonoBehaviour {
 		if (receiveInput) {
 			cameraValueY += (Input.GetAxis("Mouse Y"))*sensitivityY;
 		}
-		cameraValueY = Mathf.Clamp (cameraValueY, -60f, 60f);
+
+		//cameraValueY = Mathf.Clamp (cameraValueY, -60f, 60f);
+		cameraValueY = Mathf.Clamp (cameraValueY, -90f, 90f);
 
 		float compoundValueX = cameraValueX;
 		float compoundValueY = cameraValueY;
