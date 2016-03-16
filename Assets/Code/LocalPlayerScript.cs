@@ -9,6 +9,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
     public GameScript gameScript;
 	private GameObject personalCamera;
+	private GameObject firstPersonCamera;
 	//private float cameraDistance = 3.2f;
     private float cameraDistance = 0f;
 	private float allPlayerRotationX = 0f;
@@ -68,12 +69,15 @@ public class LocalPlayerScript : MonoBehaviour {
 	private GameObject firstPersonObjects;
 	private GameObject armRight;
 
+	private float auxFieldOfView = 0f;
+
 	// Use this for initialization
 	void Start () {
 
 		GlobalData.Start ();
 
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
+		firstPersonCamera = this.gameObject.transform.FindChild ("PersonalCamera/FirstPersonCamera").gameObject;
 		visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
@@ -345,6 +349,13 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, aux, 0f);
 
+			auxFieldOfView = Mathf.Max (0f, auxFieldOfView - Time.deltaTime*5f);
+			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (60f, 65f, auxFieldOfView);
+
+			//personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (personalCamera.GetComponent<Camera> ().fieldOfView, 60f, Time.deltaTime * 10f);
+			//firstPersonCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (firstPersonCamera.GetComponent<Camera> ().fieldOfView, 60f, Time.deltaTime * 10f);
+
+
 		} else {
 
 			notMoving = 0f;
@@ -361,6 +372,11 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 
 			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);
+
+			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*5f);
+			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (60f, 65f, auxFieldOfView);
+			//personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (personalCamera.GetComponent<Camera> ().fieldOfView, 62f, Time.deltaTime * 10f);
+			//firstPersonCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (firstPersonCamera.GetComponent<Camera> ().fieldOfView, 65f, Time.deltaTime * 10f);
 
 		}
 
