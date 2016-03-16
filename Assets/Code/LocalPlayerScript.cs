@@ -350,11 +350,8 @@ public class LocalPlayerScript : MonoBehaviour {
 			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, aux, 0f);
 
 			auxFieldOfView = Mathf.Max (0f, auxFieldOfView - Time.deltaTime*5f);
-			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (60f, 65f, auxFieldOfView);
-
-			//personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (personalCamera.GetComponent<Camera> ().fieldOfView, 60f, Time.deltaTime * 10f);
-			//firstPersonCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (firstPersonCamera.GetComponent<Camera> ().fieldOfView, 60f, Time.deltaTime * 10f);
-
+			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (70f, 75f, auxFieldOfView);
+			firstPersonCamera.GetComponent<Camera> ().fieldOfView = personalCamera.GetComponent<Camera> ().fieldOfView;
 
 		} else {
 
@@ -374,9 +371,8 @@ public class LocalPlayerScript : MonoBehaviour {
 			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);
 
 			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*5f);
-			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (60f, 65f, auxFieldOfView);
-			//personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (personalCamera.GetComponent<Camera> ().fieldOfView, 62f, Time.deltaTime * 10f);
-			//firstPersonCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (firstPersonCamera.GetComponent<Camera> ().fieldOfView, 65f, Time.deltaTime * 10f);
+			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (70f, 75f, auxFieldOfView);
+			firstPersonCamera.GetComponent<Camera> ().fieldOfView = personalCamera.GetComponent<Camera> ().fieldOfView;
 
 		}
 
