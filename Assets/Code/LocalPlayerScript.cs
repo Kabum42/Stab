@@ -54,7 +54,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
     private List<AudioClip> stabbingClips = new List<AudioClip>();
 
-	public AnimationCurve attackCameraDistance;
+	//public AnimationCurve attackCameraDistance;
 
 	private static float attackChargeCooldownMax = 2f;
 	private float attackChargeCooldown = 0f;
@@ -73,6 +73,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+
+		Cursor.lockState = CursorLockMode.Locked;
 
 		GlobalData.Start ();
 
@@ -121,6 +123,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		handleAttack ();
 		handleSprintCooldown ();
 		handleCameraChanges ();
+		adjustFirstPersonObjects ();
 		handleRegularInput();
 		skills.Update ();
 	
@@ -131,6 +134,23 @@ public class LocalPlayerScript : MonoBehaviour {
 		handleMovementInput ();
 		handleStealth ();
 		checkIfLookingAtPlayer ();
+
+	}
+
+	void adjustFirstPersonObjects() {
+
+		float difference = 0f;
+
+		if (personalCamera.transform.eulerAngles.x > 180f) {
+			// CUANTO MAS LEJOS DE 360, MAS ALTO MIRAS
+			difference = -Mathf.Abs(360f-personalCamera.transform.eulerAngles.x)/90f;
+		} else {
+			// CUANTO MAS LEJOS DE 0, MAS BAJO MIRAS
+			difference = Mathf.Abs(0f-personalCamera.transform.eulerAngles.x)/90f;
+		}
+
+		float maxAmount = 0.15f;
+		firstPersonObjects.transform.localPosition = new Vector3 (0f, difference*maxAmount, 0f);
 
 	}
 
@@ -145,19 +165,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 10f);
-
-			float aux = attacking / attackingMax;
-			aux = Mathf.Clamp(attackCameraDistance.Evaluate (aux), 0f, 1f);
-
-			if (aux > 0f) {
-				firstPersonObjects.SetActive (false);
-				materialCarrier.layer = LayerMask.NameToLayer ("Default");
-				cameraDistance = aux*attackingMax*6f;
-			} else {
-				firstPersonObjects.SetActive (true);
-				materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
-				cameraDistance = 0f;
-			}
 
 			if (attacking == attackingMax) { attacking = 0f; }
 
