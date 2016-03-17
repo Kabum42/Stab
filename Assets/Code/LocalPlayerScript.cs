@@ -33,6 +33,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	public GameObject materialCarrier;
 
 	public bool receiveInput = true;
+	private bool receiveInput2 = true;
 
 	private float notMoving = 0f;
 
@@ -70,6 +71,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private GameObject armRight;
 
 	private float auxFieldOfView = 0f;
+	private float maxFieldOfView = 75f;
 
 	// Use this for initialization
 	void Start () {
@@ -123,7 +125,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		handleAttack ();
 		handleSprintCooldown ();
 		handleCameraChanges ();
-		adjustFirstPersonObjects ();
+		//adjustFirstPersonObjects ();
 		handleRegularInput();
 		skills.Update ();
 	
@@ -158,7 +160,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (attacking > 0f) {
 
-			receiveInput = false;
+			receiveInput2 = false;
 
 			attacking += Time.deltaTime;
 			if (attacking >= attackingMax) { attacking = attackingMax; }
@@ -166,11 +168,14 @@ public class LocalPlayerScript : MonoBehaviour {
 			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 10f);
 
+			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*10f);
+			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 80f, Time.deltaTime * 5f);
+
 			if (attacking == attackingMax) { attacking = 0f; }
 
 		} else {
 
-			receiveInput = true;
+			receiveInput2 = true;
 
 			if (attackChargeCooldown > 0f) {
 				attackChargeCooldown -= Time.deltaTime;
@@ -267,7 +272,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleRegularInput() {
 
-		if (receiveInput) {
+		if (receiveInput && receiveInput2) {
 
 			if (Input.GetKeyDown(KeyCode.LeftShift) && sprintCooldownCurrent == 0f) {
 				sprintActive = 2.5f;
@@ -323,7 +328,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		Vector2 movement = new Vector3 (0, 0);
 
-		if (receiveInput) {
+		if (receiveInput && receiveInput2) {
 
 			if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
 				movement = new Vector3(movement.x, 1f);
@@ -356,9 +361,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, aux, 0f);
 
-			auxFieldOfView = Mathf.Max (0f, auxFieldOfView - Time.deltaTime*5f);
-			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (70f, 75f, auxFieldOfView);
-			firstPersonCamera.GetComponent<Camera> ().fieldOfView = personalCamera.GetComponent<Camera> ().fieldOfView;
+			if (attacking == 0f) {
+				auxFieldOfView = Mathf.Max (0f, auxFieldOfView - Time.deltaTime*5f);
+			}
 
 		} else {
 
@@ -377,11 +382,18 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);
 
-			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*5f);
-			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (70f, 75f, auxFieldOfView);
-			firstPersonCamera.GetComponent<Camera> ().fieldOfView = personalCamera.GetComponent<Camera> ().fieldOfView;
+			if (attacking == 0f) {
+				auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*5f);
+			}
 
 		}
+
+		if (attacking == 0f) {
+			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 75f, Time.deltaTime * 5f);
+		}
+
+		personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (70f, maxFieldOfView, auxFieldOfView);
+		firstPersonCamera.GetComponent<Camera> ().fieldOfView = personalCamera.GetComponent<Camera> ().fieldOfView;
 
 	}
 
@@ -431,7 +443,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleCameraChanges() {
 
-		if (receiveInput) {
+		if (receiveInput2) {
 			cameraValueY += (Input.GetAxis("Mouse Y"))*sensitivityY;
 		}
 
@@ -457,7 +469,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 
 		float changeX = 0f;
-		if (receiveInput) { changeX = (Input.GetAxis("Mouse X"))*sensitivityX; }
+		if (receiveInput2) { changeX = (Input.GetAxis("Mouse X"))*sensitivityX; }
 
 		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 
