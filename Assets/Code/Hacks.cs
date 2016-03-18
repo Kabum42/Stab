@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 public static class Hacks {
 
+	private static List<AudioSource> hacksAudioSources = new List<AudioSource> ();
+	private static GameObject parentAudioSources;
+
     // TEXT ALPHA
     public static void TextAlpha(GameObject g, float a)
     {
@@ -150,6 +153,42 @@ public static class Hacks {
 		
 		return false;
 		
+	}
+
+	// SOUND
+	public static AudioSource GetAudioSource() {
+
+		if (parentAudioSources != Camera.main.gameObject) {
+			hacksAudioSources.Clear ();
+			parentAudioSources = Camera.main.gameObject;
+		}
+
+		AudioSource aux = null;
+
+		for (int i = 0; i < hacksAudioSources.Count; i++) {
+			if (!hacksAudioSources [i].isPlaying) {
+				aux = hacksAudioSources [i];
+				break;
+			}
+		}
+
+		if (aux == null) {
+			aux = Camera.main.gameObject.AddComponent<AudioSource> ();
+			aux.spatialBlend = 0f;
+			aux.loop = false;
+			aux.playOnAwake = false;
+			hacksAudioSources.Add (aux);
+		}
+
+		return aux;
+	}
+
+	public static AudioSource GetAudioSource(string resourcesPath) {
+
+		AudioSource aux = GetAudioSource ();
+		aux.clip = Resources.Load(resourcesPath) as AudioClip;
+		return aux;
+
 	}
 
 }

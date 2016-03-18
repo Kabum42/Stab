@@ -73,6 +73,10 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float auxFieldOfView = 0f;
 	private float maxFieldOfView = 75f;
 
+	private bool lastTimeGrounded = true;
+	private static float footStepCooldownMax = 0.35f;
+	private float footStepCooldown = footStepCooldownMax/2f;
+
 	// Use this for initialization
 	void Start () {
 
@@ -81,6 +85,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		GlobalData.Start ();
 
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
+		personalCamera.transform.localPosition = centerOfCamera;
 		firstPersonCamera = this.gameObject.transform.FindChild ("PersonalCamera/FirstPersonCamera").gameObject;
 		visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
 		visualAvatar.transform.parent = this.gameObject.transform;
@@ -298,21 +303,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			}
 
-			/*
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (!audioSource1.isPlaying)
-                {
-                    audioSource1.clip = stabbingClips[UnityEngine.Random.Range(0, stabbingClips.Count)];
-                    audioSource1.Play();
-                }
-                if (gameScript != null)
-                {
-                    gameScript.requestAttack(personalCamera.transform.forward);
-                }
-            }
-			*/
-
 			if (currentMode == "regular") {
 				timeStealth += Time.deltaTime;
 				if (timeStealth > 30f) {
@@ -386,6 +376,14 @@ public class LocalPlayerScript : MonoBehaviour {
 				auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*5f);
 			}
 
+			if (IsGrounded ()) {
+				footStepCooldown -= Time.deltaTime *(characterSpeed/baseSpeed);
+				if (footStepCooldown <= 0f) {
+					footStepCooldown = footStepCooldownMax*UnityEngine.Random.Range(0.95f, 1.05f);
+					FootStep ();
+				}
+			}
+
 		}
 
 		if (attacking == 0f) {
@@ -394,6 +392,29 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (70f, maxFieldOfView, auxFieldOfView);
 		firstPersonCamera.GetComponent<Camera> ().fieldOfView = personalCamera.GetComponent<Camera> ().fieldOfView;
+
+		if (!lastTimeGrounded && IsGrounded ()) {
+			// JUST LANDED
+			float amount = Mathf.Min(Mathf.Abs(this.gameObject.GetComponent<Rigidbody>().velocity.y)/Mathf.Abs(Physics.gravity.y)*0.1f, 0.15f);
+			personalCamera.transform.localPosition = personalCamera.transform.localPosition - personalCamera.transform.up*amount;
+			AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/JumpLand");
+			audio.volume = 0.7f * (amount/0.15f);
+			audio.pitch = UnityEngine.Random.Range (0.85f, 1.15f);
+			audio.Play ();
+		}
+
+		lastTimeGrounded = IsGrounded ();
+
+	}
+
+	void FootStep() {
+
+		int amountFootSteps = 4;
+		int aux = UnityEngine.Random.Range(1, amountFootSteps +1);
+		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/Footsteps/Footstep_"+aux.ToString("00"));
+		audio.volume = 0.3f;
+		audio.pitch = UnityEngine.Random.Range (0.8f, 1f);
+		audio.Play ();
 
 	}
 
@@ -420,7 +441,14 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	bool IsGrounded()  {
 		float distToGround = (float)this.gameObject.GetComponent<CapsuleCollider>().bounds.extents.y;
-		return Physics.Raycast(this.gameObject.transform.position + this.gameObject.GetComponent<CapsuleCollider>().center, -Vector3.up, distToGround + 0.3f);
+		RaycastHit[] hits;
+		hits = Physics.RaycastAll (this.gameObject.transform.position + this.gameObject.GetComponent<CapsuleCollider>().center, -Vector3.up, distToGround + 0.3f);
+		for (int i = 0; i < hits.Length; i++) {
+			if (hits [i].collider.gameObject.GetComponent<PlayerMarker> () == null) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	Vector3 IsGroundedVector3() {
@@ -456,7 +484,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		personalCamera.transform.localEulerAngles = new Vector3 (-compoundValueY, compoundValueX, personalCamera.transform.localEulerAngles.z);
 
 
-		personalCamera.transform.localPosition = centerOfCamera;
+		personalCamera.transform.localPosition = Vector3.Lerp(personalCamera.transform.localPosition, centerOfCamera, Time.deltaTime*5f);
 
 		RaycastHit hit;
 		Vector3 direction = -personalCamera.transform.forward;
