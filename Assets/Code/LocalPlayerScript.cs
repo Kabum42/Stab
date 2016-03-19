@@ -62,7 +62,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private bool attackCharging = false;
 	private static float attackChargeMax = 0.5f;
 	private float attackCharge = 0f;
-	private float attacking = 0f;
+	public float attacking = 0f;
 	private float attackingMax = 0.5f;
 	private Vector3 attackOldPosition;
 	private Vector3 attackTargetPosition;

@@ -86,44 +86,16 @@ public class GameScript : MonoBehaviour {
 
 	void FixedUpdate() {
 
-		for (int i = 0; i < listOtherPlayers.Count; i++) {
-
-			if (listOtherPlayers[i].currentMode == "regular") {
-				
-				Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 1f), Time.fixedDeltaTime*5f);
-				listOtherPlayers[i].visualMaterial.SetColor("_Color", c);
-				//Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0f), Time.fixedDeltaTime*5f);
-				//materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
-				
-			} else if (listOtherPlayers[i].currentMode == "stealth") {
-				
-				Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 0.4f), Time.fixedDeltaTime*5f);
-				listOtherPlayers[i].visualMaterial.SetColor("_Color", c);
-				//Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0.65f), Time.fixedDeltaTime*5f);
-				//materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
-
-			}
-
-			if (listOtherPlayers[i].sprintActive && !listOtherPlayers[i].sprintTrail.Emit) {
-				listOtherPlayers[i].sprintTrail.Emit = true;
-			}
-			else if (!listOtherPlayers[i].sprintActive && listOtherPlayers[i].sprintTrail.Emit) {
-				listOtherPlayers[i].sprintTrail.Emit = false;
-			}
-
-
-			if (localPlayer.GetComponent<LocalPlayerScript>().crossHairTargeted == null) {
-				textTargeted.SetActive(false);
-			}
-			else {
-				textTargeted.SetActive(true);
-				for (int j = 0; j < listOtherPlayers.Count; j++) {
-					if (listOtherPlayers[j].visualAvatar == localPlayer.GetComponent<LocalPlayerScript>().crossHairTargeted) {
-						textTargeted.GetComponent<Text>().text = "<Player "+listOtherPlayers[j].playerCode+">";
-					}
+		if (localPlayer.GetComponent<LocalPlayerScript>().crossHairTargeted == null) {
+			textTargeted.SetActive(false);
+		}
+		else {
+			textTargeted.SetActive(true);
+			for (int j = 0; j < listOtherPlayers.Count; j++) {
+				if (listOtherPlayers[j].visualAvatar == localPlayer.GetComponent<LocalPlayerScript>().crossHairTargeted) {
+					textTargeted.GetComponent<Text>().text = "<Player "+listOtherPlayers[j].playerCode+">";
 				}
 			}
-
 		}
 
 	}
@@ -193,7 +165,7 @@ public class GameScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation, string currentMode, bool sprintActive)
+	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation, string currentMode, bool sprintActive, float attacking)
 	{
 		bool foundPlayer = false;
 
@@ -205,6 +177,7 @@ public class GameScript : MonoBehaviour {
 				listOtherPlayers[i].SmartCrossfade(currentAnimation);
 				listOtherPlayers[i].currentMode = currentMode;
 				listOtherPlayers[i].sprintActive = sprintActive;
+				listOtherPlayers[i].attacking = attacking;
 				foundPlayer = true;
 				break;
 			}
@@ -499,7 +472,7 @@ public class GameScript : MonoBehaviour {
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
 				string currentMode = localPlayer.GetComponent<LocalPlayerScript>().currentMode;
 				bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, currentMode, sprintActive);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, currentMode, sprintActive, localPlayer.GetComponent<LocalPlayerScript> ().attacking);
 
 			}
 			
@@ -518,7 +491,29 @@ public class GameScript : MonoBehaviour {
 
 			listOtherPlayers[i].visualAvatar.transform.position = Hacks.LerpVector3(listOtherPlayers[i].visualAvatar.transform.position, listOtherPlayers[i].targetPosition, Time.deltaTime*10f);
 			listOtherPlayers[i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle(listOtherPlayers[i].visualAvatar.transform.eulerAngles, listOtherPlayers[i].targetRotation, Time.deltaTime*10f);
-			
+			listOtherPlayers [i].attacking = Mathf.Max (0f, listOtherPlayers [i].attacking - Time.deltaTime);
+
+			if (listOtherPlayers[i].currentMode == "regular") {
+
+				Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f-listOtherPlayers [i].attacking, 1f-listOtherPlayers [i].attacking, 1f), Time.fixedDeltaTime*5f);
+				//Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 1f), Time.fixedDeltaTime*5f);
+				listOtherPlayers[i].visualMaterial.SetColor("_Color", c);
+
+			} else if (listOtherPlayers[i].currentMode == "stealth") {
+
+				Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f-listOtherPlayers [i].attacking, 1f-listOtherPlayers [i].attacking, 0.4f), Time.fixedDeltaTime*5f);
+				//Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 0.4f), Time.fixedDeltaTime*5f);
+				listOtherPlayers[i].visualMaterial.SetColor("_Color", c);
+
+			}
+
+			if (listOtherPlayers[i].sprintActive && !listOtherPlayers[i].sprintTrail.Emit) {
+				listOtherPlayers[i].sprintTrail.Emit = true;
+			}
+			else if (!listOtherPlayers[i].sprintActive && listOtherPlayers[i].sprintTrail.Emit) {
+				listOtherPlayers[i].sprintTrail.Emit = false;
+			}
+				
 		}
 
 	}
@@ -544,6 +539,7 @@ public class GameScript : MonoBehaviour {
 		public string currentMode = "regular";
 		public bool sprintActive = false;
 		public MeleeWeaponTrail sprintTrail;
+		public float attacking = 0f;
 
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
