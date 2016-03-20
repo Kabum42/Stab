@@ -5,6 +5,12 @@ using UnityEngine.UI;
 
 public class ChatManager {
 
+	public GameObject chatInputField;
+	public GameObject chatPanel;
+	public bool lastTimeChatInputFocused = false;
+	public float lastChatPannelInteraction = 0f;
+	public float chatPannelInteractionThreshold = 8f;
+
 	private GameObject physicalChat;
 	public List<ChatMessage> listMessages = new List<ChatMessage>();
 	private int maxMessages = 10;
@@ -14,6 +20,9 @@ public class ChatManager {
 
 		physicalChat = auxPhysicalChat;
 		scrollRect = auxPhysicalChat.transform.parent.gameObject.GetComponent<ScrollRect> ();
+
+		chatInputField = GameObject.Find ("Canvas/ChatPanel/InputField");
+		chatPanel = GameObject.Find ("Canvas/ChatPanel");
 
 	}
 
@@ -29,7 +38,7 @@ public class ChatManager {
 
 	}
 
-	public void Update() {
+	public void Write() {
 
 		string aux = "";
 
