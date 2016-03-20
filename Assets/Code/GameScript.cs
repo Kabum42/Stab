@@ -77,7 +77,12 @@ public class GameScript : MonoBehaviour {
 
 		checkIfActivateChat ();
 		updateChat ();
-		if (Network.isServer) { checkIfSendRankingData(); }
+
+		if (Network.isServer) { 
+			checkForKillings ();
+			checkIfSendRankingData(); 
+		}
+
 		checkRanking ();
 		updateMyInfoInOtherClients ();
 		synchronizeOtherPlayers ();
@@ -241,60 +246,6 @@ public class GameScript : MonoBehaviour {
 		allRankingPlayers.Add (rp);
 	}
 
-    [RPC]
-    void requestedAttackRPC(string playerCode, Vector3 lookingAt)
-    {
-        requestedAttack(playerCode, lookingAt);
-    }
-
-    void requestedAttack(string playerCode, Vector3 lookingAt)
-    {
-        GameObject attackerVisualAvatar = null;
-        if (playerCode != Network.player.ToString())
-        {
-            for (int i = 0; i < listOtherPlayers.Count; i++)
-            {
-                if (listOtherPlayers[i].playerCode == playerCode)
-                {
-                    attackerVisualAvatar = listOtherPlayers[i].visualAvatar;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            attackerVisualAvatar = localPlayer.GetComponent<LocalPlayerScript>().visualAvatar;
-        }
-
-        if (attackerVisualAvatar != null)
-        {
-
-            RaycastHit[] hits;
-            hits = Physics.RaycastAll(attackerVisualAvatar.transform.position + LocalPlayerScript.centerOfCamera, lookingAt, LocalPlayerScript.stabbingDistance);
-            Array.Sort(hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
-
-            for (int i = 0; i < hits.Length; i++)
-            {
-                if (hits[i].collider.gameObject != attackerVisualAvatar && hits[i].collider.gameObject != localPlayer)
-                {
-
-                    if (hits[i].collider.gameObject.GetComponent<PlayerMarker>() != null)
-                    {
-                        // DEAD
-                        RankingPlayerByCode(playerCode).kills++;
-                        break;
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                }
-            }
-
-        }
-    }
-
 	NetworkPlayer NetworkPlayerByCode(string playerCode) {
 
 		if (Network.player.ToString () == playerCode) {
@@ -371,6 +322,59 @@ public class GameScript : MonoBehaviour {
 		chatManager.Add(chatMessage);
 		chatManager.Update ();
 		lastChatPannelInteraction = 0f;
+
+	}
+
+	void checkForKillings() {
+
+		bool ownPlayerDead = false;
+		List<OtherPlayer> otherPlayersDead = new List<OtherPlayer> ();
+
+		// AQUI FALTA COMPROBAR SI HAN MATADO AL JUGADOR DEL SERVER
+		if (localPlayer.GetComponent<LocalPlayerScript> ().attacking > 0f) {
+
+			List<GameObject> currentTriggering = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar.GetComponent<PlayerMarker> ().ownAttacker.listTriggering;
+
+			for (int j = 0; j < currentTriggering.Count; j++) {
+
+				OtherPlayer currentOtherPlayer = currentTriggering[j].GetComponent<PlayerMarker>().otherPlayer;
+
+				if (currentOtherPlayer.immune == 0f) {
+
+					RankingPlayerByCode(Network.player.ToString()).kills++;
+					currentOtherPlayer.immune = 5f;
+					otherPlayersDead.Add (currentOtherPlayer);
+
+				}
+
+			}
+
+		}
+
+
+		for (int i = 0; i < listOtherPlayers.Count; i++) {
+
+			if (listOtherPlayers [i].attacking > 0f) {
+
+				List<GameObject> currentTriggering = listOtherPlayers [i].visualAvatar.GetComponent<PlayerMarker> ().ownAttacker.listTriggering;
+
+				for (int j = 0; j < currentTriggering.Count; j++) {
+
+					OtherPlayer currentOtherPlayer = currentTriggering[j].GetComponent<PlayerMarker>().otherPlayer;
+
+					if (currentOtherPlayer.immune == 0f) {
+
+						RankingPlayerByCode(listOtherPlayers [i].playerCode).kills++;
+						currentOtherPlayer.immune = 5f;
+						otherPlayersDead.Add (currentOtherPlayer);
+
+					}
+
+				}
+			}
+
+		}
+			
 
 	}
 
@@ -492,6 +496,7 @@ public class GameScript : MonoBehaviour {
 			listOtherPlayers[i].visualAvatar.transform.position = Hacks.LerpVector3(listOtherPlayers[i].visualAvatar.transform.position, listOtherPlayers[i].targetPosition, Time.deltaTime*10f);
 			listOtherPlayers[i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle(listOtherPlayers[i].visualAvatar.transform.eulerAngles, listOtherPlayers[i].targetRotation, Time.deltaTime*10f);
 			listOtherPlayers [i].attacking = Mathf.Max (0f, listOtherPlayers [i].attacking - Time.deltaTime);
+			listOtherPlayers [i].immune = Mathf.Max (0f, listOtherPlayers [i].immune - Time.deltaTime);
 
 			if (listOtherPlayers[i].currentMode == "regular") {
 
@@ -518,6 +523,7 @@ public class GameScript : MonoBehaviour {
 
 	}
 
+	/*
     public void requestAttack(Vector3 lookingAt)
     {
         if (Network.isServer)
@@ -529,6 +535,7 @@ public class GameScript : MonoBehaviour {
             GetComponent<NetworkView>().RPC("requestedAttackRPC", RPCMode.Server, Network.player.ToString(), lookingAt);
         }
     }
+	*/
 
 	public class OtherPlayer {
 
@@ -540,6 +547,7 @@ public class GameScript : MonoBehaviour {
 		public bool sprintActive = false;
 		public MeleeWeaponTrail sprintTrail;
 		public float attacking = 0f;
+		public float immune = 0f;
 
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
@@ -549,6 +557,7 @@ public class GameScript : MonoBehaviour {
 			playerCode = auxPlayerCode;
 			visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
 			visualAvatar.name = "VisualAvatar "+playerCode;
+			visualAvatar.GetComponent<PlayerMarker>().otherPlayer = this;
 			visualMaterial = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;
 			sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 			sprintTrail.Emit = false;
