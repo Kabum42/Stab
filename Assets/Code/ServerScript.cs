@@ -35,6 +35,7 @@ public class ServerScript : MonoBehaviour {
 
 						gameScript.clientScript.listPlayers[i].kills++;
 						currentPlayer.immune = 5f;
+						sendRankingData ();
 
 					}
 
@@ -79,44 +80,7 @@ public class ServerScript : MonoBehaviour {
 	void OnPlayerDisconnected(NetworkPlayer player) {
 		Debug.Log("Clean up after player " + player);
 		Network.RemoveRPCs(player);
-		//Network.DestroyPlayerObjects(player);
 		GetComponent<NetworkView>().RPC("removePlayerRPC", RPCMode.All, player.ToString());
-	}
-
-	// SERVER RPCs
-	[RPC]
-	void sendRemainingSecondsRPC(string playerCode, float auxRemainingSeconds)
-	{
-		if (playerCode == Network.player.ToString()) {
-			gameScript.clientScript.remainingSeconds = auxRemainingSeconds;
-		}
-	}
-
-	[RPC]
-	void removePlayerRPC(string playerCode) {
-
-		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
-
-			if (gameScript.clientScript.listPlayers[i].playerCode == playerCode) {
-
-				Destroy(gameScript.clientScript.listPlayers[i].visualAvatar);
-				gameScript.clientScript.listPlayers.RemoveAt(i);
-
-				break;
-			}
-
-		}
-
-		sendRankingData();
-
-	}
-
-	[RPC]
-	void updateRankingRPC(string playerCode, int kills, int ping)
-	{
-		ClientScript.Player player = gameScript.clientScript.PlayerByCode (playerCode);
-		player.kills = kills;
-		player.ping = ping;
 	}
 
 }

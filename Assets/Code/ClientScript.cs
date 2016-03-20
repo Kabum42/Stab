@@ -56,6 +56,8 @@ public class ClientScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		currentRankingCooldown += Time.deltaTime;
+
 		PlayerByCode (myCode).attacking = localPlayer.attacking;
 
 		if (EventSystem.current.currentSelectedGameObject == chatManager.chatInputField) {
@@ -335,6 +337,40 @@ public class ClientScript : MonoBehaviour {
 		chatManager.lastChatPannelInteraction = 0f;
 	}
 
+	// SERVER RPCs
+	[RPC]
+	void sendRemainingSecondsRPC(string playerCode, float auxRemainingSeconds)
+	{
+		if (playerCode == Network.player.ToString()) {
+			gameScript.clientScript.remainingSeconds = auxRemainingSeconds;
+		}
+	}
+
+	[RPC]
+	void removePlayerRPC(string playerCode) {
+
+		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
+
+			if (gameScript.clientScript.listPlayers[i].playerCode == playerCode) {
+
+				Destroy(gameScript.clientScript.listPlayers[i].visualAvatar);
+				gameScript.clientScript.listPlayers.RemoveAt(i);
+
+				break;
+			}
+
+		}
+
+	}
+
+	[RPC]
+	void updateRankingRPC(string playerCode, int kills, int ping)
+	{
+		ClientScript.Player player = gameScript.clientScript.PlayerByCode (playerCode);
+		player.kills = kills;
+		player.ping = ping;
+	}
+
 	// CLASSES
 	public class Player {
 
@@ -359,7 +395,6 @@ public class ClientScript : MonoBehaviour {
 			visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
 			visualAvatar.name = "VisualAvatar "+playerCode;
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
-			Debug.Log(visualAvatar.GetComponent<PlayerMarker>().player);
 			visualMaterial = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;
 			sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 			sprintTrail.Emit = false;
