@@ -77,8 +77,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private static float footStepCooldownMax = 0.35f;
 	private float footStepCooldown = footStepCooldownMax/2f;
 
-	// Use this for initialization
-	void Start () {
+	void Awake () {
 
 		Cursor.lockState = CursorLockMode.Locked;
 
@@ -105,11 +104,11 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		lastPositionCursor = Input.mousePosition;
 
-        audioSource1 = this.gameObject.AddComponent<AudioSource>();
+		audioSource1 = this.gameObject.AddComponent<AudioSource>();
 
-        stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_001") as AudioClip);
-        stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_002") as AudioClip);
-        stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_003") as AudioClip);
+		stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_001") as AudioClip);
+		stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_002") as AudioClip);
+		stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_003") as AudioClip);
 
 		GameObject sun = GameObject.Find ("Sun");
 		if (sun != null) {
@@ -121,6 +120,13 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		firstPersonObjects = this.transform.FindChild ("PersonalCamera/FirstPersonCamera/FirstPersonObjects").gameObject;
 		armRight = this.transform.FindChild ("PersonalCamera/FirstPersonCamera/FirstPersonObjects/Arm_2").gameObject;
+
+	}
+
+	// Use this for initialization
+	void Start () {
+
+
 	
 	}
 	
