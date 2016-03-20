@@ -21,9 +21,6 @@ public class ServerScript : MonoBehaviour {
 
 	void checkForKillings() {
 
-		bool ownPlayerDead = false;
-		List<ClientScript.Player> playersDead = new List<ClientScript.Player> ();
-
 		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
 
 			if (gameScript.clientScript.listPlayers[i].attacking > 0f) {
@@ -36,9 +33,8 @@ public class ServerScript : MonoBehaviour {
 
 					if (currentPlayer.immune == 0f) {
 
-						RankingPlayerByCode(gameScript.clientScript.listPlayers[i].playerCode).kills++;
+						gameScript.clientScript.listPlayers[i].kills++;
 						currentPlayer.immune = 5f;
-						//playersDead.Add (currentPlayer);
 
 					}
 
@@ -52,45 +48,31 @@ public class ServerScript : MonoBehaviour {
 
 	void checkIfSendRankingData() {
 
-		// SE VUELVE A COMPROBAR POR SI ACASO
-
-			if (currentRankingCooldown >= 1f) {
-				serverSendRankingData ();
+		if (gameScript.clientScript.currentRankingCooldown >= 1f) {
+				sendRankingData ();
 			} else {
-				currentRankingCooldown += Time.deltaTime;
+				gameScript.clientScript.currentRankingCooldown += Time.deltaTime;
 			}
-
 
 	}
 
-	void serverSendRankingData() {
+	public void sendRankingData() {
 
-		currentRankingCooldown = 0f;
+		gameScript.clientScript.currentRankingCooldown = 0f;
 
-		GetComponent<NetworkView>().RPC("clearRankingRPC", RPCMode.Others);
+		gameScript.clientScript.listPlayers.Sort (CompareListByKills);
 
-		for (int i = 0; i < allRankingPlayers.Count; i++) {
-			allRankingPlayers[i].ping = Network.GetAveragePing(NetworkPlayerByCode(allRankingPlayers[i].playerCode));
-			if (allRankingPlayers[i].ping == -1) { allRankingPlayers[i].ping = 0; }
-			GetComponent<NetworkView>().RPC("addRankingRPC", RPCMode.Others, allRankingPlayers[i].playerCode, allRankingPlayers[i].kills, allRankingPlayers[i].ping);
+		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
+			gameScript.clientScript.listPlayers[i].ping = Network.GetAveragePing(gameScript.clientScript.NetworkPlayerByCode(gameScript.clientScript.listPlayers[i].playerCode));
+			if (gameScript.clientScript.listPlayers[i].ping < 0) { gameScript.clientScript.listPlayers[i].ping = 0; }
+			GetComponent<NetworkView>().RPC("updateRankingRPC", RPCMode.Others, gameScript.clientScript.listPlayers[i].playerCode, gameScript.clientScript.listPlayers[i].kills, gameScript.clientScript.listPlayers[i].ping);
 		}
 
 	}
 
-
-	RankingPlayer RankingPlayerByCode(string playerCode)
+	private static int CompareListByKills(ClientScript.Player p1, ClientScript.Player p2)
 	{
-
-		for (int i = 0; i < allRankingPlayers.Count; i++)
-		{
-			if (allRankingPlayers[i].playerCode == playerCode)
-			{
-				return allRankingPlayers[i];
-			}
-		}
-
-		return null;
-
+		return p1.kills.CompareTo(p2.kills); 
 	}
 
 	// NETWORK RELATED
@@ -125,17 +107,16 @@ public class ServerScript : MonoBehaviour {
 
 		}
 
-		for (int i = 0; i < allRankingPlayers.Count; i++) {
+		sendRankingData();
 
-			if (allRankingPlayers[i].playerCode == playerCode) {
+	}
 
-				allRankingPlayers.RemoveAt(i);
-				serverSendRankingData();
-
-			}
-
-		}
-
+	[RPC]
+	void updateRankingRPC(string playerCode, int kills, int ping)
+	{
+		ClientScript.Player player = gameScript.clientScript.PlayerByCode (playerCode);
+		player.kills = kills;
+		player.ping = ping;
 	}
 
 }

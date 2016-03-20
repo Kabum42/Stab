@@ -9,7 +9,7 @@ public class ClientScript : MonoBehaviour {
 
 	[HideInInspector] public GameScript gameScript;
 
-	private float currentRankingCooldown = 0f;
+	public float currentRankingCooldown = 0f;
 
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
@@ -19,12 +19,8 @@ public class ClientScript : MonoBehaviour {
 	private ChatManager chatManager;
 
 	private GameObject rankingBackground;
-
 	private GameObject textTargeted;
-
 	private GameObject map;
-
-	public List<RankingPlayer> allRankingPlayers = new List<RankingPlayer>();
 
 	public LocalPlayerScript localPlayer;
 	private string myCode;
@@ -55,17 +51,12 @@ public class ClientScript : MonoBehaviour {
 		aux.visualMaterial = aux.visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;
 		listPlayers.Add(aux);
 
-		if (Network.isServer) {
-			// SI TU ERES EL SERVER, TE AGREGAS A TI MISMO COMO UN RANKINGPLAYER
-			RankingPlayer rp = new RankingPlayer (Network.player.ToString ());
-			rp.ping = 0;
-			allRankingPlayers.Add (rp);
-		}
-
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		PlayerByCode (myCode).attacking = localPlayer.attacking;
 
 		if (EventSystem.current.currentSelectedGameObject == chatManager.chatInputField) {
 			chatManager.lastChatPannelInteraction = 0f;
@@ -171,16 +162,16 @@ public class ClientScript : MonoBehaviour {
 			string auxTime = minutes.ToString("00") + ":" + seconds.ToString("00");
 
 
-			for (int i = 0; i < allRankingPlayers.Count; i++) {
-				if (Network.player.ToString() == allRankingPlayers[i].playerCode) {
-					auxPlayers += "<color=#D7D520>" + "Player"+allRankingPlayers[i].playerCode + "</color>";
+			for (int i = 0; i < listPlayers.Count; i++) {
+				if (Network.player.ToString() == listPlayers[i].playerCode) {
+					auxPlayers += "<color=#D7D520>" + "Player"+listPlayers[i].playerCode + "</color>";
 				}
 				else {
-					auxPlayers += "Player"+allRankingPlayers[i].playerCode;
+					auxPlayers += "Player"+listPlayers[i].playerCode;
 				}
-				auxKills += "<color=#FF8C8CFF>"+ allRankingPlayers[i].kills + "</color>";
-				auxPings += allRankingPlayers[i].ping +"";
-				if (i != allRankingPlayers.Count -1) { 
+				auxKills += "<color=#FF8C8CFF>"+ listPlayers[i].kills + "</color>";
+				auxPings += listPlayers[i].ping +"";
+				if (i != listPlayers.Count -1) { 
 					auxPlayers += "\n"; 
 					auxKills += "\n"; 
 					auxPings += "\n";
@@ -248,7 +239,7 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
-	NetworkPlayer NetworkPlayerByCode(string playerCode) {
+	public NetworkPlayer NetworkPlayerByCode(string playerCode) {
 
 		if (Network.player.ToString () == playerCode) {
 			return Network.player;
@@ -264,9 +255,16 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
-	private static int CompareListByKills(RankingPlayer rp1, RankingPlayer rp2)
-	{
-		return rp1.kills.CompareTo(rp2.kills); 
+	public Player PlayerByCode(string playerCode) {
+
+		for (int i = 0; i < listPlayers.Count; i++) {
+			if (listPlayers[i].playerCode == playerCode) {
+				return listPlayers [i];
+			}
+		}
+
+		return null;
+
 	}
 
 	// NETWORK RELATED
@@ -316,34 +314,13 @@ public class ClientScript : MonoBehaviour {
 
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
-				RankingPlayer rp = new RankingPlayer(playerCode);
-				rp.ping = Network.GetAveragePing(NetworkPlayerByCode(playerCode));
-				allRankingPlayers.Add(rp);
-				allRankingPlayers.Sort (CompareListByKills);
-
-				//serverSendRankingData();
-
+				gameScript.serverScript.sendRankingData();
 				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, playerCode, remainingSeconds);
 
 			}
 
 		}
 
-	}
-
-	[RPC]
-	void clearRankingRPC()
-	{
-		allRankingPlayers = new List<RankingPlayer> ();
-	}
-
-	[RPC]
-	void addRankingRPC(string playerCode, int kills, int ping) 
-	{
-		RankingPlayer rp = new RankingPlayer (playerCode);
-		rp.kills = kills;
-		rp.ping = ping;
-		allRankingPlayers.Add (rp);
 	}
 
 	[RPC]
@@ -370,6 +347,8 @@ public class ClientScript : MonoBehaviour {
 		public MeleeWeaponTrail sprintTrail;
 		public float attacking = 0f;
 		public float immune = 0f;
+		public int kills = 0;
+		public int ping = 0;
 
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
@@ -380,6 +359,7 @@ public class ClientScript : MonoBehaviour {
 			visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
 			visualAvatar.name = "VisualAvatar "+playerCode;
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
+			Debug.Log(visualAvatar.GetComponent<PlayerMarker>().player);
 			visualMaterial = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;
 			sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 			sprintTrail.Emit = false;
@@ -397,22 +377,6 @@ public class ClientScript : MonoBehaviour {
 				animator.CrossFade(animation, GlobalData.crossfadeAnimation);
 				lastAnimationOrder = animation;
 			}
-
-		}
-
-	}
-
-	public class RankingPlayer {
-
-		public string playerCode;
-		public int kills;
-		public int ping;
-
-		public RankingPlayer(string auxPlayerCode) {
-
-			playerCode = auxPlayerCode;
-			kills = 0;
-			ping = 0;
 
 		}
 
