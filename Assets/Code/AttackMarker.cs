@@ -9,14 +9,16 @@ public class AttackMarker : MonoBehaviour {
 
 	void Update() {
 
+		List<GameObject> toErase = new List<GameObject> ();
+
 		for (int i = 0; i < listTriggering.Count; i++) {
-
 			if (listTriggering [i] == null) {
-
-				//listTriggering.Remove
-
+				toErase.Add(listTriggering[i]);
 			}
+		}
 
+		for (int i = 0; i < toErase.Count; i++) {
+			listTriggering.Remove (toErase [i]);
 		}
 
 	}
