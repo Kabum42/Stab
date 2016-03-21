@@ -79,9 +79,10 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void Awake () {
 
-		Cursor.lockState = CursorLockMode.Locked;
-
 		GlobalData.Start ();
+
+		Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.Locked;
 
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
 		personalCamera.transform.localPosition = centerOfCamera;
@@ -123,11 +124,11 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	}
 
-	// Use this for initialization
-	void Start () {
-
-
-	
+	void OnApplicationFocus(bool focusStatus) {
+		if (focusStatus && !Application.isEditor) {
+			Cursor.visible = false;
+			Cursor.lockState = CursorLockMode.Locked;
+		}
 	}
 	
 	// Update is called once per frame

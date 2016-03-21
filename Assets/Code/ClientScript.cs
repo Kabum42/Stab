@@ -85,6 +85,10 @@ public class ClientScript : MonoBehaviour {
 				}
 			}
 		}
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			Network.Disconnect ();
+		}
 	
 	}
 
