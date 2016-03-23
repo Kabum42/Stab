@@ -8,11 +8,6 @@ public class GameScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		
-		GlobalData.Start ();
-
-		Cursor.visible = false;
-		Cursor.lockState = CursorLockMode.Locked;
 
 		clientScript = gameObject.AddComponent<ClientScript> ();
 		clientScript.gameScript = this;
@@ -20,20 +15,9 @@ public class GameScript : MonoBehaviour {
 		if (Network.isServer) { 
 			serverScript = gameObject.AddComponent<ServerScript> ();
 			serverScript.gameScript = this; 
+		} else {
+			Destroy (clientScript.map.transform.FindChild ("Scenario/RespawnPoints").gameObject);
 		}
-
-	}
-
-
-	
-	// Update is called once per frame
-	void Update () {
-
-
-	}
-
-	void FixedUpdate() {
-
 
 	}
 

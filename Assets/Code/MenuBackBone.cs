@@ -140,12 +140,14 @@ public class MenuBackBone : MonoBehaviour {
 			currentMenuNeuron.optionSelected--;
 			if (currentMenuNeuron.optionSelected < 0) { currentMenuNeuron.optionSelected = currentMenuNeuron.options.Count -1; }
 			currentMenuNeuron.clockwise = true;
+			SoundMoveSelected ();
 
 		} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) {
 			
 			currentMenuNeuron.optionSelected++;
 			if (currentMenuNeuron.optionSelected > (currentMenuNeuron.options.Count -1)) { currentMenuNeuron.optionSelected = 0; }
 			currentMenuNeuron.clockwise = false;
+			SoundMoveSelected ();
 
 		}
 
@@ -156,10 +158,11 @@ public class MenuBackBone : MonoBehaviour {
 			if (action == "exit") {
 				
 				Application.Quit ();
+				SoundSelection ();
 
 			} else if (action == "play") {
 
-				Application.LoadLevel ("TestChamber");
+				Application.LoadLevel ("TestChamber2");
 
 			} else if (action == "neuron") {
 
@@ -180,9 +183,12 @@ public class MenuBackBone : MonoBehaviour {
 
                 pB.MenuForward();
 
+				SoundSelection ();
+
             } else if (action == "back") {
 
                 Back();
+				SoundSelection ();
 
 			} else if (action == "menu") {
 
@@ -191,21 +197,25 @@ public class MenuBackBone : MonoBehaviour {
 				//rhombus.synapsisToBackBone.start = currentMenuNeuron;
 				rhombus.gameObject.transform.position = currentMenuNeuron.root.transform.position +new Vector3(4f, -4f, 0f);
 				//rhombus.Collapse ();
+				SoundSelection ();
 
 			} else if (action == "create") {
 
 				NetworkManager.StartServer("test");
 				Application.LoadLevel("Game");
+				SoundSelection ();
 
 			} else if (action == "join") {
 
 				NetworkManager.RefreshHostList ();
+				SoundSelection ();
 
 			}
 
 		} else if (Input.GetKeyDown (KeyCode.Escape)) {
 
             Back();
+			SoundSelection ();
 
 		}
 
@@ -238,6 +248,24 @@ public class MenuBackBone : MonoBehaviour {
 
         }
     }
+
+	private void SoundSelection() {
+
+		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/tap-mellow");
+		audio.volume = 1f;
+		audio.pitch = UnityEngine.Random.Range (0.85f, 1.15f);
+		audio.Play ();
+
+	}
+
+	private void SoundMoveSelected() {
+
+		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/slide-network");
+		audio.volume = 1f;
+		audio.pitch = UnityEngine.Random.Range (0.85f, 1.15f);
+		audio.Play ();
+
+	}
 
 	public class MenuNeuron {
 

@@ -20,14 +20,14 @@ public class ClientScript : MonoBehaviour {
 
 	private GameObject rankingBackground;
 	private GameObject textTargeted;
-	private GameObject map;
+	public GameObject map;
 
 	public LocalPlayerScript localPlayer;
 	private string myCode;
 	public List<Player> listPlayers = new List<Player>();
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 	
 		chatManager = new ChatManager(GameObject.Find ("Canvas/ChatPanel/ScrollRect/AllChat"));
 
@@ -84,6 +84,10 @@ public class ClientScript : MonoBehaviour {
 					textTargeted.GetComponent<Text>().text = "<Player "+listPlayers[j].playerCode+">";
 				}
 			}
+		}
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			Network.Disconnect ();
 		}
 	
 	}
@@ -366,9 +370,18 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void updateRankingRPC(string playerCode, int kills, int ping)
 	{
-		ClientScript.Player player = gameScript.clientScript.PlayerByCode (playerCode);
+		Player player = PlayerByCode (playerCode);
 		player.kills = kills;
 		player.ping = ping;
+	}
+
+	[RPC]
+	void respawnRPC(string playerCode, Vector3 position, Vector3 eulerAngles)
+	{
+		if (Network.player.ToString () == playerCode) {
+			localPlayer.transform.position = position;
+			localPlayer.transform.eulerAngles = eulerAngles;
+		}
 	}
 
 	// CLASSES

@@ -5,10 +5,14 @@ using System.Collections.Generic;
 public class ServerScript : MonoBehaviour {
 
 	[HideInInspector] public GameScript gameScript;
+	[HideInInspector] public List<RespawnLocation> listRespawnLocations = new List<RespawnLocation> ();
+	private float oldestTimeUsed;
 
 	// Use this for initialization
 	void Start () {
 	
+		createRespawnPoints(gameScript.clientScript.map.transform.FindChild ("Scenario/RespawnPoints").gameObject);
+
 	}
 	
 	// Update is called once per frame
@@ -19,12 +23,28 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
+	void createRespawnPoints(GameObject respawnPoints) {
+
+		float now = Time.realtimeSinceStartup;
+		oldestTimeUsed = now;
+
+		foreach (Transform child in respawnPoints.transform)
+		{
+			RespawnLocation rL = new RespawnLocation (child.position, child.eulerAngles);
+			rL.lastTimeUsed = now;
+			listRespawnLocations.Add (rL);
+		}
+
+		Destroy (respawnPoints);
+
+	}
+
 	void checkForKillings() {
 
 		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
 
 			if (gameScript.clientScript.listPlayers[i].attacking > 0f) {
-
+				
 				List<GameObject> currentTriggering = gameScript.clientScript.listPlayers[i].visualAvatar.GetComponent<PlayerMarker> ().ownAttacker.listTriggering;
 
 				for (int j = 0; j < currentTriggering.Count; j++) {
@@ -34,6 +54,7 @@ public class ServerScript : MonoBehaviour {
 					if (currentPlayer.immune == 0f) {
 
 						gameScript.clientScript.listPlayers[i].kills++;
+						respawn (currentPlayer.playerCode);
 						currentPlayer.immune = 5f;
 						sendRankingData ();
 
@@ -44,6 +65,12 @@ public class ServerScript : MonoBehaviour {
 
 		}
 
+
+	}
+
+	void respawn(string playerCode) {
+
+		GetComponent<NetworkView> ().RPC ("updateRankingRPC", RPCMode.Others, playerCode, listRespawnLocations [0].position, listRespawnLocations [0].eulerAngles);
 
 	}
 
@@ -81,6 +108,22 @@ public class ServerScript : MonoBehaviour {
 		Debug.Log("Clean up after player " + player);
 		Network.RemoveRPCs(player);
 		GetComponent<NetworkView>().RPC("removePlayerRPC", RPCMode.All, player.ToString());
+	}
+
+	// CLASSES
+	public class RespawnLocation {
+
+		public Vector3 position;
+		public Vector3 eulerAngles;
+		public float lastTimeUsed;
+
+		public RespawnLocation(Vector3 position, Vector3 eulerAngles) {
+
+			this.position = position;
+			this.eulerAngles = eulerAngles;
+
+		}
+
 	}
 
 }

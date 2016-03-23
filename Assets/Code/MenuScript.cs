@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityStandardAssets.ImageEffects;
 
 public class MenuScript : MonoBehaviour {
 
@@ -33,6 +34,9 @@ public class MenuScript : MonoBehaviour {
 	private GameObject test;
 
 	private List<PingMatch> unresolvedPingMatches = new List<PingMatch>();
+
+	private AudioSource menuMusic;
+	private VignetteAndChromaticAberration vignette;
 
 	void OnServerInitialized()
 	{
@@ -77,6 +81,16 @@ public class MenuScript : MonoBehaviour {
 		Cursor.visible = true;
 		Cursor.lockState = CursorLockMode.None;
 
+		menuMusic = this.gameObject.AddComponent<AudioSource> ();
+		menuMusic.clip = Resources.Load("Sound/Music/Cyberium") as AudioClip;
+		menuMusic.loop = true;
+		menuMusic.spatialBlend = 0f;
+		menuMusic.volume = 0.25f;
+		menuMusic.Play ();
+
+		//vignette = this.GetComponent<VignetteAndChromaticAberration> ();
+		//vignette.intensity = 500f;
+
 		canvas = GameObject.Find ("Canvas");
 
 		menuMain = GameObject.Find ("MenuMain");
@@ -105,6 +119,8 @@ public class MenuScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		//vignette.intensity = Mathf.Lerp (vignette.intensity, 7f, Time.deltaTime * 20f);
 
 		if (menuMode == "main") {
 
