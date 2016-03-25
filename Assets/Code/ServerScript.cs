@@ -71,7 +71,40 @@ public class ServerScript : NetworkBehaviour {
 
 	void respawn(string playerCode) {
 
-		GetComponent<NetworkView> ().RPC ("updateRankingRPC", RPCMode.Others, playerCode, listRespawnLocations [0].position, listRespawnLocations [0].eulerAngles);
+        List<int> possibleRespawns = new List<int>();
+        float cooldown = 5f;
+        bool cooldownFulfilled = (Time.realtimeSinceStartup - oldestTimeUsed) >= cooldown;
+
+        for (int i = 0; i < listRespawnLocations.Count; i++)
+        {
+            if (cooldownFulfilled)
+            {
+                // SOMEONE FULFILLS THE COOLDOWN
+                if ((Time.realtimeSinceStartup - listRespawnLocations[i].lastTimeUsed) >= cooldown)
+                {
+                    // THIS ONE FULLFILS THE COOLDOWN
+                    possibleRespawns.Add(i);
+                }
+            }
+            else
+            {
+                // NO ONE FULFILLS THE COOLDOWN, EVERYONE IS EQUALLY VALID
+                possibleRespawns.Add(i);
+            }
+        }
+
+        int chosenRespawn = possibleRespawns[Random.Range(0, possibleRespawns.Count)];
+        listRespawnLocations[chosenRespawn].lastTimeUsed = Time.realtimeSinceStartup;
+
+		GetComponent<NetworkView> ().RPC ("updateRankingRPC", RPCMode.Others, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
+
+        // UPDATE NEW OLDEST_TIME
+        oldestTimeUsed = listRespawnLocations[0].lastTimeUsed;
+
+        for (int i = 0; i < listRespawnLocations.Count; i++)
+        {
+            oldestTimeUsed = Mathf.Min(oldestTimeUsed, listRespawnLocations[i].lastTimeUsed);
+        }
 
 	}
 
