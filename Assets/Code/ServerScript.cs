@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.Networking;
 
-public class ServerScript : NetworkBehaviour {
+public class ServerScript : MonoBehaviour {
 
 	[HideInInspector] public GameScript gameScript;
 	[HideInInspector] public List<RespawnLocation> listRespawnLocations = new List<RespawnLocation> ();

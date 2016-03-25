@@ -79,7 +79,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void Awake () {
 
-		//GlobalData.Start ();
+		GlobalData.Start ();
 
 		Cursor.visible = false;
 		Cursor.lockState = CursorLockMode.Locked;

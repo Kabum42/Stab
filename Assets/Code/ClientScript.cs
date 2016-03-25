@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
-using UnityEngine.Networking;
 
-public class ClientScript : NetworkBehaviour {
+public class ClientScript : MonoBehaviour {
 
 	[HideInInspector] public GameScript gameScript;
 
@@ -105,8 +104,7 @@ public class ClientScript : NetworkBehaviour {
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
 				string currentMode = localPlayer.GetComponent<LocalPlayerScript>().currentMode;
 				bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
-
-				Cmd_updatePlayerRPC(Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, currentMode, sprintActive, localPlayer.GetComponent<LocalPlayerScript> ().attacking);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, currentMode, sprintActive, localPlayer.GetComponent<LocalPlayerScript> ().attacking);
 
 			}
 
@@ -289,8 +287,8 @@ public class ClientScript : NetworkBehaviour {
 	}
 
 	// CLIENT RPCs
-	[Command]
-	void Cmd_updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation, string currentMode, bool sprintActive, float attacking)
+	[RPC]
+	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation, string currentMode, bool sprintActive, float attacking)
 	{
 		bool foundPlayer = false;
 
@@ -328,8 +326,6 @@ public class ClientScript : NetworkBehaviour {
 			}
 
 		}
-
-		Debug.Log ("JEJE");
 
 	}
 
