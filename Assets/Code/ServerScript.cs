@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.Networking;
 
-public class ServerScript : NetworkBehaviour {
+public class ServerScript : MonoBehaviour {
 
 	[HideInInspector] public GameScript gameScript;
 	[HideInInspector] public List<RespawnLocation> listRespawnLocations = new List<RespawnLocation> ();
@@ -96,7 +95,7 @@ public class ServerScript : NetworkBehaviour {
         int chosenRespawn = possibleRespawns[Random.Range(0, possibleRespawns.Count)];
         listRespawnLocations[chosenRespawn].lastTimeUsed = Time.realtimeSinceStartup;
 
-		GetComponent<NetworkView> ().RPC ("updateRankingRPC", RPCMode.Others, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
+		GetComponent<NetworkView> ().RPC ("respawnRPC", RPCMode.Others, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
 
         // UPDATE NEW OLDEST_TIME
         oldestTimeUsed = listRespawnLocations[0].lastTimeUsed;
