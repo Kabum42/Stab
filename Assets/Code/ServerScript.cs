@@ -95,7 +95,7 @@ public class ServerScript : MonoBehaviour {
         int chosenRespawn = possibleRespawns[Random.Range(0, possibleRespawns.Count)];
         listRespawnLocations[chosenRespawn].lastTimeUsed = Time.realtimeSinceStartup;
 
-		GetComponent<NetworkView> ().RPC ("updateRankingRPC", RPCMode.Others, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
+		GetComponent<NetworkView> ().RPC ("respawnRPC", RPCMode.Others, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
 
         // UPDATE NEW OLDEST_TIME
         oldestTimeUsed = listRespawnLocations[0].lastTimeUsed;

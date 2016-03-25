@@ -26,6 +26,8 @@ public class MenuBackBone : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
+		GlobalData.Start ();
+
 		rhombus.gameObject.SetActive (false);
         pB = GameObject.Find("PositronicBrain").GetComponent<PositronicBrain>();
 
