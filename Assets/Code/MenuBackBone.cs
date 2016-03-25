@@ -201,13 +201,13 @@ public class MenuBackBone : MonoBehaviour {
 
 			} else if (action == "create") {
 
-				NetworkManager.StartServer("test");
-				Application.LoadLevel("Game");
+				NetCustom.StartServer("test");
+				//Application.LoadLevel("Game");
 				SoundSelection ();
 
 			} else if (action == "join") {
 
-				NetworkManager.RefreshHostList ();
+				NetCustom.RefreshHostList ();
 				SoundSelection ();
 
 			}
@@ -225,8 +225,8 @@ public class MenuBackBone : MonoBehaviour {
 	{
 		if (msEvent == MasterServerEvent.HostListReceived)
 		{
-			NetworkManager.hostList = MasterServer.PollHostList();
-			NetworkManager.JoinServer(NetworkManager.hostList[0]);
+			NetCustom.hostList = MasterServer.PollHostList();
+			NetCustom.JoinServer(NetCustom.hostList[0]);
 		}
 	}
 

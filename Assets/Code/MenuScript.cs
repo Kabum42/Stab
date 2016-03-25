@@ -47,13 +47,13 @@ public class MenuScript : MonoBehaviour {
 	{
 		if (msEvent == MasterServerEvent.HostListReceived)
 		{
-			NetworkManager.hostList = MasterServer.PollHostList();
+			NetCustom.hostList = MasterServer.PollHostList();
 
 			flushMatches();
 
-			for (int i = 0; i < NetworkManager.hostList.Length; i++) {
+			for (int i = 0; i < NetCustom.hostList.Length; i++) {
 				
-				Match m = new Match (this, ref NetworkManager.hostList[i], currentMatches.Count);
+				Match m = new Match (this, ref NetCustom.hostList[i], currentMatches.Count);
 				currentMatches.Add (m);
 				m.adjustPosition();
 				
@@ -69,7 +69,7 @@ public class MenuScript : MonoBehaviour {
 	void OnConnectedToServer()
 	{
 		Debug.Log("Server Joined");
-		Application.LoadLevel ("Game");
+		//Application.LoadLevel ("Game");
 	}
 
 	// Use this for initialization
@@ -196,13 +196,13 @@ public class MenuScript : MonoBehaviour {
 					string password = canvasCreate.transform.FindChild("PasswordField").GetComponent<InputField>().text;
 					if (password != "") {
 						// WITH PASSWORD
-						NetworkManager.StartServer(roomName, password);
+						NetCustom.StartServer(roomName, password);
 					}
 					else {
 						// WITHOUT PASSWORD
-						NetworkManager.StartServer(roomName);
+						NetCustom.StartServer(roomName);
 					}
-					Application.LoadLevel("Game");
+					//Application.LoadLevel("Game");
 				}
 			}
 			else if (Hacks.isOver(menuCreateBack)) {
@@ -224,7 +224,7 @@ public class MenuScript : MonoBehaviour {
 		// CHECK FOR CLICK
 		if (Input.GetMouseButtonDown (0)) {
 			if (Hacks.isOver(menuJoinPlay) && selectedMatch != -1) {
-				NetworkManager.JoinServer(NetworkManager.hostList[selectedMatch]);
+				NetCustom.JoinServer(NetCustom.hostList[selectedMatch]);
 			}
 			else if (Hacks.isOver(menuJoinBack)) {
 				menuMode = "main";
@@ -276,7 +276,7 @@ public class MenuScript : MonoBehaviour {
 
 	private void reloadMatches() {
 
-		NetworkManager.RefreshHostList ();
+		NetCustom.RefreshHostList ();
 
 	}
 

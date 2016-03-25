@@ -13,6 +13,7 @@ public static class GlobalData {
 
             started = true;
             // HERE GOES ALL INITIALIZATION NECESSARY
+			NetCustom.Start();
 
         }
 
