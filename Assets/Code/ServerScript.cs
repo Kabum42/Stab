@@ -70,6 +70,8 @@ public class ServerScript : MonoBehaviour {
 
 	void respawn(string playerCode) {
 
+		Debug.Log ("RESPAWNING: "+playerCode);
+
         List<int> possibleRespawns = new List<int>();
         float cooldown = 5f;
         bool cooldownFulfilled = (Time.realtimeSinceStartup - oldestTimeUsed) >= cooldown;
@@ -95,7 +97,7 @@ public class ServerScript : MonoBehaviour {
         int chosenRespawn = possibleRespawns[Random.Range(0, possibleRespawns.Count)];
         listRespawnLocations[chosenRespawn].lastTimeUsed = Time.realtimeSinceStartup;
 
-		GetComponent<NetworkView> ().RPC ("respawnRPC", RPCMode.Others, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
+		GetComponent<NetworkView> ().RPC ("respawnRPC", RPCMode.All, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
 
         // UPDATE NEW OLDEST_TIME
         oldestTimeUsed = listRespawnLocations[0].lastTimeUsed;

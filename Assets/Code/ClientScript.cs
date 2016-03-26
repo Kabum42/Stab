@@ -44,11 +44,7 @@ public class ClientScript : MonoBehaviour {
 
 		// TE UNES COMO PLAYER
 		myCode = Network.player.ToString ();
-		Player aux = new Player(myCode);
-		Destroy (aux.visualAvatar); 
-		aux.visualAvatar = localPlayer.visualAvatar;
-		Destroy (aux.visualMaterial);
-		aux.visualMaterial = aux.visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;
+		Player aux = new Player(myCode, localPlayer.visualAvatar);
 		listPlayers.Add(aux);
 
 	}
@@ -123,32 +119,34 @@ public class ClientScript : MonoBehaviour {
 
 			if (listPlayers [i].playerCode != myCode) {
 
-				listPlayers[i].visualAvatar.transform.position = Hacks.LerpVector3(listPlayers[i].visualAvatar.transform.position, listPlayers[i].targetPosition, Time.deltaTime*10f);
-				listPlayers[i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle(listPlayers[i].visualAvatar.transform.eulerAngles, listPlayers[i].targetRotation, Time.deltaTime*10f);
+				listPlayers [i].visualAvatar.transform.position = Hacks.LerpVector3 (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
+				listPlayers [i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
 				listPlayers [i].attacking = Mathf.Max (0f, listPlayers [i].attacking - Time.deltaTime);
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 
-				if (listPlayers[i].currentMode == "regular") {
+				if (listPlayers [i].currentMode == "regular") {
 
-					Color c = Color.Lerp(listPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f-listPlayers [i].attacking, 1f-listPlayers [i].attacking, 1f), Time.fixedDeltaTime*5f);
+					Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f - listPlayers [i].attacking, 1f - listPlayers [i].attacking, 1f), Time.fixedDeltaTime * 5f);
 					//Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 1f), Time.fixedDeltaTime*5f);
-					listPlayers[i].visualMaterial.SetColor("_Color", c);
+					listPlayers [i].visualMaterial.SetColor ("_Color", c);
 
-				} else if (listPlayers[i].currentMode == "stealth") {
+				} else if (listPlayers [i].currentMode == "stealth") {
 
-					Color c = Color.Lerp(listPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f-listPlayers [i].attacking, 1f-listPlayers [i].attacking, 0.4f), Time.fixedDeltaTime*5f);
+					Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f - listPlayers [i].attacking, 1f - listPlayers [i].attacking, 0.4f), Time.fixedDeltaTime * 5f);
 					//Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 0.4f), Time.fixedDeltaTime*5f);
-					listPlayers[i].visualMaterial.SetColor("_Color", c);
+					listPlayers [i].visualMaterial.SetColor ("_Color", c);
 
 				}
 
-				if (listPlayers[i].sprintActive && !listPlayers[i].sprintTrail.Emit) {
-					listPlayers[i].sprintTrail.Emit = true;
-				}
-				else if (!listPlayers[i].sprintActive && listPlayers[i].sprintTrail.Emit) {
-					listPlayers[i].sprintTrail.Emit = false;
+				if (listPlayers [i].sprintActive && !listPlayers [i].sprintTrail.Emit) {
+					listPlayers [i].sprintTrail.Emit = true;
+				} else if (!listPlayers [i].sprintActive && listPlayers [i].sprintTrail.Emit) {
+					listPlayers [i].sprintTrail.Emit = false;
 				}
 
+			} else {
+				// ES MI PLAYER
+				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 			}
 
 		}
@@ -404,8 +402,20 @@ public class ClientScript : MonoBehaviour {
 
 		public Player(string auxPlayerCode) {
 
-			playerCode = auxPlayerCode;
 			visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
+			Initialize(auxPlayerCode, visualAvatar);
+
+		}
+
+		public Player(string auxPlayerCode, GameObject visualAvatar) {
+
+			Initialize(auxPlayerCode, visualAvatar);
+
+		}
+
+		public void Initialize (string auxPlayerCode, GameObject visualAvatar) {
+
+			playerCode = auxPlayerCode;
 			visualAvatar.name = "VisualAvatar "+playerCode;
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
 			visualMaterial = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;
