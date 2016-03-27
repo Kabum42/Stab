@@ -86,7 +86,7 @@ public class MenuScript : MonoBehaviour {
 		menuMusic.loop = true;
 		menuMusic.spatialBlend = 0f;
 		menuMusic.volume = 0.25f;
-		menuMusic.Play ();
+		//menuMusic.Play ();
 
 		//vignette = this.GetComponent<VignetteAndChromaticAberration> ();
 		//vignette.intensity = 500f;

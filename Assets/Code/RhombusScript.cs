@@ -6,14 +6,18 @@ public class RhombusScript : MonoBehaviour {
 
     public GameObject neuronSource;
     public GameObject synapsisSource;
+	public GameObject textSource;
 
     public GameObject boneNW;
     public GameObject boneNE;
     public GameObject boneSW;
     public GameObject boneSE;
-
-	public Synapsis synapsisToBackBone;
     
+	public Neuron backboneLink;
+
+	public bool active = false;
+	public string mode = "create";
+
     private Neuron NW;
     private Neuron NE;
     private Neuron SW;
@@ -21,8 +25,17 @@ public class RhombusScript : MonoBehaviour {
 
     private List<Synapsis> synapsisList = new List<Synapsis>();
 
+	private GameObject createMenu;
+	private GameObject createMenuNameTitle;
+
 	// Use this for initialization
 	void Start () {
+
+		backboneLink = new Neuron(this);
+		backboneLink.root.name = "Neuron_backboneLink";
+		backboneLink.root.transform.localPosition = new Vector3(3f, 3f, 0f);
+		backboneLink.SetOriginal();
+		backboneLink.root.SetActive (false);
 
         NW = new Neuron(this);
         NW.root.name = "Neuron_NW";
@@ -44,6 +57,11 @@ public class RhombusScript : MonoBehaviour {
         SE.root.transform.localPosition = new Vector3(-2f, -2f, 0f);
         SE.SetOriginal();
 
+		Synapsis sLink = new Synapsis(this);
+		sLink.start = backboneLink;
+		sLink.end = NW;
+		synapsisList.Add(sLink);
+
         Synapsis s1 = new Synapsis(this);
         s1.start = NW;
         s1.end = NE;
@@ -64,26 +82,40 @@ public class RhombusScript : MonoBehaviour {
         s4.end = NW;
         synapsisList.Add(s4);
 
-		synapsisToBackBone = new Synapsis (this);
-		synapsisToBackBone.start = NW;
-		synapsisToBackBone.end = NW;
-		synapsisList.Add (synapsisToBackBone);
+		createMenu = new GameObject ();
+		createMenu.name = "CreateMenu";
+		createMenu.transform.SetParent (this.transform);
+		createMenu.transform.localPosition = new Vector3 (0f, 0f, 0f);
 
-		//Collapse ();
+		createMenuNameTitle = Instantiate (textSource);
+		createMenuNameTitle.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
+		createMenuNameTitle.GetComponent<TextMesh> ().fontSize = 140;
+		createMenuNameTitle.GetComponent<TextMesh> ().text = "Match name";
+		createMenuNameTitle.name = "NameTitle";
+		createMenuNameTitle.transform.SetParent (createMenu.transform);
+		createMenuNameTitle.transform.localPosition = new Vector3 (0f, 4f, -0.1f);
 	
 	}
 
 	public void Collapse() {
 
-		NW.root.transform.localPosition = new Vector3(0f, 0f, 0f);
-		NE.root.transform.localPosition = new Vector3(0f, 0f, 0f);
-		SW.root.transform.localPosition = new Vector3(0f, 0f, 0f);
-		SE.root.transform.localPosition = new Vector3(0f, 0f, 0f);
+		NW.root.transform.position = backboneLink.root.transform.position;
+		NE.root.transform.position = backboneLink.root.transform.position;
+		SW.root.transform.position = backboneLink.root.transform.position;
+		SE.root.transform.position = backboneLink.root.transform.position;
+
+		Update ();
 
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (active) {
+			Expand ();
+		} else {
+			Shrink ();
+		}
 
         NW.Update();
         NE.Update();
@@ -99,6 +131,36 @@ public class RhombusScript : MonoBehaviour {
         boneNE.transform.position = NE.root.transform.position;
         boneSW.transform.position = SW.root.transform.position;
         boneSE.transform.position = SE.root.transform.position;
+
+		createMenu.transform.position = (NW.root.transform.position + NE.root.transform.position + SW.root.transform.position + SE.root.transform.position) / 4f;
+		float targetXDistance_NW_NE = 18f;
+		float currentXDistance_NW_NE = Mathf.Abs(NE.root.transform.position.x - NW.root.transform.position.x);
+		float aux = currentXDistance_NW_NE / targetXDistance_NW_NE;
+		createMenu.transform.localScale = new Vector3 (aux, aux, 1f);
+
+		if (!active && aux <= 0.01f) {
+
+			this.gameObject.SetActive (false);
+
+		}
+
+	}
+
+	private void Expand() {
+
+		NW.root.transform.position = Vector3.Lerp (NW.root.transform.position, backboneLink.root.transform.position + new Vector3 (-1f, -1f, -0.2f), Time.deltaTime * 5f);
+		NE.root.transform.position = Vector3.Lerp (NE.root.transform.position, backboneLink.root.transform.position + new Vector3 (17f, -1f, -0.2f), Time.deltaTime * 5f);
+		SW.root.transform.position = Vector3.Lerp (SW.root.transform.position, backboneLink.root.transform.position + new Vector3 (-1f, -11f, -0.2f), Time.deltaTime * 5f);
+		SE.root.transform.position = Vector3.Lerp (SE.root.transform.position, backboneLink.root.transform.position + new Vector3 (17f, -11f, -0.2f), Time.deltaTime * 5f);
+
+	}
+
+	private void Shrink() {
+
+		NW.root.transform.position = Vector3.Lerp (NW.root.transform.position, backboneLink.root.transform.position, Time.deltaTime * 8f);
+		NE.root.transform.position = Vector3.Lerp (NE.root.transform.position, backboneLink.root.transform.position, Time.deltaTime * 8f);
+		SW.root.transform.position = Vector3.Lerp (SW.root.transform.position, backboneLink.root.transform.position, Time.deltaTime * 8f);
+		SE.root.transform.position = Vector3.Lerp (SE.root.transform.position, backboneLink.root.transform.position, Time.deltaTime * 8f);
 
 	}
 
