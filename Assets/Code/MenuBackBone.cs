@@ -28,6 +28,9 @@ public class MenuBackBone : MonoBehaviour {
 
 		GlobalData.Start ();
 
+		Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.Locked;
+
 		rhombus.gameObject.SetActive (false);
         pB = GameObject.Find("PositronicBrain").GetComponent<PositronicBrain>();
 
@@ -62,8 +65,8 @@ public class MenuBackBone : MonoBehaviour {
 		MenuNeuron stabNeuron = CreateStabNeuron (firstNeuron);
 		firstNeuron.AddOption ("Stab.exe", "neuron", stabNeuron);
 
-		MenuNeuron optionsNeuron = CreateOptionsNeuron (firstNeuron);
-		firstNeuron.AddOption ("Options", "neuron", optionsNeuron);
+		//MenuNeuron optionsNeuron = CreateOptionsNeuron (firstNeuron);
+		//firstNeuron.AddOption ("Options", "neuron", optionsNeuron);
 
 		firstNeuron.AddOption ("Shut down system", "exit", null);
 
@@ -80,6 +83,7 @@ public class MenuBackBone : MonoBehaviour {
 
 	}
 
+	/*
 	private MenuNeuron CreateOptionsNeuron(MenuNeuron parentNeuron) {
 
 		MenuNeuron auxNeuron = GenerateMenuNeuron (parentNeuron);
@@ -91,6 +95,7 @@ public class MenuBackBone : MonoBehaviour {
 		return auxNeuron;
 
 	}
+	*/
 
 	private MenuNeuron GenerateMenuNeuron(MenuNeuron parentNeuron) {
 
@@ -110,6 +115,13 @@ public class MenuBackBone : MonoBehaviour {
 
 		return newNeuron;
 
+	}
+
+	void OnApplicationFocus(bool focusStatus) {
+		if (focusStatus && !Application.isEditor) {
+			Cursor.visible = false;
+			Cursor.lockState = CursorLockMode.Locked;
+		}
 	}
 	
 	// Update is called once per frame
@@ -136,24 +148,30 @@ public class MenuBackBone : MonoBehaviour {
 
 	private void ProcessInput() {
 
-		if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
-		{
-			
-			currentMenuNeuron.optionSelected--;
-			if (currentMenuNeuron.optionSelected < 0) { currentMenuNeuron.optionSelected = currentMenuNeuron.options.Count -1; }
-			currentMenuNeuron.clockwise = true;
-			SoundMoveSelected ();
+		if (!rhombus.active) {
 
-		} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) {
-			
-			currentMenuNeuron.optionSelected++;
-			if (currentMenuNeuron.optionSelected > (currentMenuNeuron.options.Count -1)) { currentMenuNeuron.optionSelected = 0; }
-			currentMenuNeuron.clockwise = false;
-			SoundMoveSelected ();
+			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+			{
+
+				currentMenuNeuron.optionSelected--;
+				if (currentMenuNeuron.optionSelected < 0) { currentMenuNeuron.optionSelected = currentMenuNeuron.options.Count -1; }
+				currentMenuNeuron.clockwise = true;
+				SoundMoveSelected ();
+
+			} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) {
+
+				currentMenuNeuron.optionSelected++;
+				if (currentMenuNeuron.optionSelected > (currentMenuNeuron.options.Count -1)) { currentMenuNeuron.optionSelected = 0; }
+				currentMenuNeuron.clockwise = false;
+				SoundMoveSelected ();
+
+			}
 
 		}
 
-		if (Input.GetKeyDown (KeyCode.Return)) {
+
+
+		if (Input.GetKeyDown (KeyCode.Return) && !rhombus.active) {
 
 			string action = currentMenuNeuron.options [currentMenuNeuron.optionSelected].action;
 
@@ -192,19 +210,13 @@ public class MenuBackBone : MonoBehaviour {
                 Back();
 				SoundSelection ();
 
-			} else if (action == "menu") {
-
-				neuronOffset = new Vector3(-8f, 3.5f, 1f);
-				rhombus.gameObject.SetActive (true);
-				//rhombus.synapsisToBackBone.start = currentMenuNeuron;
-				rhombus.gameObject.transform.position = currentMenuNeuron.root.transform.position +new Vector3(4f, -4f, 0f);
-				//rhombus.Collapse ();
-				SoundSelection ();
-
 			} else if (action == "create") {
-
-				NetworkManager.StartServer("test");
-				Application.LoadLevel("Game");
+				
+				neuronOffset = new Vector3(-8f, 5.5f, 1f);
+				rhombus.backboneLink.root.transform.position = currentMenuNeuron.root.transform.position;
+				rhombus.Collapse ();
+				rhombus.active = true;
+				rhombus.gameObject.SetActive (true);
 				SoundSelection ();
 
 			} else if (action == "join") {
@@ -216,8 +228,18 @@ public class MenuBackBone : MonoBehaviour {
 
 		} else if (Input.GetKeyDown (KeyCode.Escape)) {
 
-            Back();
-			SoundSelection ();
+			if (!rhombus.active) {
+
+				Back ();
+				SoundSelection ();
+
+			} else {
+
+				neuronOffset = new Vector3(-8f, -3.5f, 1f);
+				rhombus.active = false;
+				SoundSelection ();
+
+			}
 
 		}
 
