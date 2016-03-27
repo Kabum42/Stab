@@ -77,10 +77,6 @@ public class MenuScript : MonoBehaviour {
 
 		GlobalData.Start ();
 
-		Cursor.SetCursor (Resources.Load ("Sprites/cursorWoW") as Texture2D, Vector2.zero, CursorMode.Auto);
-		Cursor.visible = true;
-		Cursor.lockState = CursorLockMode.None;
-
 		menuMusic = this.gameObject.AddComponent<AudioSource> ();
 		menuMusic.clip = Resources.Load("Sound/Music/Cyberium") as AudioClip;
 		menuMusic.loop = true;

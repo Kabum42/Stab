@@ -44,7 +44,7 @@ public class ServerScript : MonoBehaviour {
 		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
 
 			if (gameScript.clientScript.listPlayers[i].attacking > 0f) {
-				
+
 				List<GameObject> currentTriggering = gameScript.clientScript.listPlayers[i].visualAvatar.GetComponent<PlayerMarker> ().ownAttacker.listTriggering;
 
 				for (int j = 0; j < currentTriggering.Count; j++) {

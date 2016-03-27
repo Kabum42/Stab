@@ -416,6 +416,7 @@ public class ClientScript : MonoBehaviour {
 		public void Initialize (string auxPlayerCode, GameObject visualAvatar) {
 
 			playerCode = auxPlayerCode;
+			this.visualAvatar = visualAvatar;
 			visualAvatar.name = "VisualAvatar "+playerCode;
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
 			visualMaterial = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;

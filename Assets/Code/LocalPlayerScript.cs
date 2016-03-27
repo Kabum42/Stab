@@ -82,7 +82,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		GlobalData.Start ();
 
 		Cursor.visible = false;
-		Cursor.lockState = CursorLockMode.Confined;
+		Cursor.lockState = CursorLockMode.Locked;
 
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
 		personalCamera.transform.localPosition = centerOfCamera;
@@ -127,7 +127,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	void OnApplicationFocus(bool focusStatus) {
 		if (focusStatus && !Application.isEditor) {
 			Cursor.visible = false;
-			Cursor.lockState = CursorLockMode.Confined;
+			Cursor.lockState = CursorLockMode.Locked;
 		}
 	}
 	

@@ -28,6 +28,9 @@ public class MenuBackBone : MonoBehaviour {
 
 		GlobalData.Start ();
 
+		Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.Locked;
+
 		rhombus.gameObject.SetActive (false);
         pB = GameObject.Find("PositronicBrain").GetComponent<PositronicBrain>();
 
@@ -112,6 +115,13 @@ public class MenuBackBone : MonoBehaviour {
 
 		return newNeuron;
 
+	}
+
+	void OnApplicationFocus(bool focusStatus) {
+		if (focusStatus && !Application.isEditor) {
+			Cursor.visible = false;
+			Cursor.lockState = CursorLockMode.Locked;
+		}
 	}
 	
 	// Update is called once per frame
@@ -201,10 +211,7 @@ public class MenuBackBone : MonoBehaviour {
 				SoundSelection ();
 
 			} else if (action == "create") {
-
-				//NetworkManager.StartServer("test");
-				//Application.LoadLevel("Game");
-
+				
 				neuronOffset = new Vector3(-8f, 5.5f, 1f);
 				rhombus.backboneLink.root.transform.position = currentMenuNeuron.root.transform.position;
 				rhombus.Collapse ();
@@ -221,7 +228,7 @@ public class MenuBackBone : MonoBehaviour {
 
 		} else if (Input.GetKeyDown (KeyCode.Escape)) {
 
-			if (!rhombus.gameObject.activeInHierarchy) {
+			if (!rhombus.active) {
 
 				Back ();
 				SoundSelection ();
