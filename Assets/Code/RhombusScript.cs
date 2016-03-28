@@ -8,6 +8,7 @@ public class RhombusScript : MonoBehaviour {
     public GameObject synapsisSource;
 	public GameObject textSource;
 	public GameObject textBackgroundSource;
+	public GameObject arrowSource;
 
     public GameObject boneNW;
     public GameObject boneNE;
@@ -26,8 +27,14 @@ public class RhombusScript : MonoBehaviour {
 
     private List<Synapsis> synapsisList = new List<Synapsis>();
 
+	public bool locked = false;
 	public int menuSelected = 0;
 	private Neuron menuSelectedNeuron;
+
+	private GameObject typeText;
+	private float typeAux = 0f;
+	private static float typeBlank = 0.5f;
+	private static float typeShow = 0.5f;
 
 	// CREATE MENU
 	private GameObject createMenu;
@@ -35,14 +42,20 @@ public class RhombusScript : MonoBehaviour {
 	// MATCH NAME
 	private GameObject createMenuNameTitle;
 	private GameObject createMenuNameText;
+	private string createMenuNameTextString = "";
 	private GameObject createMenuNameTextBackground;
 	// MAP
 	private GameObject createMenuMapTitle;
 	private GameObject createMenuMapText;
+	private List<string> createMenuMapList = new List<string> ();
+	private int createMenuMapListCurrent = 0;
 	private GameObject createMenuMapTextBackground;
+	private GameObject createMenuMapArrowLeft;
+	private GameObject createMenuMapArrowRight;
 	// PASSWORD
 	private GameObject createMenuPasswordTitle;
 	private GameObject createMenuPasswordText;
+	private string createMenuPasswordTextString = "";
 	private GameObject createMenuPasswordTextBackground;
 	// CREATE
 	private GameObject createMenuGoTitle;
@@ -112,6 +125,15 @@ public class RhombusScript : MonoBehaviour {
 		menuSelectedNeuron.root.transform.SetParent (createMenu.transform);
 		menuSelectedNeuron.root.transform.localPosition = new Vector3(0f, 0f, 0f);
 
+		typeText = Instantiate (textSource);
+		typeText.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
+		typeText.GetComponent<TextMesh> ().fontSize = 140;
+		typeText.GetComponent<TextMesh> ().text = "|";
+		typeText.name = "TypeText";
+		typeText.transform.SetParent (createMenu.transform);
+		typeText.transform.localPosition = new Vector3 (0f, 3f, -0.1f);
+		typeText.GetComponent<TextMesh> ().color = this.transform.parent.GetComponent<MenuBackBone> ().optionSelectedColor;
+
 		// MATCH NAME
 		createMenuNameTitle = Instantiate (textSource);
 		createMenuNameTitle.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
@@ -125,7 +147,7 @@ public class RhombusScript : MonoBehaviour {
 		createMenuNameText = Instantiate (textSource);
 		createMenuNameText.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
 		createMenuNameText.GetComponent<TextMesh> ().fontSize = 140;
-		createMenuNameText.GetComponent<TextMesh> ().text = "Test";
+		createMenuNameText.GetComponent<TextMesh> ().text = createMenuNameTextString;
 		createMenuNameText.name = "NameText";
 		createMenuNameText.transform.SetParent (createMenu.transform);
 		createMenuNameText.transform.localPosition = new Vector3 (0f, 3f, -0.1f);
@@ -147,10 +169,15 @@ public class RhombusScript : MonoBehaviour {
 		createMenuMapTitle.transform.localPosition = new Vector3 (0f, 1.5f, -0.1f);
 		createMenuOptions.Add (createMenuMapTitle);
 
+		createMenuMapList.Add ("Placeholder_01");
+		createMenuMapList.Add ("Placeholder_02");
+		createMenuMapList.Add ("Placeholder_03");
+		createMenuMapList.Add ("Placeholder_04");
+
 		createMenuMapText = Instantiate (textSource);
 		createMenuMapText.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
 		createMenuMapText.GetComponent<TextMesh> ().fontSize = 140;
-		createMenuMapText.GetComponent<TextMesh> ().text = "Portal.zip";
+		createMenuMapText.GetComponent<TextMesh> ().text = createMenuMapList[createMenuMapListCurrent];
 		createMenuMapText.name = "MapText";
 		createMenuMapText.transform.SetParent (createMenu.transform);
 		createMenuMapText.transform.localPosition = new Vector3 (0f, 0.5f, -0.1f);
@@ -161,6 +188,22 @@ public class RhombusScript : MonoBehaviour {
 		createMenuMapTextBackground.transform.SetParent (createMenuMapText.transform);
 		createMenuMapTextBackground.transform.localPosition = new Vector3 (0f, 0f, 0.001f);
 		createMenuMapTextBackground.transform.localScale = new Vector3 (25f, 1f, 2f);
+
+		createMenuMapArrowLeft = Instantiate (arrowSource);
+		createMenuMapArrowLeft.SetActive (true);
+		createMenuMapArrowLeft.name = "MapArrowLeft";
+		createMenuMapArrowLeft.transform.SetParent (createMenu.transform);
+		createMenuMapArrowLeft.transform.localScale = new Vector3 (-0.05f, 1f, createMenuMapText.transform.localScale.z * createMenuMapTextBackground.transform.localScale.z * 0.75f);
+		createMenuMapArrowLeft.transform.localPosition = new Vector3 (-createMenuMapTextBackground.GetComponent<MeshRenderer>().bounds.size.x/2f -createMenuMapArrowLeft.GetComponent<MeshRenderer>().bounds.size.x/2f -0.2f, createMenuMapText.transform.localPosition.y, -0.1f);
+		createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
+
+		createMenuMapArrowRight = Instantiate (arrowSource);
+		createMenuMapArrowRight.SetActive (true);
+		createMenuMapArrowRight.name = "MapArrowRight";
+		createMenuMapArrowRight.transform.SetParent (createMenu.transform);
+		createMenuMapArrowRight.transform.localScale = new Vector3 (+0.05f, 1f, createMenuMapText.transform.localScale.z * createMenuMapTextBackground.transform.localScale.z * 0.75f);
+		createMenuMapArrowRight.transform.localPosition = new Vector3 (+createMenuMapTextBackground.GetComponent<MeshRenderer>().bounds.size.x/2f +createMenuMapArrowLeft.GetComponent<MeshRenderer>().bounds.size.x/2f +0.2f, createMenuMapText.transform.localPosition.y, -0.1f);
+		createMenuMapArrowRight.GetComponent<MeshRenderer> ().material.color = new Color (1f, 1f, 1f, 0f);
 
 		// PASSWORD
 		createMenuPasswordTitle = Instantiate (textSource);
@@ -175,7 +218,7 @@ public class RhombusScript : MonoBehaviour {
 		createMenuPasswordText = Instantiate (textSource);
 		createMenuPasswordText.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
 		createMenuPasswordText.GetComponent<TextMesh> ().fontSize = 140;
-		createMenuPasswordText.GetComponent<TextMesh> ().text = "...";
+		createMenuPasswordText.GetComponent<TextMesh> ().text = createMenuPasswordTextString;
 		createMenuPasswordText.name = "PasswordText";
 		createMenuPasswordText.transform.SetParent (createMenu.transform);
 		createMenuPasswordText.transform.localPosition = new Vector3 (0f, -2.5f, -0.1f);
@@ -242,20 +285,99 @@ public class RhombusScript : MonoBehaviour {
 
 		if (mode == "create") {
 
-			if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
-				menuSelected--;
-				if (menuSelected < 0) { menuSelected = createMenuOptions.Count - 1; }
-			} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
-				menuSelected++;
-				if (menuSelected > createMenuOptions.Count-1) { menuSelected = 0; }
+			Color targetArrowColor = new Color (1f, 1f, 1f, 0f);
+
+			if (locked) {
+
+				if (createMenuOptions [menuSelected] == createMenuNameTitle) {
+
+					handleInputString (ref createMenuNameTextString);
+					createMenuNameText.GetComponent<TextMesh> ().text = createMenuNameTextString;
+					handleTypeIntermitency (createMenuNameText);
+
+				} else if (createMenuOptions [menuSelected] == createMenuMapTitle) {
+
+					if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
+						MenuBackBone.SoundMoveSelected ();
+						createMenuMapListCurrent--;
+						if (createMenuMapListCurrent < 0) { createMenuMapListCurrent = createMenuMapList.Count - 1; }
+					} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow)) {
+						MenuBackBone.SoundMoveSelected ();
+						createMenuMapListCurrent++;
+						if (createMenuMapListCurrent > (createMenuMapList.Count - 1)) { createMenuMapListCurrent = 0; }
+					}
+
+					createMenuMapText.GetComponent<TextMesh> ().text = createMenuMapList [createMenuMapListCurrent];
+
+					targetArrowColor = new Color (1f, 1f, 1f, 1f);
+				
+				} else if (createMenuOptions [menuSelected] == createMenuPasswordTitle) {
+
+					handleInputString (ref createMenuPasswordTextString);
+					createMenuPasswordText.GetComponent<TextMesh> ().text = createMenuPasswordTextString;
+					handleTypeIntermitency (createMenuPasswordText);
+
+				}
+
+				createMenuNameText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuNameText.GetComponent<TextMesh> ().color, createMenuNameTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
+				createMenuMapText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuMapText.GetComponent<TextMesh> ().color, createMenuMapTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
+				createMenuPasswordText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuPasswordText.GetComponent<TextMesh> ().color, createMenuPasswordTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
+
+			} else {
+				
+				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					menuSelected--;
+					if (menuSelected < 0) { menuSelected = createMenuOptions.Count - 1; }
+				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					menuSelected++;
+					if (menuSelected > createMenuOptions.Count-1) { menuSelected = 0; }
+				}
+
+				typeText.SetActive (false);
+
+				createMenuNameText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuNameText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
+				createMenuMapText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuMapText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
+				createMenuPasswordText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuPasswordText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
+
 			}
 
 			if (Input.GetKeyDown (KeyCode.Return) && aux > 0f) {
 
-				if (createMenuOptions[menuSelected] == createMenuGoTitle) {
-					// Start match
-					NetworkManager.StartServer("test");
-					Application.LoadLevel("Game");
+				MenuBackBone.SoundSelection ();
+
+				if (locked) {
+					locked = false;
+				} else {
+					if (createMenuOptions[menuSelected] == createMenuNameTitle) {
+						locked = true;
+					}
+					else if (createMenuOptions[menuSelected] == createMenuMapTitle) {
+						locked = true;
+					}
+					else if (createMenuOptions[menuSelected] == createMenuPasswordTitle) {
+						locked = true;
+					}
+					else if (createMenuOptions[menuSelected] == createMenuGoTitle) {
+						if (createMenuNameTextString.Length != 0) {
+							// Start match
+							NetworkManager.StartServer (createMenuNameTextString);
+							Application.LoadLevel ("Game");
+						} else {
+							locked = true;
+							menuSelected = 0;
+						}
+					}
+				}
+
+			}
+
+			if (Input.GetKeyDown (KeyCode.Escape)) {
+
+				if (locked) {
+					MenuBackBone.SoundSelection ();
+					locked = false;
 				}
 
 			}
@@ -266,7 +388,7 @@ public class RhombusScript : MonoBehaviour {
 
 				if (i == menuSelected) {
 					targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionSelectedColor;
-				} 
+				}
 
 				createMenuOptions [i].GetComponent<TextMesh> ().color = Color.Lerp (createMenuOptions [i].GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
 
@@ -275,20 +397,54 @@ public class RhombusScript : MonoBehaviour {
 			Vector3 targetPosition = createMenuOptions [menuSelected].transform.position + new Vector3 (-createMenuOptions [menuSelected].GetComponent<MeshRenderer> ().bounds.size.x / 2f - 0.5f, 0f, 0f);
 			menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
 
+			createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color = Color.Lerp (createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color, targetArrowColor, Time.deltaTime * 5f);
+			createMenuMapArrowRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (createMenuMapArrowRight.GetComponent<MeshRenderer> ().material.color, targetArrowColor, Time.deltaTime * 5f);
+
+
 		} else if (mode == "join") {
 
 
 
 		}
 
-		createMenuNameText.GetComponent<TextMesh> ().color = createMenuNameTitle.GetComponent<TextMesh> ().color;
-		createMenuMapText.GetComponent<TextMesh> ().color = createMenuMapTitle.GetComponent<TextMesh> ().color;
-		createMenuPasswordText.GetComponent<TextMesh> ().color = createMenuPasswordTitle.GetComponent<TextMesh> ().color;
-
 		menuSelectedNeuron.Update ();
 
 		if (!active && aux <= 0.01f) {
 			this.gameObject.SetActive (false);
+		}
+
+	}
+
+	private void handleInputString(ref string s) {
+
+		foreach (char c in Input.inputString) {
+
+			if (c == "\b" [0]) {
+				if (s.Length != 0) {
+					s = s.Substring (0, s.Length - 1);
+				}	
+			} else if (c == "\n" [0] || c == "\r" [0]) {
+				// RETURN KEY
+			} else {
+				s += c;
+			}
+
+		}
+
+	}
+
+	private void handleTypeIntermitency(GameObject g) {
+
+		typeAux += Time.deltaTime;
+		if (typeAux > (typeBlank + typeShow)) {
+			typeAux -= (typeBlank + typeShow);
+		}
+
+		if (typeAux > typeBlank) { 
+			typeText.SetActive (true);
+			typeText.transform.position = g.transform.position + new Vector3 (g.GetComponent<MeshRenderer> ().bounds.size.x / 2f + 0.05f, 0f, 0f);
+		} else {
+			typeText.SetActive (false);
 		}
 
 	}
@@ -399,4 +555,5 @@ public class RhombusScript : MonoBehaviour {
         }
 
     }
+
 }
