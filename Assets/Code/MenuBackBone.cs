@@ -233,7 +233,7 @@ public class MenuBackBone : MonoBehaviour {
 				Back ();
 				SoundSelection ();
 
-			} else {
+			} else if (!rhombus.locked) {
 
 				neuronOffset = new Vector3(-8f, -3.5f, 1f);
 				rhombus.active = false;
@@ -273,7 +273,7 @@ public class MenuBackBone : MonoBehaviour {
         }
     }
 
-	private void SoundSelection() {
+	public static void SoundSelection() {
 
 		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/tap-mellow");
 		audio.volume = 1f;
@@ -282,7 +282,7 @@ public class MenuBackBone : MonoBehaviour {
 
 	}
 
-	private void SoundMoveSelected() {
+	public static void SoundMoveSelected() {
 
 		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/slide-network");
 		audio.volume = 1f;
