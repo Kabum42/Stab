@@ -69,7 +69,7 @@ public class MenuBackBone : MonoBehaviour {
 		//firstNeuron.AddOption ("Options", "neuron", optionsNeuron);
 
 		MenuNeuron creditsNeuron = CreateCreditsNeuron (firstNeuron);
-		firstNeuron.AddOption ("Credits", "neuron", creditsNeuron);
+		firstNeuron.AddOption ("Developers", "neuron", creditsNeuron);
 
 		firstNeuron.AddOption ("Shut down system", "exit", null);
 
@@ -104,8 +104,8 @@ public class MenuBackBone : MonoBehaviour {
 
 		MenuNeuron auxNeuron = GenerateMenuNeuron (parentNeuron);
 
-		auxNeuron.AddOption ("Artist", "dunistrad", null);
-		auxNeuron.AddOption ("Programmer", "kabum42", null);
+		auxNeuron.AddOption ("Programmer's <color=#4894e1ff>Twitter</color>  (ง■ ͟ʖ■)ง", "kabum42", null);
+		auxNeuron.AddOption ("Artist's <color=#4894e1ff>Twitter</color>  ʕʘᴥʘʔ", "dunistrad", null);
 
 		return auxNeuron;
 
