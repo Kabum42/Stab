@@ -68,6 +68,9 @@ public class MenuBackBone : MonoBehaviour {
 		//MenuNeuron optionsNeuron = CreateOptionsNeuron (firstNeuron);
 		//firstNeuron.AddOption ("Options", "neuron", optionsNeuron);
 
+		MenuNeuron creditsNeuron = CreateCreditsNeuron (firstNeuron);
+		firstNeuron.AddOption ("Credits", "neuron", creditsNeuron);
+
 		firstNeuron.AddOption ("Shut down system", "exit", null);
 
 	}
@@ -96,6 +99,17 @@ public class MenuBackBone : MonoBehaviour {
 
 	}
 	*/
+
+	private MenuNeuron CreateCreditsNeuron(MenuNeuron parentNeuron) {
+
+		MenuNeuron auxNeuron = GenerateMenuNeuron (parentNeuron);
+
+		auxNeuron.AddOption ("Artist", "dunistrad", null);
+		auxNeuron.AddOption ("Programmer", "kabum42", null);
+
+		return auxNeuron;
+
+	}
 
 	private MenuNeuron GenerateMenuNeuron(MenuNeuron parentNeuron) {
 
@@ -222,6 +236,16 @@ public class MenuBackBone : MonoBehaviour {
 			} else if (action == "join") {
 
 				NetworkManager.RefreshHostList ();
+				SoundSelection ();
+
+			} else if (action == "dunistrad") {
+
+				Application.OpenURL ("https://twitter.com/duniStrad");
+				SoundSelection ();
+
+			} else if (action == "kabum42") {
+
+				Application.OpenURL ("https://twitter.com/kabum42");
 				SoundSelection ();
 
 			}
