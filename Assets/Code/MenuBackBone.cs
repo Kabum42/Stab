@@ -133,8 +133,7 @@ public class MenuBackBone : MonoBehaviour {
 
 	void OnApplicationFocus(bool focusStatus) {
 		if (focusStatus && !Application.isEditor) {
-			Cursor.visible = false;
-			Cursor.lockState = CursorLockMode.Locked;
+			StartCoroutine(Hacks.LockCursor(-1f));
 		}
 	}
 	

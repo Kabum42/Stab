@@ -191,4 +191,18 @@ public static class Hacks {
 
 	}
 
+	// APPLICATION
+	public static IEnumerator LockCursor(float time)
+	{
+		if (time < 0f) { 
+			// USE DEFAULT
+			time = 0.1f;
+		}
+
+		yield return new WaitForSeconds(time);
+		// Code to execute after the delay
+		Cursor.visible = false;
+		Cursor.lockState = CursorLockMode.Locked;
+	}
+
 }

@@ -239,8 +239,21 @@ public class ClientScript : MonoBehaviour {
 
 		}
 
+		if (localPlayer.GetComponent<LocalPlayerScript> ().receiveInput == false &&
+			EventSystem.current.currentSelectedGameObject != chatManager.chatInputField) {
+			// ESTO ES PARA EVITAR BUGS EN LOS QUE DEJAS DE TENER FOCUSEADO EL JUEGO
+			EventSystem.current.SetSelectedGameObject(chatManager.chatInputField);
+			StartCoroutine(CaretToEnd());
+		}
+			
 		chatManager.lastTimeChatInputFocused = chatManager.chatInputField.GetComponent<InputField> ().isFocused;
 
+	}
+
+	private IEnumerator CaretToEnd() {
+		// Doing a WateForSeconds(0f) forces to be executed next frame
+		yield return new WaitForSeconds(0f);
+		chatManager.chatInputField.GetComponent<InputField> ().MoveTextEnd (true);
 	}
 
 	public NetworkPlayer NetworkPlayerByCode(string playerCode) {
