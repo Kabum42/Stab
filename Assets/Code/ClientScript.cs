@@ -92,39 +92,56 @@ public class ClientScript : MonoBehaviour {
 
 	void updateHacking() {
 
-		float slowSpeed = 1f/(1f);
-		float hackingSpeed = 1f/(0.5f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
-		float fastSpeed = 1f/(0.15f);
 		int playersHackingYou = 0;
 
 		for (int i = 0; i < listPlayers.Count; i++) {
 			if (listPlayers [i] != myPlayer) {
-				if (looking (listPlayers [i], myPlayer)) {
-					// HE'S LOOKING AT YOU
-					if (looking (myPlayer, listPlayers [i])) {
-						// YOU ARE LOOKING AT HIM TOO, INTERCEPTION
-						listPlayers [i].hackingYou = Mathf.Max(0f, listPlayers [i].hackingYou - Time.deltaTime * fastSpeed);
-					} else {
-						// NOT INTERCEPTED, HE'S HACKING YOU
-						listPlayers [i].hackingYou = Mathf.Min(1.5f, listPlayers [i].hackingYou + Time.deltaTime * hackingSpeed);
-						playersHackingYou++;
-					}
 
-				} else {
-					// HE'S NOT LOOKING AT YOU, UNHACKING
-					if (listPlayers [i].lastTargetCode == myCode) {
-						// I WAS HIS LAST TARGET, SLOW UNHACKING
-						listPlayers [i].hackingYou = Mathf.Max(0f, listPlayers [i].hackingYou - Time.deltaTime * slowSpeed);
-					} else {
-						// I WASN'T HIS LAST TARGET, FAST UNHACKING
-						listPlayers [i].hackingYou = Mathf.Max(0f, listPlayers [i].hackingYou - Time.deltaTime * fastSpeed);
-					}
-				}
+				// YOU TRY HACKING HIM
+				tryHacking(myPlayer, listPlayers [i], ref listPlayers[i].isBeingHacked);
+
+				// HE TRIES HACKING YOU
+				playersHackingYou += tryHacking(listPlayers [i], myPlayer, ref listPlayers[i].hackingYou);
+
 			}
+				
 		}
 
 		if (playersHackingYou >= 3) {
 			// OVERLOAD
+		}
+
+	}
+
+	int tryHacking(Player p1, Player p2, ref float hackingVariable) {
+
+		float slowSpeed = 1f/(1f);
+		float hackingSpeed = 1f/(0.5f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
+		float fastSpeed = 1f/(0.15f);
+
+		if (looking (p1, p2)) {
+			// HACKER IS LOOKING AT PREY
+			if (looking (p2, p1)) {
+				// PREY IS LOOKING AT HACKER TOO, HACKER INTERCEPTED
+				hackingVariable = Mathf.Max(0f, hackingVariable - Time.deltaTime * fastSpeed);
+				return 0;
+			} else {
+				// NOT INTERCEPTED, HACKER IS HACKING PREY
+				hackingVariable = Mathf.Min(1.5f, hackingVariable + Time.deltaTime * hackingSpeed);
+				return 1;
+			}
+
+		} else {
+			// HACKER IS NOT LOOKING AT PREY
+			if (p1.lastTargetCode == p2.playerCode) {
+				// PREY WAS LAST HACKER'S TARGET, SLOW UNHACKING
+				hackingVariable = Mathf.Max(0f, hackingVariable - Time.deltaTime * slowSpeed);
+				return 0;
+			} else {
+				// PREY WASN'T LAST HACKER'S TARGET, FAST UNHACKING
+				hackingVariable = Mathf.Max(0f, hackingVariable - Time.deltaTime * fastSpeed);
+				return 0;
+			}
 		}
 
 	}
@@ -142,14 +159,48 @@ public class ClientScript : MonoBehaviour {
 
 				//Debug.Log (p1.playerCode + " COLLIDING WITH: "+ hits [i].collider.gameObject.name);
 
-				if (hits [i].collider.gameObject.GetComponent<PlayerMarker> () != null && hits [i].collider.gameObject.GetComponent<PlayerMarker> ().player.hackingYou < 1f) {
+				if (hits [i].collider.gameObject.GetComponent<PlayerMarker> () != null) {
 					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER AND IT STORES AS ITS LAST TARGET IF CAN SEE IT
-					p1.lastTargetCode = hits [i].collider.gameObject.GetComponent<PlayerMarker> ().player.playerCode;
+					Player auxPlayer = hits[i].collider.gameObject.GetComponent<PlayerMarker> ().player;
+
+					if (p1 == myPlayer) {
+						// THE ONE WHO IS LOOKING IS MY PLAYER, SO TO KNOW IF IT CAN SEE IT
+						if (auxPlayer.hackingYou < 1f) {
+							return true;
+						}
+
+					} else if (p2 == myPlayer) {
+						// CHECK IF SOMEONE RANDOM CAN SEE ME
+						if (p1.isBeingHacked < 1f) {
+							return true;
+						}
+
+					}
+
+					p1.lastTargetCode = auxPlayer.playerCode;
+
 				}
 
-				if (hits[i].collider.gameObject == p2.visualAvatar && p2.hackingYou < 1f) {
+				if (hits[i].collider.gameObject == p2.visualAvatar) {
 					// IF IT COLLIDED WITH THE TARGET AND CAN SEE IT, RETURN TRUE
-					return true;
+					Player auxPlayer = p2;
+
+					if (p1 == myPlayer) {
+						// THE ONE WHO IS LOOKING IS MY PLAYER, SO TO KNOW IF IT CAN SEE IT
+						if (auxPlayer.hackingYou < 1f) {
+							return true;
+						}
+
+					} else if (p2 == myPlayer) {
+						// CHECK IF SOMEONE RANDOM CAN SEE ME
+						if (p1.isBeingHacked < 1f) {
+							return true;
+						}
+
+					}
+
+					p1.lastTargetCode = auxPlayer.playerCode;
+
 				}
 				else {
 					return false;
@@ -199,7 +250,7 @@ public class ClientScript : MonoBehaviour {
 				listPlayers [i].attacking = Mathf.Max (0f, listPlayers [i].attacking - Time.deltaTime);
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 
-				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f - listPlayers [i].attacking, 1f - listPlayers [i].attacking, Mathf.Clamp(1f - listPlayers[i].hackingYou, 0f, 1f)), Time.fixedDeltaTime * 5f);
+				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].isBeingHacked, Mathf.Clamp(1f - listPlayers[i].hackingYou, 0f, 1f)), Time.fixedDeltaTime * 5f);
 				listPlayers [i].visualMaterial.SetColor ("_Color", c);
 
 				if (listPlayers [i].sprintActive && !listPlayers [i].sprintTrail.Emit) {
@@ -474,6 +525,7 @@ public class ClientScript : MonoBehaviour {
 		public int ping = 0;
 		public float hackingYou = 0f;
 		public string lastTargetCode;
+		public float isBeingHacked = 0f;
 
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
