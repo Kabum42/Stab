@@ -8,7 +8,7 @@ using System.Collections.Generic;
 public class LocalPlayerScript : MonoBehaviour {
 
     public GameScript gameScript;
-	private GameObject personalCamera;
+	public GameObject personalCamera;
 	private GameObject firstPersonCamera;
 	//private float cameraDistance = 3.2f;
     private float cameraDistance = 0f;
@@ -36,9 +36,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	private bool receiveInput2 = true;
 
 	private float notMoving = 0f;
-
-	private float timeStealth = 0f;
-	public string currentMode = "regular";
 
 	public Skills skills;
 
@@ -145,7 +142,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	void FixedUpdate() {
 
 		handleMovementInput ();
-		handleStealth ();
 		checkIfLookingAtPlayer ();
 
 	}
@@ -304,16 +300,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 				this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
 
-				timeStealth = 0f;
-				currentMode = "regular";
-
-			}
-
-			if (currentMode == "regular") {
-				timeStealth += Time.deltaTime;
-				if (timeStealth > 30f) {
-					currentMode = "stealth";
-				}
 			}
 
 		}
@@ -421,27 +407,6 @@ public class LocalPlayerScript : MonoBehaviour {
 		audio.volume = 0.3f;
 		audio.pitch = UnityEngine.Random.Range (0.8f, 1f);
 		audio.Play ();
-
-	}
-
-	void handleStealth() {
-
-
-		if (currentMode == "regular") {
-
-			Color c = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_Color"), new Color(1f, 1f, 1f, 1f), Time.fixedDeltaTime*5f);
-			materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_Color", c);
-			//Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0f), Time.fixedDeltaTime*5f);
-			//materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
-
-		} else if (currentMode == "stealth") {
-
-			Color c = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_Color"), new Color(1f, 1f, 1f, 0.4f), Time.fixedDeltaTime*5f);
-			materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_Color", c);
-			//Color c2 = Color.Lerp(materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.GetColor("_OutlineColor"), new Color(1f, 1f, 1f, 0.65f), Time.fixedDeltaTime*5f);
-			//materialCarrier.GetComponent<SkinnedMeshRenderer> ().material.SetColor("_OutlineColor", c2);
-
-		}
 
 	}
 

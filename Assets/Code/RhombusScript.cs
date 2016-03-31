@@ -279,9 +279,10 @@ public class RhombusScript : MonoBehaviour {
 		if (msEvent == MasterServerEvent.HostListReceived)
 		{
 			NetworkManager.hostList = MasterServer.PollHostList();
+			NetworkManager.JoinServer (NetworkManager.hostList [0]);
 
-			flushMatches();
-			addMatches();
+			//flushMatches();
+			//addMatches();
 
 			Debug.Log ("HostListReceived");
 		}

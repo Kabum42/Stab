@@ -24,6 +24,7 @@ public class ClientScript : MonoBehaviour {
 
 	public LocalPlayerScript localPlayer;
 	private string myCode;
+	private Player myPlayer;
 	public List<Player> listPlayers = new List<Player>();
 
 	// Use this for initialization
@@ -44,8 +45,8 @@ public class ClientScript : MonoBehaviour {
 
 		// TE UNES COMO PLAYER
 		myCode = Network.player.ToString ();
-		Player aux = new Player(myCode, localPlayer.visualAvatar);
-		listPlayers.Add(aux);
+		myPlayer = new Player(myCode, localPlayer.visualAvatar);
+		listPlayers.Add(myPlayer);
 
 	}
 	
@@ -69,6 +70,7 @@ public class ClientScript : MonoBehaviour {
 		updateRanking ();
 		updateMyInfoInOtherClients ();
 		synchronizeOtherPlayers ();
+		updateHacking ();
 
 		if (localPlayer.crossHairTargeted == null) {
 			textTargeted.SetActive(false);
@@ -88,6 +90,78 @@ public class ClientScript : MonoBehaviour {
 	
 	}
 
+	void updateHacking() {
+
+		float slowSpeed = 1f/(1f);
+		float hackingSpeed = 1f/(0.5f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
+		float fastSpeed = 1f/(0.15f);
+		int playersHackingYou = 0;
+
+		for (int i = 0; i < listPlayers.Count; i++) {
+			if (listPlayers [i] != myPlayer) {
+				if (looking (listPlayers [i], myPlayer)) {
+					// HE'S LOOKING AT YOU
+					if (looking (myPlayer, listPlayers [i])) {
+						// YOU ARE LOOKING AT HIM TOO, INTERCEPTION
+						listPlayers [i].hackingYou = Mathf.Max(0f, listPlayers [i].hackingYou - Time.deltaTime * fastSpeed);
+					} else {
+						// NOT INTERCEPTED, HE'S HACKING YOU
+						listPlayers [i].hackingYou = Mathf.Min(1.5f, listPlayers [i].hackingYou + Time.deltaTime * hackingSpeed);
+						playersHackingYou++;
+					}
+
+				} else {
+					// HE'S NOT LOOKING AT YOU, UNHACKING
+					if (listPlayers [i].lastTargetCode == myCode) {
+						// I WAS HIS LAST TARGET, SLOW UNHACKING
+						listPlayers [i].hackingYou = Mathf.Max(0f, listPlayers [i].hackingYou - Time.deltaTime * slowSpeed);
+					} else {
+						// I WASN'T HIS LAST TARGET, FAST UNHACKING
+						listPlayers [i].hackingYou = Mathf.Max(0f, listPlayers [i].hackingYou - Time.deltaTime * fastSpeed);
+					}
+				}
+			}
+		}
+
+		if (playersHackingYou >= 3) {
+			// OVERLOAD
+		}
+
+	}
+
+	bool looking(Player p1, Player p2) {
+
+		float lookingDistance = 10f;
+
+		RaycastHit[] hits;
+		hits = Physics.RaycastAll (p1.visualAvatar.transform.position + LocalPlayerScript.centerOfCamera, p1.cameraForward, lookingDistance);
+		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
+
+		for (int i = 0; i < hits.Length; i++) {
+			if (hits[i].collider.gameObject.tag != "LocalPlayer" && hits[i].collider.gameObject.GetComponent<AttackMarker>() == null && hits[i].collider.gameObject != p1.visualAvatar) {
+
+				//Debug.Log (p1.playerCode + " COLLIDING WITH: "+ hits [i].collider.gameObject.name);
+
+				if (hits [i].collider.gameObject.GetComponent<PlayerMarker> () != null && hits [i].collider.gameObject.GetComponent<PlayerMarker> ().player.hackingYou < 1f) {
+					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER AND IT STORES AS ITS LAST TARGET IF CAN SEE IT
+					p1.lastTargetCode = hits [i].collider.gameObject.GetComponent<PlayerMarker> ().player.playerCode;
+				}
+
+				if (hits[i].collider.gameObject == p2.visualAvatar && p2.hackingYou < 1f) {
+					// IF IT COLLIDED WITH THE TARGET AND CAN SEE IT, RETURN TRUE
+					return true;
+				}
+				else {
+					return false;
+				}
+
+			}
+		}
+
+		return false;
+
+	}
+
 	void updateMyInfoInOtherClients() {
 
 
@@ -98,9 +172,8 @@ public class ClientScript : MonoBehaviour {
 			if (localPlayer != null && GetComponent<NetworkView> () != null) {
 
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
-				string currentMode = localPlayer.GetComponent<LocalPlayerScript>().currentMode;
 				bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, currentMode, sprintActive, localPlayer.GetComponent<LocalPlayerScript> ().attacking);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, Network.player.ToString(), localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, localPlayer.GetComponent<LocalPlayerScript> ().attacking);
 
 			}
 
@@ -110,6 +183,8 @@ public class ClientScript : MonoBehaviour {
 			currentUpdateCooldown += Time.deltaTime;
 
 		}
+
+		myPlayer.cameraForward = localPlayer.personalCamera.transform.forward;
 
 	}
 
@@ -124,19 +199,8 @@ public class ClientScript : MonoBehaviour {
 				listPlayers [i].attacking = Mathf.Max (0f, listPlayers [i].attacking - Time.deltaTime);
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 
-				if (listPlayers [i].currentMode == "regular") {
-
-					Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f - listPlayers [i].attacking, 1f - listPlayers [i].attacking, 1f), Time.fixedDeltaTime * 5f);
-					//Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 1f), Time.fixedDeltaTime*5f);
-					listPlayers [i].visualMaterial.SetColor ("_Color", c);
-
-				} else if (listPlayers [i].currentMode == "stealth") {
-
-					Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f - listPlayers [i].attacking, 1f - listPlayers [i].attacking, 0.4f), Time.fixedDeltaTime * 5f);
-					//Color c = Color.Lerp(listOtherPlayers[i].visualMaterial.GetColor("_Color"), new Color(1f, 1f, 1f, 0.4f), Time.fixedDeltaTime*5f);
-					listPlayers [i].visualMaterial.SetColor ("_Color", c);
-
-				}
+				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f - listPlayers [i].attacking, 1f - listPlayers [i].attacking, Mathf.Clamp(1f - listPlayers[i].hackingYou, 0f, 1f)), Time.fixedDeltaTime * 5f);
+				listPlayers [i].visualMaterial.SetColor ("_Color", c);
 
 				if (listPlayers [i].sprintActive && !listPlayers [i].sprintTrail.Emit) {
 					listPlayers [i].sprintTrail.Emit = true;
@@ -299,7 +363,7 @@ public class ClientScript : MonoBehaviour {
 
 	// CLIENT RPCs
 	[RPC]
-	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, string currentAnimation, string currentMode, bool sprintActive, float attacking)
+	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, Vector3 cameraForward, string currentAnimation, bool sprintActive, float attacking)
 	{
 		bool foundPlayer = false;
 
@@ -308,8 +372,8 @@ public class ClientScript : MonoBehaviour {
 			if (listPlayers[i].playerCode == playerCode) {
 				listPlayers[i].targetPosition = position;
 				listPlayers[i].targetRotation = rotation;
+				listPlayers[i].cameraForward = cameraForward;
 				listPlayers[i].SmartCrossfade(currentAnimation);
-				listPlayers[i].currentMode = currentMode;
 				listPlayers[i].sprintActive = sprintActive;
 				listPlayers[i].attacking = attacking;
 				foundPlayer = true;
@@ -327,7 +391,6 @@ public class ClientScript : MonoBehaviour {
 			aux.targetPosition = position;
 			aux.targetRotation = rotation;
 			aux.SmartCrossfade(currentAnimation);
-			aux.currentMode = currentMode;
 
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
@@ -409,9 +472,12 @@ public class ClientScript : MonoBehaviour {
 		public float immune = 0f;
 		public int kills = 0;
 		public int ping = 0;
+		public float hackingYou = 0f;
+		public string lastTargetCode;
 
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
+		public Vector3 cameraForward;
 
 		public Player(string auxPlayerCode) {
 
@@ -438,6 +504,7 @@ public class ClientScript : MonoBehaviour {
 
 			targetPosition = visualAvatar.transform.position;
 			targetRotation = visualAvatar.transform.eulerAngles;
+			cameraForward = Vector3.forward;
 
 		}
 

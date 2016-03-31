@@ -236,12 +236,14 @@ public class MenuBackBone : MonoBehaviour {
 			} else if (action == "join") {
 
 				NetworkManager.RefreshHostList ();
+
 				neuronOffset = new Vector3(-8f, 5.5f, 1f);
 				rhombus.backboneLink.root.transform.position = currentMenuNeuron.root.transform.position;
 				rhombus.Collapse ();
 				rhombus.setMode(action);
 				rhombus.active = true;
 				rhombus.gameObject.SetActive (true);
+
 				SoundSelection ();
 
 			} else if (action == "dunistrad") {
