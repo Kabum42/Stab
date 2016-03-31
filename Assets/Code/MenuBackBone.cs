@@ -228,6 +228,7 @@ public class MenuBackBone : MonoBehaviour {
 				neuronOffset = new Vector3(-8f, 5.5f, 1f);
 				rhombus.backboneLink.root.transform.position = currentMenuNeuron.root.transform.position;
 				rhombus.Collapse ();
+				rhombus.setMode(action);
 				rhombus.active = true;
 				rhombus.gameObject.SetActive (true);
 				SoundSelection ();
@@ -235,6 +236,12 @@ public class MenuBackBone : MonoBehaviour {
 			} else if (action == "join") {
 
 				NetworkManager.RefreshHostList ();
+				neuronOffset = new Vector3(-8f, 5.5f, 1f);
+				rhombus.backboneLink.root.transform.position = currentMenuNeuron.root.transform.position;
+				rhombus.Collapse ();
+				rhombus.setMode(action);
+				rhombus.active = true;
+				rhombus.gameObject.SetActive (true);
 				SoundSelection ();
 
 			} else if (action == "dunistrad") {
@@ -266,15 +273,6 @@ public class MenuBackBone : MonoBehaviour {
 
 		}
 
-	}
-
-	void OnMasterServerEvent(MasterServerEvent msEvent)
-	{
-		if (msEvent == MasterServerEvent.HostListReceived)
-		{
-			NetworkManager.hostList = MasterServer.PollHostList();
-			NetworkManager.JoinServer(NetworkManager.hostList[0]);
-		}
 	}
 
     private void Back()

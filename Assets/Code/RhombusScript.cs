@@ -26,6 +26,7 @@ public class RhombusScript : MonoBehaviour {
     private Neuron SE;
 
     private List<Synapsis> synapsisList = new List<Synapsis>();
+	private float expandedAmount = 0f;
 
 	public bool locked = false;
 	public int menuSelected = 0;
@@ -59,6 +60,15 @@ public class RhombusScript : MonoBehaviour {
 	private GameObject createMenuPasswordTextBackground;
 	// CREATE
 	private GameObject createMenuGoTitle;
+
+
+	// JOIN MENU
+	private GameObject joinMenu;
+	private List<Match> currentMatches = new List<Match> ();
+	private List<Match> toRecycleMatches = new List<Match> ();
+	private int selectedMatch = -1;
+	private List<PingMatch> unresolvedPingMatches = new List<PingMatch>();
+	//private List<>
 
 	// Use this for initialization
 	void Start () {
@@ -117,6 +127,7 @@ public class RhombusScript : MonoBehaviour {
 		menuSelectedNeuron = new Neuron(this);
 		menuSelectedNeuron.root.name = "Neuron_MenuSelected";
 
+		// CREATE MENU
 		createMenu = new GameObject ();
 		createMenu.name = "CreateMenu";
 		createMenu.transform.SetParent (this.transform);
@@ -239,7 +250,142 @@ public class RhombusScript : MonoBehaviour {
 		createMenuGoTitle.transform.SetParent (createMenu.transform);
 		createMenuGoTitle.transform.localPosition = new Vector3 (0f, -4f, -0.1f);
 		createMenuOptions.Add (createMenuGoTitle);
+
+
+
+		// JOIN MENU
+		joinMenu = new GameObject ();
+		joinMenu.name = "JoinMenu";
+		joinMenu.transform.SetParent (this.transform);
+		joinMenu.transform.localPosition = new Vector3 (0f, 0f, 0f);
+
+		/*
+		for (int i = 0; i < 9; i++) {
+			GameObject g;
+			g = Instantiate (textSource);
+			g.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
+			g.GetComponent<TextMesh> ().fontSize = 140;
+			g.GetComponent<TextMesh> ().text = "Match_"+i;
+			g.name = "Match_"+i;
+			g.transform.SetParent (joinMenu.transform);
+			g.transform.localPosition = new Vector3 (-5f, 2f - i*(0.75f), -0.1f);
+		}
+		*/
 	
+	}
+
+	void OnMasterServerEvent(MasterServerEvent msEvent)
+	{
+		if (msEvent == MasterServerEvent.HostListReceived)
+		{
+			NetworkManager.hostList = MasterServer.PollHostList();
+
+			flushMatches();
+			addMatches();
+
+			Debug.Log ("HostListReceived");
+		}
+	}
+
+	private void flushMatches() {
+
+		selectedMatch = -1;
+
+		// STORE OLD MATCHES TO RECYCLE
+		while (currentMatches.Count > 0) {
+
+			toRecycleMatches.Add (currentMatches [0]);
+			currentMatches.RemoveAt(0);
+
+		}
+
+		// REMOVE ALL PINGMATCHES, THESE ARE NOT RELIABLE
+		while (unresolvedPingMatches.Count > 0) {
+
+			unresolvedPingMatches[0] = null;
+			unresolvedPingMatches.RemoveAt(0);
+
+		}
+
+	}
+
+	private void addMatches() {
+
+		for (int i = 0; i < NetworkManager.hostList.Length; i++) {
+
+			Debug.Log (i);
+			Match m;
+
+			if (toRecycleMatches.Count > 0) {
+				m = toRecycleMatches [0];
+				m.Recycle (ref NetworkManager.hostList [i], currentMatches.Count);
+				toRecycleMatches.RemoveAt (0);
+			} else {
+				m = new Match (this, ref NetworkManager.hostList[i], currentMatches.Count);
+			}
+				
+			currentMatches.Add (m);
+
+		}
+
+	}
+	
+	// Update is called once per frame
+	void Update () {
+
+		handleRepositions ();
+
+		if (mode == "create") {
+
+			updateCreate ();
+
+		} else if (mode == "join") {
+
+			updateJoin ();
+
+		}
+
+		menuSelectedNeuron.Update ();
+
+		if (!active && expandedAmount <= 0.01f) {
+			this.gameObject.SetActive (false);
+		}
+
+	}
+
+	private void handleRepositions() {
+
+		if (active) {
+			Expand ();
+		} else {
+			Shrink ();
+		}
+
+		NW.Update();
+		NE.Update();
+		SW.Update();
+		SE.Update();
+
+		for (int i = 0; i < synapsisList.Count; i++)
+		{
+			synapsisList[i].Update();
+		}
+
+		boneNW.transform.position = NW.root.transform.position;
+		boneNE.transform.position = NE.root.transform.position;
+		boneSW.transform.position = SW.root.transform.position;
+		boneSE.transform.position = SE.root.transform.position;
+
+		Vector3 menuPositions = (NW.root.transform.position + NE.root.transform.position + SW.root.transform.position + SE.root.transform.position) / 4f + new Vector3 (0f, 0f, -1f);
+		float targetXDistance_NW_NE = 18f;
+		float currentXDistance_NW_NE = Mathf.Abs(NE.root.transform.position.x - NW.root.transform.position.x);
+		expandedAmount = currentXDistance_NW_NE / targetXDistance_NW_NE;
+
+		createMenu.transform.position = menuPositions;
+		createMenu.transform.localScale = new Vector3 (expandedAmount, expandedAmount, 1f);
+		joinMenu.transform.position = menuPositions;
+		joinMenu.transform.localScale = new Vector3 (expandedAmount, expandedAmount, 1f);
+
 	}
 
 	public void Collapse() {
@@ -252,166 +398,144 @@ public class RhombusScript : MonoBehaviour {
 		Update ();
 
 	}
-	
-	// Update is called once per frame
-	void Update () {
 
-		if (active) {
-			Expand ();
-		} else {
-			Shrink ();
+	void updateJoin() {
+
+
+		for (int i = 0; i < unresolvedPingMatches.Count; i++) {
+			unresolvedPingMatches[i].Check();
 		}
 
-        NW.Update();
-        NE.Update();
-        SW.Update();
-        SE.Update();
+	}
 
-        for (int i = 0; i < synapsisList.Count; i++)
-        {
-            synapsisList[i].Update();
-        }
+	void updateCreate() {
 
-        boneNW.transform.position = NW.root.transform.position;
-        boneNE.transform.position = NE.root.transform.position;
-        boneSW.transform.position = SW.root.transform.position;
-        boneSE.transform.position = SE.root.transform.position;
+		Color targetArrowColor = new Color (1f, 1f, 1f, 0f);
 
-		createMenu.transform.position = (NW.root.transform.position + NE.root.transform.position + SW.root.transform.position + SE.root.transform.position) / 4f + new Vector3(0f, 0f, -1f);
-		float targetXDistance_NW_NE = 18f;
-		float currentXDistance_NW_NE = Mathf.Abs(NE.root.transform.position.x - NW.root.transform.position.x);
-		float aux = currentXDistance_NW_NE / targetXDistance_NW_NE;
-		createMenu.transform.localScale = new Vector3 (aux, aux, 1f);
+		if (locked) {
 
-		if (mode == "create") {
+			if (createMenuOptions [menuSelected] == createMenuNameTitle) {
 
-			Color targetArrowColor = new Color (1f, 1f, 1f, 0f);
+				handleInputString (ref createMenuNameTextString);
+				createMenuNameText.GetComponent<TextMesh> ().text = createMenuNameTextString;
+				handleTypeIntermitency (createMenuNameText);
+
+			} else if (createMenuOptions [menuSelected] == createMenuMapTitle) {
+
+				if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					createMenuMapListCurrent--;
+					if (createMenuMapListCurrent < 0) { createMenuMapListCurrent = createMenuMapList.Count - 1; }
+				} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					createMenuMapListCurrent++;
+					if (createMenuMapListCurrent > (createMenuMapList.Count - 1)) { createMenuMapListCurrent = 0; }
+				}
+
+				createMenuMapText.GetComponent<TextMesh> ().text = createMenuMapList [createMenuMapListCurrent];
+
+				targetArrowColor = new Color (1f, 1f, 1f, 1f);
+
+			} else if (createMenuOptions [menuSelected] == createMenuPasswordTitle) {
+
+				handleInputString (ref createMenuPasswordTextString);
+				createMenuPasswordText.GetComponent<TextMesh> ().text = createMenuPasswordTextString;
+				handleTypeIntermitency (createMenuPasswordText);
+
+			}
+
+			createMenuNameText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuNameText.GetComponent<TextMesh> ().color, createMenuNameTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
+			createMenuMapText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuMapText.GetComponent<TextMesh> ().color, createMenuMapTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
+			createMenuPasswordText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuPasswordText.GetComponent<TextMesh> ().color, createMenuPasswordTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
+
+		} else {
+
+			if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
+				MenuBackBone.SoundMoveSelected ();
+				menuSelected--;
+				if (menuSelected < 0) { menuSelected = createMenuOptions.Count - 1; }
+			} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
+				MenuBackBone.SoundMoveSelected ();
+				menuSelected++;
+				if (menuSelected > createMenuOptions.Count-1) { menuSelected = 0; }
+			}
+
+			typeText.SetActive (false);
+
+			createMenuNameText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuNameText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
+			createMenuMapText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuMapText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
+			createMenuPasswordText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuPasswordText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
+
+		}
+
+		if (Input.GetKeyDown (KeyCode.Return) && expandedAmount > 0f) {
+
+			MenuBackBone.SoundSelection ();
 
 			if (locked) {
-
-				if (createMenuOptions [menuSelected] == createMenuNameTitle) {
-
-					handleInputString (ref createMenuNameTextString);
-					createMenuNameText.GetComponent<TextMesh> ().text = createMenuNameTextString;
-					handleTypeIntermitency (createMenuNameText);
-
-				} else if (createMenuOptions [menuSelected] == createMenuMapTitle) {
-
-					if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
-						MenuBackBone.SoundMoveSelected ();
-						createMenuMapListCurrent--;
-						if (createMenuMapListCurrent < 0) { createMenuMapListCurrent = createMenuMapList.Count - 1; }
-					} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow)) {
-						MenuBackBone.SoundMoveSelected ();
-						createMenuMapListCurrent++;
-						if (createMenuMapListCurrent > (createMenuMapList.Count - 1)) { createMenuMapListCurrent = 0; }
-					}
-
-					createMenuMapText.GetComponent<TextMesh> ().text = createMenuMapList [createMenuMapListCurrent];
-
-					targetArrowColor = new Color (1f, 1f, 1f, 1f);
-				
-				} else if (createMenuOptions [menuSelected] == createMenuPasswordTitle) {
-
-					handleInputString (ref createMenuPasswordTextString);
-					createMenuPasswordText.GetComponent<TextMesh> ().text = createMenuPasswordTextString;
-					handleTypeIntermitency (createMenuPasswordText);
-
-				}
-
-				createMenuNameText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuNameText.GetComponent<TextMesh> ().color, createMenuNameTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
-				createMenuMapText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuMapText.GetComponent<TextMesh> ().color, createMenuMapTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
-				createMenuPasswordText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuPasswordText.GetComponent<TextMesh> ().color, createMenuPasswordTitle.GetComponent<TextMesh> ().color, Time.deltaTime*5f);
-
+				locked = false;
 			} else {
-				
-				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
-					MenuBackBone.SoundMoveSelected ();
-					menuSelected--;
-					if (menuSelected < 0) { menuSelected = createMenuOptions.Count - 1; }
-				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
-					MenuBackBone.SoundMoveSelected ();
-					menuSelected++;
-					if (menuSelected > createMenuOptions.Count-1) { menuSelected = 0; }
+				if (createMenuOptions[menuSelected] == createMenuNameTitle) {
+					locked = true;
 				}
-
-				typeText.SetActive (false);
-
-				createMenuNameText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuNameText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
-				createMenuMapText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuMapText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
-				createMenuPasswordText.GetComponent<TextMesh> ().color = Color.Lerp(createMenuPasswordText.GetComponent<TextMesh> ().color, this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor, Time.deltaTime*5f);
-
+				else if (createMenuOptions[menuSelected] == createMenuMapTitle) {
+					locked = true;
+				}
+				else if (createMenuOptions[menuSelected] == createMenuPasswordTitle) {
+					locked = true;
+				}
+				else if (createMenuOptions[menuSelected] == createMenuGoTitle) {
+					if (createMenuNameTextString.Length != 0) {
+						// Start match
+						NetworkManager.StartServer (createMenuNameTextString);
+						Application.LoadLevel ("Game");
+					} else {
+						locked = true;
+						menuSelected = 0;
+					}
+				}
 			}
 
-			if (Input.GetKeyDown (KeyCode.Return) && aux > 0f) {
+		}
 
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+
+			if (locked) {
 				MenuBackBone.SoundSelection ();
-
-				if (locked) {
-					locked = false;
-				} else {
-					if (createMenuOptions[menuSelected] == createMenuNameTitle) {
-						locked = true;
-					}
-					else if (createMenuOptions[menuSelected] == createMenuMapTitle) {
-						locked = true;
-					}
-					else if (createMenuOptions[menuSelected] == createMenuPasswordTitle) {
-						locked = true;
-					}
-					else if (createMenuOptions[menuSelected] == createMenuGoTitle) {
-						if (createMenuNameTextString.Length != 0) {
-							// Start match
-							NetworkManager.StartServer (createMenuNameTextString);
-							Application.LoadLevel ("Game");
-						} else {
-							locked = true;
-							menuSelected = 0;
-						}
-					}
-				}
-
+				locked = false;
 			}
-
-			if (Input.GetKeyDown (KeyCode.Escape)) {
-
-				if (locked) {
-					MenuBackBone.SoundSelection ();
-					locked = false;
-				}
-
-			}
-
-			for (int i = 0; i < createMenuOptions.Count; i++) {
-
-				Color targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor;
-
-				if (i == menuSelected) {
-					targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionSelectedColor;
-				}
-
-				createMenuOptions [i].GetComponent<TextMesh> ().color = Color.Lerp (createMenuOptions [i].GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
-
-			}
-
-			Vector3 targetPosition = createMenuOptions [menuSelected].transform.position + new Vector3 (-createMenuOptions [menuSelected].GetComponent<MeshRenderer> ().bounds.size.x / 2f - 0.5f, 0f, 0f);
-			menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
-
-			createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color = Color.Lerp (createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color, targetArrowColor, Time.deltaTime * 5f);
-			createMenuMapArrowRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (createMenuMapArrowRight.GetComponent<MeshRenderer> ().material.color, targetArrowColor, Time.deltaTime * 5f);
-
-
-		} else if (mode == "join") {
-
-
 
 		}
 
-		menuSelectedNeuron.Update ();
+		for (int i = 0; i < createMenuOptions.Count; i++) {
 
-		if (!active && aux <= 0.01f) {
-			this.gameObject.SetActive (false);
+			Color targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor;
+
+			if (i == menuSelected) {
+				targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionSelectedColor;
+			}
+
+			createMenuOptions [i].GetComponent<TextMesh> ().color = Color.Lerp (createMenuOptions [i].GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
+
 		}
+
+		Vector3 targetPosition = createMenuOptions [menuSelected].transform.position + new Vector3 (-createMenuOptions [menuSelected].GetComponent<MeshRenderer> ().bounds.size.x / 2f - 0.5f, 0f, 0f);
+		menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
+
+		createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color = Color.Lerp (createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color, targetArrowColor, Time.deltaTime * 5f);
+		createMenuMapArrowRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (createMenuMapArrowRight.GetComponent<MeshRenderer> ().material.color, targetArrowColor, Time.deltaTime * 5f);
+
+	}
+
+	public void setMode(string newMode) {
+
+		createMenu.SetActive (false);
+		joinMenu.SetActive (false);
+
+		if (newMode == "create") { createMenu.SetActive (true); } 
+		else if (newMode == "join") { joinMenu.SetActive (true); }
+
+		mode = newMode;
 
 	}
 
@@ -555,5 +679,73 @@ public class RhombusScript : MonoBehaviour {
         }
 
     }
+
+	private class Match {
+
+		public RhombusScript owner;
+		public GameObject root;
+		public string matchName;
+		public int position;
+		public int players;
+		public int pingTime = -1;
+
+		public Match(RhombusScript auxOwner, ref HostData hData, int auxPosition) {
+
+			owner = auxOwner;
+			root = Instantiate (owner.textSource);
+
+			Recycle(ref hData, auxPosition);
+
+		}
+
+		public void Recycle(ref HostData hData, int auxPosition) {
+
+			matchName = hData.gameName;
+			players = hData.connectedPlayers;
+			position = auxPosition;
+
+			root.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
+			root.GetComponent<TextMesh> ().fontSize = 140;
+			root.GetComponent<TextMesh>().text = matchName + "  <color=#00ff00>" + players +"/20" + "</color>";
+			root.name = "Match_"+auxPosition;
+			root.gameObject.transform.SetParent(owner.joinMenu.transform);
+			root.transform.localPosition = new Vector3 (-5f, 2f - auxPosition*(0.75f), -0.1f);
+
+			owner.unresolvedPingMatches.Add(new PingMatch(this, hData.ip[0]));
+
+		}
+
+		public void UpdatePingTime(int auxPingTime) {
+			
+			pingTime = auxPingTime;
+			root.GetComponent<TextMesh>().text = matchName + "  <color=#00ff00>" + players +"/20" + "</color>" + "  <color=#ff9999>"+pingTime+ "ms" + "</color>";
+
+		}
+
+
+	}
+
+	private class PingMatch {
+
+		public Match match;
+		public Ping ping;
+
+		public PingMatch(Match auxMatch, string auxIpAdress) {
+
+			match = auxMatch;
+			ping = new Ping(auxIpAdress);
+
+		}
+
+		public void Check() {
+
+			if (ping.isDone) {
+				match.UpdatePingTime (ping.time);
+				match.owner.unresolvedPingMatches.Remove(this);
+			}
+
+		}
+
+	}
 
 }

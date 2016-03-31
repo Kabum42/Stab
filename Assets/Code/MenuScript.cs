@@ -43,6 +43,7 @@ public class MenuScript : MonoBehaviour {
 		Debug.Log("Server Initializied");
 	}
 
+	/*
 	void OnMasterServerEvent(MasterServerEvent msEvent)
 	{
 		if (msEvent == MasterServerEvent.HostListReceived)
@@ -65,6 +66,7 @@ public class MenuScript : MonoBehaviour {
 			canvasJoinContent.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, -canvasJoinContent.GetComponent<RectTransform> ().sizeDelta.y/2f);
 		}
 	}
+	*/
 
 	void OnConnectedToServer()
 	{
