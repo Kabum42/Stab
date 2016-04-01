@@ -76,16 +76,14 @@ public class ClientScript : MonoBehaviour {
 		synchronizeOtherPlayers ();
 		updateHacking ();
 
-		if (localPlayer.crossHairTargeted == null) {
+		if (myPlayer.hackingPlayerCode == "-1") {
+			localPlayer.crossHair.GetComponent<Image>().color = new Color(1f, 1f, 1f);
 			textTargeted.SetActive(false);
 		}
 		else {
+			localPlayer.crossHair.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 			textTargeted.SetActive(true);
-			for (int j = 0; j < listPlayers.Count; j++) {
-				if (listPlayers[j].visualAvatar == localPlayer.GetComponent<LocalPlayerScript>().crossHairTargeted) {
-					textTargeted.GetComponent<Text>().text = "<Player "+listPlayers[j].playerCode+">";
-				}
-			}
+			textTargeted.GetComponent<Text>().text = "<Player "+myPlayer.hackingPlayerCode+">";
 		}
 
 		if (Input.GetKeyDown (KeyCode.Escape)) {
