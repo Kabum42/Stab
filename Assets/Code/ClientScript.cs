@@ -273,6 +273,7 @@ public class ClientScript : MonoBehaviour {
 
 				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].hackingMyPlayer), Time.fixedDeltaTime * 5f);
 				listPlayers [i].visualMaterial.SetColor ("_Color", c);
+				listPlayers [i].visualMaterial.SetFloat ("_Cutoff", 1f - c.a);
 
 				if (listPlayers [i].sprintActive && !listPlayers [i].sprintTrail.Emit) {
 					listPlayers [i].sprintTrail.Emit = true;
