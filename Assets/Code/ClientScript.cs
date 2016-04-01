@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
+using System.Linq;
 
 public class ClientScript : MonoBehaviour {
 
@@ -14,12 +15,13 @@ public class ClientScript : MonoBehaviour {
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
-	public float remainingSeconds = 600f;
+	public float remainingSeconds = (0.3f)*(60f); // 5 MINUTES
 
 	private ChatManager chatManager;
 
 	private GameObject rankingBackground;
 	private GameObject textTargeted;
+	private GameObject textBig;
 	public GameObject map;
 
 	public LocalPlayerScript localPlayer;
@@ -28,8 +30,8 @@ public class ClientScript : MonoBehaviour {
 	public List<Player> listPlayers = new List<Player>();
 
 	private static float slowSpeed = 1f/(1f);
-	private static float hackingSpeed = 1f/(0.5f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
-	private static float fastSpeed = 1f/(0.15f);
+	private static float hackingSpeed = 1f/(0.25f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
+	private static float fastSpeed = 1f/(0.05f);
 
 	// Use this for initialization
 	void Awake () {
@@ -41,6 +43,8 @@ public class ClientScript : MonoBehaviour {
 
 		textTargeted = GameObject.Find ("Canvas/TextTargeted");
 		textTargeted.SetActive (false);
+
+		textBig = GameObject.Find ("Canvas/TextBig");
 
 		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
 
@@ -72,9 +76,31 @@ public class ClientScript : MonoBehaviour {
 		checkIfActivateChat ();
 		updateChat ();
 		updateRanking ();
+		updateCanvas ();
 		updateMyInfoInOtherClients ();
 		synchronizeOtherPlayers ();
 		updateHacking ();
+
+		if (remainingSeconds <= 0f) {
+			localPlayer.gameEnded = true;
+			localPlayer.attacking = 0f;
+			/** HACK AQUI HAY QUE HACER QUE SE DECIDA EL GANADOR CON UN RPC DESDE EL SERVER, QUE SI NO HAY DESINCRONIZACIONES HACK **/
+			if (listPlayers [0].playerCode == myCode) {
+				textBig.GetComponent<Text>().text = "<color=#44FF44>CONGRATULATIONS!</color> YOU WON";
+			} else {
+				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+listPlayers[0].playerCode+"</color> HAS WON";
+			}
+
+			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+		}
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			Network.Disconnect ();
+		}
+	
+	}
+
+	void updateCanvas() {
 
 		if (myPlayer.hackingPlayerCode == "-1") {
 			localPlayer.crossHair.GetComponent<Image>().color = new Color(1f, 1f, 1f);
@@ -86,10 +112,8 @@ public class ClientScript : MonoBehaviour {
 			textTargeted.GetComponent<Text>().text = "<Player "+myPlayer.hackingPlayerCode+">";
 		}
 
-		if (Input.GetKeyDown (KeyCode.Escape)) {
-			Network.Disconnect ();
-		}
-	
+		textBig.GetComponent<CanvasRenderer> ().SetAlpha (Mathf.Max(0f, textBig.GetComponent<CanvasRenderer> ().GetAlpha() - Time.deltaTime * (1f/5f)));
+
 	}
 
 	void updateHacking() {
@@ -267,9 +291,10 @@ public class ClientScript : MonoBehaviour {
 			int minutes = totalSeconds / 60;
 			string auxTime = minutes.ToString("00") + ":" + seconds.ToString("00");
 
+			listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.playerCode).ToList();
 
 			for (int i = 0; i < listPlayers.Count; i++) {
-				if (Network.player.ToString() == listPlayers[i].playerCode) {
+				if (listPlayers[i].playerCode == myCode) {
 					auxPlayers += "<color=#D7D520>" + "Player"+listPlayers[i].playerCode + "</color>";
 				}
 				else {
@@ -291,10 +316,12 @@ public class ClientScript : MonoBehaviour {
 
 			rankingBackground.SetActive (true);
 			chatManager.chatPanel.SetActive(false);
+			textBig.SetActive (false);
 
 		} else {
 			
 			rankingBackground.SetActive (false);
+			textBig.SetActive (true);
 
 			// SHOW CHAT PANEL
 			if (chatManager.lastChatPannelInteraction >= chatManager.chatPannelInteractionThreshold) {
@@ -460,8 +487,8 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void sendRemainingSecondsRPC(string playerCode, float auxRemainingSeconds)
 	{
-		if (playerCode == Network.player.ToString()) {
-			gameScript.clientScript.remainingSeconds = auxRemainingSeconds;
+		if (playerCode == myCode) {
+			remainingSeconds = auxRemainingSeconds;
 		}
 	}
 
@@ -491,11 +518,30 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
+	void killRPC(string assassinCode, string victimCode)
+	{
+		if (assassinCode == myCode) {
+			// YOU SLAYED VICTIMCODE
+			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+			textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimCode+"</color>";
+			localPlayer.nextCooldownFree = true;
+		} else if (victimCode == myCode) {
+			// SLAYED BY ASSASSINCODE
+			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinCode+"</color>";
+		}
+	}
+
+	[RPC]
 	void respawnRPC(string playerCode, Vector3 position, Vector3 eulerAngles)
 	{
-		if (Network.player.ToString () == playerCode) {
+		if (playerCode == myCode) {
 			localPlayer.transform.position = position;
 			localPlayer.transform.eulerAngles = eulerAngles;
+		} else {
+			Player auxPlayer = PlayerByCode (playerCode);
+			auxPlayer.visualAvatar.transform.position = position;
+			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
 		}
 	}
 
@@ -525,7 +571,7 @@ public class ClientScript : MonoBehaviour {
 
 		public Player(string auxPlayerCode) {
 
-			visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
+			visualAvatar = Instantiate (Resources.Load("Prefabs/BOT") as GameObject);
 			Initialize(auxPlayerCode, visualAvatar);
 
 		}

@@ -35,7 +35,7 @@ public class MenuScript : MonoBehaviour {
 
 	private List<PingMatch> unresolvedPingMatches = new List<PingMatch>();
 
-	private AudioSource menuMusic;
+
 	private VignetteAndChromaticAberration vignette;
 
 	void OnServerInitialized()
@@ -78,14 +78,7 @@ public class MenuScript : MonoBehaviour {
 	void Start () {
 
 		GlobalData.Start ();
-
-		menuMusic = this.gameObject.AddComponent<AudioSource> ();
-		menuMusic.clip = Resources.Load("Sound/Music/Cyberium") as AudioClip;
-		menuMusic.loop = true;
-		menuMusic.spatialBlend = 0f;
-		menuMusic.volume = 0.25f;
-		//menuMusic.Play ();
-
+	
 		//vignette = this.GetComponent<VignetteAndChromaticAberration> ();
 		//vignette.intensity = 500f;
 

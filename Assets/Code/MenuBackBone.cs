@@ -19,6 +19,7 @@ public class MenuBackBone : MonoBehaviour {
 
 	private bool lastActionAddition = false;
 
+	private AudioSource menuMusic;
     private PositronicBrain pB;
 
 	public Vector3 neuronOffset = new Vector3(-8f, -3.5f, 1f);
@@ -27,6 +28,13 @@ public class MenuBackBone : MonoBehaviour {
 	void Start () {
 
 		GlobalData.Start ();
+
+		menuMusic = this.gameObject.AddComponent<AudioSource> ();
+		menuMusic.clip = Resources.Load("Sound/Music/Ossuary_6_Air") as AudioClip;
+		menuMusic.loop = true;
+		menuMusic.spatialBlend = 0f;
+		menuMusic.volume = 1f;
+		menuMusic.Play ();
 
 		Cursor.visible = false;
 		Cursor.lockState = CursorLockMode.Locked;
@@ -236,14 +244,12 @@ public class MenuBackBone : MonoBehaviour {
 			} else if (action == "join") {
 
 				NetworkManager.RefreshHostList ();
-
 				neuronOffset = new Vector3(-8f, 5.5f, 1f);
 				rhombus.backboneLink.root.transform.position = currentMenuNeuron.root.transform.position;
 				rhombus.Collapse ();
 				rhombus.setMode(action);
 				rhombus.active = true;
 				rhombus.gameObject.SetActive (true);
-
 				SoundSelection ();
 
 			} else if (action == "dunistrad") {

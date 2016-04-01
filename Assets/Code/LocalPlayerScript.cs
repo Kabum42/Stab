@@ -53,10 +53,11 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	//public AnimationCurve attackCameraDistance;
 
-	private static float attackChargeCooldownMax = 2f;
-	private float attackChargeCooldown = 0f;
+	public bool nextCooldownFree = false;
+	private static float attackChargeCooldownMax = 1.5f;
+	public float attackChargeCooldown = 0f;
 	private bool attackCharging = false;
-	private static float attackChargeMax = 0.5f;
+	private static float attackChargeMax = 0.1f;
 	private float attackCharge = 0f;
 	public float attacking = 0f;
 	private float attackingMax = 0.5f;
@@ -73,6 +74,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	private static float footStepCooldownMax = 0.35f;
 	private float footStepCooldown = footStepCooldownMax/2f;
 
+	public bool gameEnded = false;
+
 	void Awake () {
 
 		GlobalData.Start ();
@@ -83,7 +86,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
 		personalCamera.transform.localPosition = centerOfCamera;
 		firstPersonCamera = this.gameObject.transform.FindChild ("PersonalCamera/FirstPersonCamera").gameObject;
-		visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
+		visualAvatar = Instantiate (Resources.Load("Prefabs/BOT") as GameObject);
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
 		visualAvatar.transform.localScale = new Vector3 (0.9f, 0.9f, 0.9f);
@@ -129,7 +132,9 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		handleAttack ();
+		if (!gameEnded) {
+			handleAttack ();
+		}
 		handleSprintCooldown ();
 		handleCameraChanges ();
 		//adjustFirstPersonObjects ();
@@ -141,7 +146,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	void FixedUpdate() {
 
 		handleMovementInput ();
-		//checkIfLookingAtPlayer ();
 
 	}
 
@@ -168,16 +172,21 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			receiveInput2 = false;
 
-			attacking += Time.deltaTime;
+			attacking += Time.deltaTime*2f;
 			if (attacking >= attackingMax) { attacking = attackingMax; }
 
 			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
-			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 10f);
+			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 20f);
 
 			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*10f);
 			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 80f, Time.deltaTime * 5f);
 
-			if (attacking == attackingMax) { attacking = 0f; }
+			if (attacking == attackingMax) { 
+				attacking = 0f;
+				if (nextCooldownFree) {
+					attackChargeCooldown = 0f;
+				}
+			}
 
 		} else {
 

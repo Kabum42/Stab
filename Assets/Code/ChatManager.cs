@@ -44,7 +44,14 @@ public class ChatManager {
 
 		for (int i = 0; i < listMessages.Count; i++) {
 
-			aux += "<color=#0000FF>["+listMessages[i].owner+"]</color> : ";
+			string auxColor = "FF7777";
+
+			if (listMessages [i].owner == "You") {
+				auxColor = "77FF77";
+			}
+				
+
+			aux += "<color=#"+auxColor+">["+listMessages[i].owner+"]</color> : ";
 			aux += listMessages[i].text;
 
 			if (i < listMessages.Count -1) {
