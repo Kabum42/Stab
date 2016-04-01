@@ -45,8 +45,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public MeleeWeaponTrail sprintTrail;
 
-	private GameObject crossHair;
-	public GameObject crossHairTargeted;
+	public GameObject crossHair;
 
     public AudioSource audioSource1;
 
@@ -142,7 +141,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	void FixedUpdate() {
 
 		handleMovementInput ();
-		checkIfLookingAtPlayer ();
+		//checkIfLookingAtPlayer ();
 
 	}
 
@@ -246,32 +245,6 @@ public class LocalPlayerScript : MonoBehaviour {
 			sprintCooldownCurrent -= Time.deltaTime;
 			if (sprintCooldownCurrent < 0f) {
 				sprintCooldownCurrent = 0f;
-			}
-		}
-
-	}
-
-	void checkIfLookingAtPlayer() {
-
-		crossHair.GetComponent<Image>().color = new Color(1f, 1f, 1f);
-		crossHairTargeted = null;
-
-		RaycastHit[] hits;
-		hits = Physics.RaycastAll (personalCamera.transform.position, personalCamera.transform.forward, stabbingDistance);
-		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
-
-		for (int i = 0; i < hits.Length; i++) {
-			if (hits[i].collider.gameObject != this.visualAvatar && hits[i].collider.gameObject != this.gameObject) {
-
-				if (hits[i].collider.gameObject.GetComponent<PlayerMarker>() != null) {
-					crossHair.GetComponent<Image>().color = new Color(1f, 0f, 0f);
-					crossHairTargeted = hits[i].collider.gameObject;
-					break;
-				}
-				else {
-					break;
-				}
-
 			}
 		}
 
