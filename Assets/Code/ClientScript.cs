@@ -515,8 +515,8 @@ public class ClientScript : MonoBehaviour {
 		public float immune = 0f;
 		public int kills = 0;
 		public int ping = 0;
-		public string lastTargetCode;
-		public string hackingPlayerCode;
+		public string lastTargetCode = "-1";
+		public string hackingPlayerCode = "-1";
 		public float amountCurrentHacking = 0f;
 		public float hackingMyPlayer = 0f;
 		public float isBeingHacked = 0f;
