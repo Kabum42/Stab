@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: a094d8fe713c5fd4fb5bca28f5a82823
-timeCreated: 1459528823
+timeCreated: 1459546658
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
@@ -252,6 +252,8 @@ ModelImporter:
     100488: Tube Lend.L_end
     100490: Tube Lend.R
     100492: Tube Lend.R_end
+    100494: Calf.L
+    100496: Calf.R
     400000: Arm ik.L
     400002: Arm ik.L_end
     400004: Arm ik.R
@@ -499,6 +501,8 @@ ModelImporter:
     400488: Tube Lend.L_end
     400490: Tube Lend.R
     400492: Tube Lend.R_end
+    400494: Calf.L
+    400496: Calf.R
     4300000: BOT_body
     9500000: //RootNode
     13700000: BOT_body
@@ -573,7 +577,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Claf.L
+    - boneName: Calf.L
       humanName: LeftLowerLeg
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -581,7 +585,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Claf.R
+    - boneName: Calf.R
       humanName: RightLowerLeg
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -733,7 +737,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Middle01.L
+    - boneName: Index01.L
       humanName: Left Index Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -741,7 +745,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Middle02.L
+    - boneName: Index02.L
       humanName: Left Index Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -749,7 +753,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Middle03.L
+    - boneName: Index03.L
       humanName: Left Index Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -757,7 +761,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Index01.L
+    - boneName: Middle01.L
       humanName: Left Middle Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -765,7 +769,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Index02.L
+    - boneName: Middle02.L
       humanName: Left Middle Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -773,7 +777,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Index03.L
+    - boneName: Middle03.L
       humanName: Left Middle Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -781,7 +785,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Pinky01.L
+    - boneName: Ring01.L
       humanName: Left Ring Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -789,7 +793,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Pinky02.L
+    - boneName: Ring02.L
       humanName: Left Ring Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -797,7 +801,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Pinky03.L
+    - boneName: Ring03.L
       humanName: Left Ring Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -805,7 +809,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Ring01.L
+    - boneName: Pinky01.L
       humanName: Left Little Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -813,7 +817,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Ring02.L
+    - boneName: Pinky02.L
       humanName: Left Little Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -821,7 +825,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Ring03.L
+    - boneName: Pinky03.L
       humanName: Left Little Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -853,7 +857,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Middle01.R
+    - boneName: Index01.R
       humanName: Right Index Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -861,7 +865,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Middle02.R
+    - boneName: Index02.R
       humanName: Right Index Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -869,7 +873,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Middle03.R
+    - boneName: Index03.R
       humanName: Right Index Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -877,7 +881,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Index01.R
+    - boneName: Middle01.R
       humanName: Right Middle Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -885,7 +889,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Index02.R
+    - boneName: Middle02.R
       humanName: Right Middle Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -893,7 +897,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Index03.R
+    - boneName: Middle03.R
       humanName: Right Middle Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -901,7 +905,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Pinky01.R
+    - boneName: Ring01.R
       humanName: Right Ring Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -909,7 +913,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Pinky02.R
+    - boneName: Ring02.R
       humanName: Right Ring Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -917,7 +921,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Pinky03.R
+    - boneName: Ring03.R
       humanName: Right Ring Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -925,7 +929,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Ring01.R
+    - boneName: Pinky01.R
       humanName: Right Little Proximal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -933,7 +937,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Ring02.R
+    - boneName: Pinky02.R
       humanName: Right Little Intermediate
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -941,7 +945,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Ring03.R
+    - boneName: Pinky03.R
       humanName: Right Little Distal
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -949,7 +953,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Claf.R_end
+    - boneName: Foot.R
       humanName: RightFoot
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -957,8 +961,24 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: Claf.L_end
+    - boneName: Foot.L
       humanName: LeftFoot
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Toe.L
+      humanName: LeftToes
+      limit:
+        min: {x: 0, y: 0, z: 0}
+        max: {x: 0, y: 0, z: 0}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: Toe.R
+      humanName: RightToes
       limit:
         min: {x: 0, y: 0, z: 0}
         max: {x: 0, y: 0, z: 0}
@@ -977,1228 +997,1218 @@ ModelImporter:
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Arm ik.L
-      position: {x: 1.439173, y: -0.046821177, z: 3.188646}
-      rotation: {x: 0.19569318, y: -0.19569327, z: -0.6794882, w: 0.67948824}
-      scale: {x: 0.99999994, y: 0.9999999, z: 0.9999999}
+      position: {x: 0.46053535, y: -0.014982777, z: 1.0203667}
+      rotation: {x: 0.19569379, y: -0.19569328, z: -0.67948794, w: 0.6794882}
+      scale: {x: 1.0000001, y: 1, z: 1}
       transformModified: 1
     - name: Arm ik.L_end
-      position: {x: -0, y: 0.3048312, z: 0}
+      position: {x: -0, y: 0.09754605, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Arm ik.R
-      position: {x: -1.439173, y: -0.04682161, z: 3.188646}
-      rotation: {x: 0.6794883, y: -0.67948806, z: -0.19569315, w: 0.19569322}
-      scale: {x: 0.99999994, y: 0.9999998, z: 1}
+      position: {x: -0.46053535, y: -0.014982915, z: 1.0203667}
+      rotation: {x: -0.67948806, y: 0.67948824, z: 0.19569369, w: -0.1956932}
+      scale: {x: 1, y: 1.0000001, z: 0.9999998}
       transformModified: 1
     - name: Arm ik.R_end
-      position: {x: -0, y: 0.3048312, z: 0}
+      position: {x: -0, y: 0.09754605, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Arm pole target.L
-      position: {x: 0.95431805, y: -1.2285941, z: 3.7620063}
+      position: {x: 0.30538177, y: -0.3931501, z: 1.2038419}
       rotation: {x: 0, y: 0, z: 1, w: 0.00000004371139}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Arm pole target.L_end
-      position: {x: -0, y: 0.48291016, z: 0}
+      position: {x: -0, y: 0.15453124, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Arm pole target.R
-      position: {x: -0.9543177, y: -1.2285943, z: 3.7620063}
+      position: {x: -0.30538166, y: -0.39315018, z: 1.2038419}
       rotation: {x: 0, y: 0, z: 1, w: 0.00000004371139}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Arm pole target.R_end
-      position: {x: -0, y: 0.48291016, z: 0}
+      position: {x: -0, y: 0.15453121, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Leg control.L
-      position: {x: 0.42318732, y: -0.41620117, z: 0}
+      position: {x: 0.13541993, y: -0.13318437, z: 0}
       rotation: {x: 0.12909669, y: 0.99163204, z: 0.000000040525585, w: -0.00000031128965}
       scale: {x: 1, y: 1.0000002, z: 1}
       transformModified: 1
     - name: Foot roll.L
-      position: {x: -0.019446334, y: 0.51310295, z: -0.061246883}
-      rotation: {x: 0.9575197, y: 0.002627557, z: 0.037226193, w: -0.2859429}
-      scale: {x: 1, y: 1.0000001, z: 1.0000011}
+      position: {x: -0.0062228357, y: 0.16419294, z: -0.019599002}
+      rotation: {x: 0.95751965, y: 0.0026275439, z: 0.03722583, w: -0.28594315}
+      scale: {x: 0.99999994, y: 0.9999998, z: 0.99999976}
       transformModified: 1
     - name: Leg ik.L
-      position: {x: -0.000000014901161, y: 0.44423705, z: 0.000000018626451}
-      rotation: {x: -0.2883559, y: -0.000000022319576, z: 0.12621811, w: 0.94916797}
-      scale: {x: 1, y: 1, z: 1.0000001}
+      position: {x: 0.000000008381903, y: 0.14215584, z: -0.000000006519258}
+      rotation: {x: -0.28835595, y: 0.0000003121222, z: 0.12621821, w: 0.94916797}
+      scale: {x: 0.9999998, y: 1, z: 0.9999999}
       transformModified: 1
     - name: Leg ik.L_end
-      position: {x: -0, y: 0.48467925, z: 0}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
-    - name: Foot.L
-      position: {x: -0.0077527566, y: 0.14151748, z: -0.30442023}
-      rotation: {x: -0.015073403, y: 0.9582326, z: 0.28555724, w: -0.004491111}
-      scale: {x: 0.9999999, y: 0.99999994, z: 1}
-      transformModified: 1
-    - name: Toe.L
-      position: {x: 0.000000008192568, y: 0.44423714, z: -0.000000014901161}
-      rotation: {x: 0.27924654, y: -0.023074502, z: 0.07584826, w: 0.956941}
-      scale: {x: 0.9999998, y: 0.9999999, z: 0.99999994}
-      transformModified: 1
-    - name: Toe.L_end
-      position: {x: -0, y: 0.2345293, z: 0}
+      position: {x: -0, y: 0.15509737, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Toe control.L
-      position: {x: -0.019446326, y: 0.513103, z: -0.06124712}
-      rotation: {x: 0.06359085, y: 0.9979598, z: 0.0056854784, w: 0.00036319534}
-      scale: {x: 1, y: 0.9999997, z: 1}
+      position: {x: -0.0062228316, y: 0.16419296, z: -0.019599078}
+      rotation: {x: 0.06359083, y: 0.9979598, z: 0.0056854673, w: 0.00036319453}
+      scale: {x: 0.9999998, y: 1.0000002, z: 0.99999994}
       transformModified: 1
     - name: Toe control.L_end
-      position: {x: -0, y: 0.2345293, z: 0}
+      position: {x: -0, y: 0.07504937, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Leg control.R
-      position: {x: -0.4231872, y: -0.4162013, z: 0}
-      rotation: {x: -0.12909687, y: 0.991632, z: -0.000000055915184, w: -0.00000042950137}
-      scale: {x: 1, y: 1.0000001, z: 1}
+      position: {x: -0.1354199, y: -0.13318442, z: 0}
+      rotation: {x: -0.12909682, y: 0.991632, z: -0.000000055915166, w: -0.00000042950137}
+      scale: {x: 1, y: 1.0000005, z: 1}
       transformModified: 1
     - name: Foot roll.R
-      position: {x: 0.01944641, y: 0.51310295, z: -0.061246853}
-      rotation: {x: 0.9575197, y: -0.0026272635, z: -0.037225235, w: -0.28594294}
-      scale: {x: 1, y: 1, z: 0.9999999}
+      position: {x: 0.0062228404, y: 0.16419293, z: -0.019598993}
+      rotation: {x: 0.95751965, y: -0.0026273099, z: -0.037225246, w: -0.28594315}
+      scale: {x: 0.99999994, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Leg ik.R
-      position: {x: 0.0000000055879354, y: 0.44423714, z: 0.000000014901161}
-      rotation: {x: -0.288356, y: -0.00000018985762, z: -0.12621814, w: 0.94916797}
-      scale: {x: 0.99999994, y: 1, z: 1}
+      position: {x: -0.0000000018626451, y: 0.14215584, z: -0.0000000027939677}
+      rotation: {x: -0.28835592, y: -0.00000019330024, z: -0.12621816, w: 0.94916797}
+      scale: {x: 0.99999976, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Leg ik.R_end
-      position: {x: -0, y: 0.48467925, z: 0}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
-    - name: Foot.R
-      position: {x: 0.007753174, y: 0.14151731, z: -0.30442083}
-      rotation: {x: 0.015074681, y: 0.9582324, z: 0.28555775, w: 0.0044962605}
-      scale: {x: 0.99999994, y: 0.9999999, z: 0.9999999}
-      transformModified: 1
-    - name: Toe.R
-      position: {x: -0.000000037143366, y: 0.44423717, z: 0.000000018626451}
-      rotation: {x: 0.2793609, y: 0.024521945, z: -0.075428426, w: 0.95690477}
-      scale: {x: 1, y: 1.0000001, z: 1.0000001}
-      transformModified: 1
-    - name: Toe.R_end
-      position: {x: -0, y: 0.23452932, z: 0}
+      position: {x: -0, y: 0.15509737, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Toe control.R
-      position: {x: 0.01944641, y: 0.51310295, z: -0.06124709}
-      rotation: {x: -0.063599266, y: 0.9979581, z: 0.005589528, w: -0.0018673736}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: 0.0062228404, y: 0.16419293, z: -0.019599069}
+      rotation: {x: -0.06359929, y: 0.9979581, z: 0.005589514, w: -0.0018673728}
+      scale: {x: 0.9999999, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Toe control.R_end
-      position: {x: -0, y: 0.23452932, z: 0}
+      position: {x: -0, y: 0.075049385, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Leg pole target.L
-      position: {x: 0.37274763, y: 0.98031896, z: 1.6825596}
-      rotation: {x: 0, y: 0, z: 0.00000007129678, w: 1}
+      position: {x: 0.119279236, y: 0.31370205, z: 0.53841907}
+      rotation: {x: 0, y: 0, z: 0.000000055700607, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Leg pole target.L_end
-      position: {x: -0, y: 0.62700564, z: 0}
+      position: {x: -0, y: 0.20064181, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Leg pole target.R
-      position: {x: -0.37274793, y: 0.98031884, z: 1.6825596}
-      rotation: {x: 0, y: 0, z: 0.00000007129677, w: 1}
+      position: {x: -0.11927933, y: 0.31370202, z: 0.53841907}
+      rotation: {x: 0, y: 0, z: 0.00000007426747, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Leg pole target.R_end
-      position: {x: -0, y: 0.62700576, z: 0}
+      position: {x: -0, y: 0.20064184, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Pelvis
-      position: {x: -0, y: 0, z: 3.0736988}
+      position: {x: -0, y: 0, z: 0.98358357}
       rotation: {x: -0.00000005338508, y: 0.7071068, z: 0.7071067, w: -0.000000053385072}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Leg.L
-      position: {x: -0.23087919, y: -0.031191349, z: -0.050599214}
-      rotation: {x: 0.71395105, y: -0.026487548, z: -0.69805855, w: -0.047818188}
-      scale: {x: 0.99999654, y: 0.9999999, z: 0.99999946}
+      position: {x: -0.07388134, y: -0.009981215, z: -0.016191749}
+      rotation: {x: 0.7139202, y: -0.026470972, z: -0.6980693, w: -0.04813132}
+      scale: {x: 0.99997723, y: 0.99999964, z: 0.9999971}
       transformModified: 1
-    - name: Claf.L
-      position: {x: -9.313226e-10, y: 1.3718053, z: 0.000000028871}
-      rotation: {x: 0.023023302, y: 0.68039703, z: -0.0503784, w: 0.73074746}
-      scale: {x: 1.0000002, y: 1.0000001, z: 0.9999999}
+    - name: Calf.L
+      position: {x: -0.0000000016298145, y: 0.43897787, z: 0.000000004947651}
+      rotation: {x: 0.023015736, y: 0.6803976, z: -0.050361834, w: 0.73074824}
+      scale: {x: 1.0000002, y: 0.9999999, z: 0.99999976}
       transformModified: 1
-    - name: Claf.L_end
-      position: {x: -0, y: 1.3903501, z: 0}
+    - name: Foot.L
+      position: {x: 0.0000000037252903, y: 0.4449122, z: -9.313226e-10}
+      rotation: {x: -0.039387558, y: 0.83404374, z: -0.52352905, w: -0.16951993}
+      scale: {x: 0.9999999, y: 1.0000002, z: 1.0000001}
+      transformModified: 1
+    - name: Toe.L
+      position: {x: -0.0000000054133125, y: 0.14215589, z: -0.000000004656613}
+      rotation: {x: 0.27885118, y: -0.028045818, z: 0.07729555, w: 0.9568077}
+      scale: {x: 0.9999995, y: 1.0000002, z: 0.99999976}
+      transformModified: 1
+    - name: Toe.L_end
+      position: {x: -0, y: 0.07504937, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Leg.R
-      position: {x: 0.23087919, y: -0.031191349, z: -0.050599214}
-      rotation: {x: 0.7139509, y: 0.026490295, z: 0.6980586, w: -0.047818683}
-      scale: {x: 0.9999966, y: 0.99999994, z: 0.99999964}
+      position: {x: 0.073881336, y: -0.009981215, z: -0.016191747}
+      rotation: {x: 0.71392286, y: 0.02647738, z: 0.69806844, w: -0.04809923}
+      scale: {x: 0.9999791, y: 0.99999976, z: 0.99999744}
       transformModified: 1
-    - name: Claf.R
-      position: {x: 9.313226e-10, y: 1.3718052, z: -0.00000011629891}
-      rotation: {x: 0.02302511, y: -0.68038094, z: 0.05037952, w: 0.7307623}
-      scale: {x: 1, y: 1, z: 1}
+    - name: Calf.R
+      position: {x: -0.000000002561137, y: 0.43897766, z: 0.000000013911631}
+      rotation: {x: 0.023022605, y: -0.6803812, z: 0.05037393, w: 0.73076254}
+      scale: {x: 0.9999999, y: 1.0000004, z: 1.0000001}
       transformModified: 1
-    - name: Claf.R_end
-      position: {x: -0, y: 1.3903501, z: 0}
+    - name: Foot.R
+      position: {x: 0.000000024680048, y: 0.44491202, z: 0.000000008381903}
+      rotation: {x: 0.03940122, y: 0.83403784, z: -0.5235331, w: 0.16953333}
+      scale: {x: 1, y: 0.9999999, z: 0.9999999}
+      transformModified: 1
+    - name: Toe.R
+      position: {x: -0.000000001382432, y: 0.14215589, z: 9.313226e-10}
+      rotation: {x: 0.27896872, y: 0.029484523, z: -0.07687365, w: 0.9567641}
+      scale: {x: 0.9999996, y: 1.0000002, z: 1}
+      transformModified: 1
+    - name: Toe.R_end
+      position: {x: -0, y: 0.075049385, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Spine
-      position: {x: -0, y: 0.49746823, z: 0}
+      position: {x: -0, y: 0.15918982, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Chest
-      position: {x: -0, y: 0.32498336, z: 0}
-      rotation: {x: -0.06521775, y: -0.00000016121055, z: 0.000000010536218, w: 0.9978711}
+      position: {x: -0, y: 0.10399473, z: 0}
+      rotation: {x: -0.06521777, y: -0.00000016121062, z: 0.000000010536227, w: 0.9978711}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Neck
-      position: {x: 8.881784e-15, y: 0.79859203, z: -0.000000022351738}
-      rotation: {x: -0.0000000070362667, y: 0.99786353, z: 0.065332964, w: -0.0000004345138}
-      scale: {x: 1, y: 1.0000002, z: 1}
+      position: {x: 4.440892e-15, y: 0.25554937, z: 0.000000011175872}
+      rotation: {x: -0.0000000070362622, y: 0.99786353, z: 0.06533304, w: -0.0000004345138}
+      scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Head
-      position: {x: 8.493206e-15, y: 0.351611, z: -0.000000013620582}
-      rotation: {x: -0.000572718, y: 0.7071064, z: -0.0005724651, w: 0.7071067}
-      scale: {x: 0.99999994, y: 1.0000001, z: 1}
+      position: {x: -3.330669e-16, y: 0.112515755, z: -0.0000000015424996}
+      rotation: {x: -0.0005715379, y: 0.7071064, z: -0.00057162216, w: 0.7071067}
+      scale: {x: 1, y: 0.99999976, z: 0.99999994}
       transformModified: 1
     - name: Eye
-      position: {x: 0.5166056, y: 0.22878808, z: 0.00000006790372}
+      position: {x: 0.16531378, y: 0.07321206, z: 0.000000021729248}
       rotation: {x: -0.49953693, y: -0.50046265, z: -0.49953684, w: 0.5004628}
       scale: {x: 1.0000001, y: 1.0000001, z: 1}
       transformModified: 1
     - name: Eye_end
-      position: {x: -0, y: 0.21978909, z: 0}
+      position: {x: -0, y: 0.0703325, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube A01
-      position: {x: -0.11981219, y: 0.28566936, z: -0.000000016239735}
-      rotation: {x: 0.62960416, y: -0.32186788, z: -0.6296035, w: -0.3218682}
-      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
+      position: {x: -0.0383399, y: 0.09141448, z: -0.0000000051966387}
+      rotation: {x: -0.63434255, y: 0.3124237, z: 0.6343437, w: 0.31242448}
+      scale: {x: 0.99999964, y: 0.9999999, z: 0.99999994}
       transformModified: 1
     - name: Tube A02
-      position: {x: -1.3500312e-13, y: 0.20642269, z: -0.00000038743013}
-      rotation: {x: -0.399832, y: -0.00000013716523, z: 0.00000002105371, w: 0.9165885}
-      scale: {x: 1, y: 0.9999999, z: 1}
+      position: {x: -4.973799e-14, y: 0.06605537, z: 0.0000001192093}
+      rotation: {x: -0.39983043, y: -0.00000014595776, z: 0.0000000095243, w: 0.91658914}
+      scale: {x: 1, y: 1, z: 1.0000001}
       transformModified: 1
     - name: Tube A03
-      position: {x: 3.1974423e-14, y: 0.20013405, z: -5.4622973e-14}
-      rotation: {x: 0.000000021995712, y: 0.9656093, z: -0.25999752, w: -0.0000003310193}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: 2.842171e-14, y: 0.06404268, z: -0.000000044703526}
+      rotation: {x: 0.00000003124647, y: 0.9656096, z: -0.25999647, w: -0.00000033351003}
+      scale: {x: 1, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Tube A04
-      position: {x: -1.4210855e-13, y: 0.21768959, z: 0.00000020861629}
-      rotation: {x: -0.17062432, y: -0.000000009587856, z: -0.00000006219001, w: 0.9853362}
-      scale: {x: 1, y: 0.99999994, z: 0.9999998}
+      position: {x: 3.0198066e-14, y: 0.06966061, z: -0.00000003725278}
+      rotation: {x: -0.17062472, y: -0.0000000086601615, z: -0.000000056834118, w: 0.98533607}
+      scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube A04_end
-      position: {x: -0, y: 0.24156007, z: 0}
+      position: {x: -0, y: 0.07729923, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube B01.L
-      position: {x: -0.11852648, y: 0.4043564, z: 0.08865564}
-      rotation: {x: 0.86088854, y: -0.2641934, z: -0.39457276, w: 0.18271582}
-      scale: {x: 1, y: 0.9999998, z: 1.0000001}
+      position: {x: -0.03792848, y: 0.1293939, z: 0.02836981}
+      rotation: {x: 0.8608887, y: -0.26419258, z: -0.39457303, w: 0.18271574}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
       transformModified: 1
     - name: Tube B02.L
-      position: {x: -0.000000029802322, y: 0.21016477, z: 0.00000011920929}
-      rotation: {x: 0.44994417, y: 0.8190728, z: -0.2292025, w: 0.27227992}
-      scale: {x: 1, y: 0.9999998, z: 0.99999994}
+      position: {x: 0.000000022351742, y: 0.067252636, z: 0.0000000037252903}
+      rotation: {x: 0.44994307, y: 0.81907326, z: -0.2292024, w: 0.27228016}
+      scale: {x: 1.0000001, y: 0.9999998, z: 1.0000001}
       transformModified: 1
     - name: Tube B03.L
-      position: {x: -0.00000010151416, y: 0.31202197, z: 0.00000015932518}
-      rotation: {x: -0.102820374, y: 0.011418014, z: -0.0547181, w: 0.9931282}
-      scale: {x: 0.99999964, y: 0.9999999, z: 0.9999999}
+      position: {x: -0.000000007450581, y: 0.099846624, z: -0.00000003501436}
+      rotation: {x: -0.10282058, y: 0.011418121, z: -0.05471828, w: 0.9931281}
+      scale: {x: 0.99999964, y: 0.9999998, z: 0.9999998}
       transformModified: 1
     - name: Tube B03.L_end
-      position: {x: -0, y: 0.14602004, z: 0}
+      position: {x: -0, y: 0.046726402, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube B01.R
-      position: {x: -0.11852645, y: 0.40435645, z: -0.08865569}
-      rotation: {x: 0.8979582, y: -0.067816496, z: -0.30081344, w: -0.31397966}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: -0.03792847, y: 0.12939389, z: -0.028369822}
+      rotation: {x: 0.8979583, y: -0.06781642, z: -0.30081314, w: -0.3139799}
+      scale: {x: 1, y: 1, z: 0.9999999}
       transformModified: 1
     - name: Tube B02.R
-      position: {x: 0.00000024586916, y: 0.21016443, z: 0.00000043213367}
-      rotation: {x: -0.1404536, y: 0.7587773, z: -0.48503184, w: 0.41142908}
-      scale: {x: 0.99999994, y: 1, z: 1.0000001}
+      position: {x: 0.0000000037252903, y: 0.06725251, z: -0.000000022351742}
+      rotation: {x: -0.14045349, y: 0.7587774, z: -0.48503175, w: 0.41142908}
+      scale: {x: 0.9999999, y: 0.99999994, z: 0.9999998}
       transformModified: 1
     - name: Tube B03.R
-      position: {x: 0.000000009313226, y: 0.31202164, z: -0.00000012075256}
-      rotation: {x: -0.10282048, y: -0.011418485, z: 0.05471824, w: 0.9931282}
-      scale: {x: 0.9999998, y: 0.99999994, z: 0.9999999}
+      position: {x: 0.000000013271347, y: 0.09984659, z: 0.000000066119604}
+      rotation: {x: -0.10282071, y: -0.011418598, z: 0.05471829, w: 0.9931281}
+      scale: {x: 1, y: 0.9999998, z: 0.9999999}
       transformModified: 1
     - name: Tube B03.R_end
-      position: {x: -0, y: 0.14602004, z: 0}
+      position: {x: -0, y: 0.0467264, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube C01.L
-      position: {x: -0.05249864, y: 0.17752525, z: 0.06952803}
-      rotation: {x: -0.6584102, y: 0.2578684, z: 0.66025865, w: 0.2530976}
-      scale: {x: 0.9999999, y: 1, z: 1}
+      position: {x: -0.01679957, y: 0.056808013, z: 0.022248967}
+      rotation: {x: -0.6584118, y: 0.257863, z: 0.660261, w: 0.25309297}
+      scale: {x: 0.9999998, y: 1, z: 0.9999998}
       transformModified: 1
     - name: Tube C02.L
-      position: {x: -5.820766e-10, y: 0.1418176, z: -0.00000007297636}
-      rotation: {x: -0.15742041, y: -0.62095493, z: 0.3278435, w: 0.69437194}
-      scale: {x: 0.9999998, y: 0.99999976, z: 1}
+      position: {x: 0.0000000022992026, y: 0.045381837, z: -0.00000014713143}
+      rotation: {x: -0.15742022, y: -0.6209549, z: 0.3278437, w: 0.69437194}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1}
       transformModified: 1
     - name: Tube C03.L
-      position: {x: 0.000000059604645, y: 0.24384004, z: -0.00000016352715}
-      rotation: {x: 0.19174555, y: -0.62932813, z: 0.18933725, w: 0.72892475}
-      scale: {x: 0.99999976, y: 0.99999976, z: 0.9999998}
+      position: {x: 0.0000000055588316, y: 0.078028694, z: -0.00000004722824}
+      rotation: {x: 0.19174589, y: -0.62932813, z: 0.18933742, w: 0.7289245}
+      scale: {x: 1.0000002, y: 1.0000004, z: 1}
       transformModified: 1
     - name: Tube C03.L_end
-      position: {x: -0, y: 0.1744134, z: 0}
+      position: {x: -0, y: 0.055812303, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube C01.R
-      position: {x: -0.05249863, y: 0.1775253, z: -0.06952804}
-      rotation: {x: 0.6602615, y: -0.25309107, z: -0.6584125, w: -0.2578617}
-      scale: {x: 0.99999994, y: 1, z: 0.9999999}
+      position: {x: -0.016799562, y: 0.05680812, z: -0.022248974}
+      rotation: {x: 0.66026515, y: -0.2530802, z: -0.65841717, w: -0.2578511}
+      scale: {x: 0.9999998, y: 0.99999976, z: 0.99999994}
       transformModified: 1
     - name: Tube C02.R
-      position: {x: 0.0000000064028427, y: 0.14181776, z: 0.00000015840624}
-      rotation: {x: -0.32932407, y: -0.68844295, z: 0.15429953, w: 0.6275218}
-      scale: {x: 1.0000001, y: 1, z: 1.0000002}
+      position: {x: -0.0000000019499566, y: 0.04538183, z: -0.00000017656222}
+      rotation: {x: -0.32932338, y: -0.6884433, z: 0.15429895, w: 0.62752193}
+      scale: {x: 0.99999976, y: 0.9999999, z: 0.99999994}
       transformModified: 1
     - name: Tube C03.R
-      position: {x: 0.000000017695129, y: 0.24383993, z: -0.000000037252903}
-      rotation: {x: 0.18750753, y: -0.7348693, z: 0.19353536, w: 0.6223762}
-      scale: {x: 0.9999999, y: 0.9999999, z: 0.9999999}
+      position: {x: 0.000000010768417, y: 0.07802886, z: 0.000000012456439}
+      rotation: {x: 0.1875075, y: -0.73486924, z: 0.1935348, w: 0.62237644}
+      scale: {x: 1, y: 0.9999996, z: 1}
       transformModified: 1
     - name: Tube C03.R_end
-      position: {x: -0, y: 0.1744134, z: 0}
+      position: {x: -0, y: 0.055812307, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube D01.L
-      position: {x: 0.116825975, y: 0.17964529, z: 0.18993886}
-      rotation: {x: 0.9922259, y: -0.06721821, z: -0.020712519, w: 0.1026672}
-      scale: {x: 0.99999857, y: 1.0000001, z: 0.9999965}
+      position: {x: 0.037384305, y: 0.05748654, z: 0.060780443}
+      rotation: {x: 0.9922242, y: -0.06724786, z: -0.020713948, w: 0.10266374}
+      scale: {x: 0.9999992, y: 1, z: 0.9999986}
       transformModified: 1
     - name: Tube D02.L
-      position: {x: -0.000000060070306, y: 0.16913037, z: 0.00000016269041}
-      rotation: {x: 0.30647692, y: 0.89892286, z: 0.29077536, w: 0.11601421}
-      scale: {x: 0.99999994, y: 1.0000004, z: 1}
+      position: {x: 0.0000000020954758, y: 0.054121763, z: 0.000000018480932}
+      rotation: {x: 0.30647045, y: 0.89892644, z: 0.2907709, w: 0.11601491}
+      scale: {x: 0.9999998, y: 1, z: 0.9999998}
       transformModified: 1
     - name: Tube D03.L
-      position: {x: -0.0000000037252903, y: 0.23703237, z: 0.00000004284084}
-      rotation: {x: 0.09076957, y: -0.014035718, z: 0.03890747, w: 0.99501264}
-      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+      position: {x: -9.313226e-10, y: 0.07585053, z: 0.000000063329935}
+      rotation: {x: 0.09076798, y: -0.014035682, z: 0.038906436, w: 0.9950128}
+      scale: {x: 0.9999998, y: 0.9999999, z: 0.99999994}
       transformModified: 1
     - name: Tube D04.L
-      position: {x: 0.00000028312206, y: 0.19031864, z: -0.00000012665987}
-      rotation: {x: 0.06974624, y: 0.12995544, z: -0.21755062, w: 0.9648413}
-      scale: {x: 0.99999994, y: 0.9999997, z: 0.99999976}
+      position: {x: 0.0000000030267984, y: 0.060901724, z: 0.000000014901161}
+      rotation: {x: 0.0697439, y: 0.12995566, z: -0.21754657, w: 0.9648424}
+      scale: {x: 0.99999994, y: 0.9999999, z: 0.9999999}
       transformModified: 1
     - name: Tube D04.L_end
-      position: {x: -0, y: 0.1948017, z: 0}
+      position: {x: -0, y: 0.06233652, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube D01.R
-      position: {x: 0.116826035, y: 0.17964542, z: -0.18993883}
-      rotation: {x: 0.9924155, y: -0.0643575, z: -0.0069727064, w: -0.10450374}
-      scale: {x: 0.99999946, y: 1.0000001, z: 0.9999985}
+      position: {x: 0.037384324, y: 0.057486515, z: -0.06078043}
+      rotation: {x: 0.99241835, y: -0.06431098, z: -0.0069734934, w: -0.104505315}
+      scale: {x: 0.9999979, y: 0.99999976, z: 0.9999953}
       transformModified: 1
     - name: Tube D02.R
-      position: {x: 0.000000003259629, y: 0.16913052, z: 0.000000026110548}
-      rotation: {x: 0.23181637, y: 0.9053897, z: -0.3531854, w: 0.042316366}
-      scale: {x: 0.9999999, y: 0.99999964, z: 0.99999964}
+      position: {x: -0.000000017695129, y: 0.054121856, z: 0.000000022548786}
+      rotation: {x: 0.23181157, y: 0.9053923, z: -0.35318246, w: 0.042313118}
+      scale: {x: 0.99999964, y: 0.9999997, z: 0.9999999}
       transformModified: 1
     - name: Tube D03.R
-      position: {x: -0.00000028312206, y: 0.23703274, z: 0.000000012575214}
-      rotation: {x: -0.0693617, y: 0.032692954, z: 0.07029741, w: 0.9945745}
-      scale: {x: 0.9999999, y: 0.99999994, z: 1.0000001}
+      position: {x: -0.000000031664968, y: 0.07585052, z: -0.000000017502998}
+      rotation: {x: -0.06936162, y: 0.032692976, z: 0.07029688, w: 0.99457455}
+      scale: {x: 0.9999999, y: 0.9999997, z: 1}
       transformModified: 1
     - name: Tube D04.R
-      position: {x: 0.00000013038516, y: 0.19031857, z: -0.00000017195327}
-      rotation: {x: -0.11119266, y: 0.03545816, z: -0.19957004, w: 0.9729084}
-      scale: {x: 0.99999976, y: 0.9999997, z: 0.99999994}
+      position: {x: -0.000000019324943, y: 0.060901728, z: 0.000000007881113}
+      rotation: {x: -0.11119225, y: 0.03545799, z: -0.19956955, w: 0.97290856}
+      scale: {x: 0.9999999, y: 0.99999976, z: 0.9999998}
       transformModified: 1
     - name: Tube D04.R_end
-      position: {x: -0, y: 0.1948017, z: 0}
+      position: {x: -0, y: 0.062336523, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube E01
-      position: {x: 0.16840765, y: -0.05973098, z: 0.00000002204504}
-      rotation: {x: 0.70368654, y: 0.06939191, z: 0.7037006, w: -0.069394566}
-      scale: {x: 0.9999963, y: 1, z: 1.0000001}
+      position: {x: 0.053890456, y: -0.019113947, z: 0.0000000070544672}
+      rotation: {x: 0.70346284, y: 0.07173111, z: 0.7034554, w: -0.07173005}
+      scale: {x: 1.0000024, y: 1.0000002, z: 1}
       transformModified: 1
     - name: Tube E02
-      position: {x: -1.2789769e-13, y: 0.10712678, z: -0.00000015646202}
-      rotation: {x: -0.00000021326821, y: 0.9951329, z: -0.09854171, w: 0.00000057615506}
-      scale: {x: 1, y: 1, z: 0.9999999}
+      position: {x: 1.2789769e-13, y: 0.034280904, z: 0.0000000074505535}
+      rotation: {x: 0.00000017205744, y: 0.9951338, z: -0.09853304, w: 0.00000065779204}
+      scale: {x: 1, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Tube E03
-      position: {x: -2.9309888e-13, y: 0.09882607, z: 0.000000015079559}
-      rotation: {x: 0.13171466, y: 0.0000001777965, z: -0.00000015396027, w: 0.9912877}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: 8.1712415e-14, y: 0.031624313, z: -8.90855e-10}
+      rotation: {x: 0.13169944, y: 0.00000014864338, z: 0.000000065484045, w: 0.9912897}
+      scale: {x: 1, y: 0.99999994, z: 0.99999994}
       transformModified: 1
     - name: Tube E03_end
-      position: {x: -0, y: 0.12105752, z: 0}
+      position: {x: -0, y: 0.0387384, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Bend.L
-      position: {x: 0.13903384, y: 0.16928184, z: 0.01844105}
-      rotation: {x: -0.00000019317854, y: 0.7070251, z: 0.7071884, w: 0.000000254944}
-      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+      position: {x: 0.04449083, y: 0.054170266, z: 0.0059011322}
+      rotation: {x: -0.00000014669014, y: 0.7070252, z: 0.7071884, w: 0.0000002534141}
+      scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Bend.L_end
-      position: {x: -0, y: 0.16459411, z: 0}
+      position: {x: -0, y: 0.052670117, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Bend.R
-      position: {x: -0.13903387, y: 0.16928184, z: 0.018440878}
-      rotation: {x: -0.00000019317847, y: 0.7070252, z: 0.7071884, w: 0.00000025494398}
-      scale: {x: 1, y: 1.0000001, z: 1}
+      position: {x: -0.044490837, y: 0.054170266, z: 0.0059010778}
+      rotation: {x: -0.00000014669014, y: 0.7070252, z: 0.7071884, w: 0.0000002534141}
+      scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Bend.R_end
-      position: {x: -0, y: 0.16459411, z: 0}
+      position: {x: -0, y: 0.052670117, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Cend.L
-      position: {x: 0.18247868, y: 0.044956364, z: 0.07088979}
-      rotation: {x: -0.0000001516694, y: 0.7070252, z: 0.7071884, w: 0.00000025839222}
-      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+      position: {x: 0.058393173, y: 0.014386006, z: 0.022684729}
+      rotation: {x: -0.00000015258506, y: 0.7070252, z: 0.7071884, w: 0.00000025930765}
+      scale: {x: 1, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Tube Cend.L_end
-      position: {x: -0, y: 0.17987001, z: 0}
+      position: {x: -0, y: 0.0575584, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Cend.R
-      position: {x: -0.18247877, y: 0.044956364, z: 0.07088957}
-      rotation: {x: -0.00000015166944, y: 0.7070252, z: 0.7071884, w: 0.00000025839228}
-      scale: {x: 1, y: 1.0000001, z: 1}
+      position: {x: -0.058393206, y: 0.014386006, z: 0.022684654}
+      rotation: {x: -0.00000019794943, y: 0.7070252, z: 0.7071884, w: 0.00000025971386}
+      scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Cend.R_end
-      position: {x: -0, y: 0.17987001, z: 0}
+      position: {x: -0, y: 0.057558402, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube F01.L
-      position: {x: 0.1513175, y: 0.19423473, z: -0.08687792}
-      rotation: {x: 0.6832017, y: 0.3292406, z: -0.6052189, w: 0.24196325}
-      scale: {x: 0.99999946, y: 0.9999997, z: 0.99999994}
+      position: {x: 0.0484216, y: 0.06215494, z: -0.027800936}
+      rotation: {x: 0.68320155, y: 0.32923976, z: -0.6052194, w: 0.24196339}
+      scale: {x: 0.99999976, y: 0.9999997, z: 1.0000001}
       transformModified: 1
     - name: Tube F02.L
-      position: {x: 0.000000035390258, y: 0.11459404, z: -0.00000011327211}
-      rotation: {x: 0.04090453, y: -0.028279142, z: 0.015081227, w: 0.99864894}
-      scale: {x: 1.0000002, y: 1, z: 1.0000001}
+      position: {x: -0.00000002863817, y: 0.036669966, z: 0.00000012011151}
+      rotation: {x: 0.04090339, y: -0.028278204, z: 0.015080996, w: 0.998649}
+      scale: {x: 0.99999994, y: 0.9999998, z: 0.9999997}
       transformModified: 1
     - name: Tube F03.L
-      position: {x: 0.000000028056093, y: 0.15597026, z: 0.00000003282912}
-      rotation: {x: 0.18656124, y: -0.039480705, z: 0.03178592, w: 0.981135}
-      scale: {x: 1, y: 0.99999976, z: 0.9999999}
+      position: {x: -5.820766e-10, y: 0.049910255, z: -0.00000003837704}
+      rotation: {x: 0.1865612, y: -0.039481096, z: 0.031785946, w: 0.98113495}
+      scale: {x: 1, y: 1.0000001, z: 0.9999999}
       transformModified: 1
     - name: Tube F03.L_end
-      position: {x: -0, y: 0.10098123, z: 0}
+      position: {x: -0, y: 0.032313988, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube F01.R
-      position: {x: -0.15131739, y: 0.19423473, z: -0.08687811}
-      rotation: {x: 0.6551405, y: -0.26616257, z: -0.6354887, w: -0.31000435}
-      scale: {x: 0.9999999, y: 1, z: 1}
+      position: {x: -0.04842156, y: 0.06215494, z: -0.027800996}
+      rotation: {x: 0.6551404, y: -0.26616237, z: -0.63548875, w: -0.31000438}
+      scale: {x: 0.99999976, y: 0.99999976, z: 1}
       transformModified: 1
     - name: Tube F02.R
-      position: {x: 0.000000014901161, y: 0.11459411, z: 0.00000025815598}
-      rotation: {x: -0.042420935, y: -0.0025894088, z: 0.01005675, w: 0.99904585}
-      scale: {x: 0.9999999, y: 0.99999994, z: 1.0000001}
+      position: {x: 0.0000000020954758, y: 0.036670312, z: -0.000000091190714}
+      rotation: {x: -0.04241955, y: -0.0025904053, z: 0.010056591, w: 0.9990459}
+      scale: {x: 0.9999999, y: 0.9999999, z: 0.9999999}
       transformModified: 1
     - name: Tube F03.R
-      position: {x: -1.1641532e-10, y: 0.15597, z: -0.00000023792218}
-      rotation: {x: -0.18779856, y: -0.004476053, z: 0.023403563, w: 0.9819185}
-      scale: {x: 0.9999999, y: 1, z: 1}
+      position: {x: -0.0000000036670826, y: 0.04991051, z: -0.00000027501972}
+      rotation: {x: -0.18779778, y: -0.004475625, z: 0.023403475, w: 0.9819187}
+      scale: {x: 1.0000001, y: 0.9999999, z: 0.9999999}
       transformModified: 1
     - name: Tube F03.R_end
-      position: {x: -0, y: 0.10098123, z: 0}
+      position: {x: -0, y: 0.032313988, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube G01.L
-      position: {x: 0.14656252, y: 0.17400338, z: -0.09671241}
-      rotation: {x: 0.7707086, y: 0.32435066, z: -0.54839885, w: 0.007975139}
-      scale: {x: 0.9999993, y: 0.99999946, z: 0.99999964}
+      position: {x: 0.046900004, y: 0.055680934, z: -0.03094797}
+      rotation: {x: 0.7707076, y: 0.32435474, z: -0.5483979, w: 0.007972877}
+      scale: {x: 1.0000002, y: 1.0000002, z: 1.0000001}
       transformModified: 1
     - name: Tube G02.L
-      position: {x: -0.00000016950071, y: 0.118051015, z: -0.0000000121071935}
-      rotation: {x: -0.034999613, y: -0.18870535, z: 0.14991394, w: 0.9698923}
-      scale: {x: 0.99999976, y: 1.0000001, z: 0.9999998}
+      position: {x: 0.00000016018748, y: 0.03777603, z: -0.0000001792796}
+      rotation: {x: -0.035000324, y: -0.18870607, z: 0.14991878, w: 0.9698914}
+      scale: {x: 0.99999964, y: 0.99999994, z: 0.99999976}
       transformModified: 1
     - name: Tube G03.L
-      position: {x: 0.000000029802322, y: 0.081760004, z: -0.00000059697777}
-      rotation: {x: 0.028154138, y: -0.1879071, z: 0.15334955, w: 0.96973306}
-      scale: {x: 1.0000001, y: 1, z: 1}
+      position: {x: 0.000000018277206, y: 0.026163, z: 0.000000070780516}
+      rotation: {x: 0.028155195, y: -0.1879075, z: 0.15335453, w: 0.96973217}
+      scale: {x: 0.99999994, y: 0.99999994, z: 0.99999994}
       transformModified: 1
     - name: Tube G03.L_end
-      position: {x: -0, y: 0.09066495, z: 0}
+      position: {x: -0, y: 0.029012816, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube G01.R
-      position: {x: -0.14656243, y: 0.17400338, z: -0.09671259}
-      rotation: {x: 0.70354146, y: -0.07864959, z: -0.6322678, w: -0.31477162}
-      scale: {x: 1.0000004, y: 1.0000002, z: 1.0000001}
+      position: {x: -0.046899974, y: 0.055680934, z: -0.030948032}
+      rotation: {x: 0.7035408, y: -0.07864859, z: -0.6322674, w: -0.3147742}
+      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
       transformModified: 1
     - name: Tube G02.R
-      position: {x: -0.00000012665987, y: 0.118050694, z: -0.000000409309}
-      rotation: {x: -0.002651397, y: -0.0017673477, z: 0.15392467, w: 0.98807746}
-      scale: {x: 1, y: 0.9999999, z: 1.0000002}
+      position: {x: 0.000000014901161, y: 0.037776314, z: -0.000000056847057}
+      rotation: {x: -0.0026521503, y: -0.0017666741, z: 0.15392604, w: 0.9880772}
+      scale: {x: 0.9999998, y: 0.9999999, z: 0.9999998}
       transformModified: 1
     - name: Tube G03.R
-      position: {x: 0.0000000013969839, y: 0.08175968, z: -0.00000025449296}
-      rotation: {x: -0.006795315, y: 0.0007857534, z: 0.15576698, w: 0.98777014}
-      scale: {x: 1.0000001, y: 1, z: 1.0000001}
+      position: {x: -2.3283064e-10, y: 0.026163312, z: -0.000000019638447}
+      rotation: {x: -0.0067956694, y: 0.0007860878, z: 0.15576807, w: 0.98777}
+      scale: {x: 1.0000001, y: 0.99999994, z: 0.99999994}
       transformModified: 1
     - name: Tube G03.R_end
-      position: {x: -0, y: 0.09066496, z: 0}
+      position: {x: -0, y: 0.029012818, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube H01.L
-      position: {x: 0.13372459, y: 0.11416584, z: -0.13720544}
-      rotation: {x: 0.8762219, y: 0.31884024, z: -0.34522945, w: -0.10673672}
-      scale: {x: 0.99999994, y: 0.9999999, z: 1}
+      position: {x: 0.042791862, y: 0.036532957, z: -0.04390574}
+      rotation: {x: 0.8762164, y: 0.31884894, z: -0.34523347, w: -0.1067429}
+      scale: {x: 1.0000004, y: 1.0000004, z: 1}
       transformModified: 1
     - name: Tube H02.L
-      position: {x: 0.00000044703484, y: 0.10693425, z: 0.00000008568168}
-      rotation: {x: -0.06743417, y: -0.29793674, z: 0.05044069, w: 0.9508639}
-      scale: {x: 1.0000002, y: 0.9999999, z: 1}
+      position: {x: 0.00000016670674, y: 0.03421879, z: 0.0000000018626451}
+      rotation: {x: -0.06743692, y: -0.2979367, z: 0.050443962, w: 0.95086354}
+      scale: {x: 0.99999976, y: 0.99999994, z: 1}
       transformModified: 1
     - name: Tube H03.L
-      position: {x: 0.000000115484, y: 0.108333744, z: -0.00000055506825}
-      rotation: {x: 0.06382585, y: -0.0882558, z: 0.07213674, w: 0.99143004}
-      scale: {x: 1.0000005, y: 1.0000001, z: 1.0000001}
+      position: {x: -0.000000023283064, y: 0.03466703, z: 0.00000007636845}
+      rotation: {x: 0.0638288, y: -0.08825636, z: 0.07214273, w: 0.9914294}
+      scale: {x: 1, y: 1.0000001, z: 1}
       transformModified: 1
     - name: Tube H03.L_end
-      position: {x: -0, y: 0.109948695, z: 0}
+      position: {x: -0, y: 0.03518357, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube H01.R
-      position: {x: -0.13372438, y: 0.11416584, z: -0.13720562}
-      rotation: {x: 0.82513106, y: -0.121409185, z: -0.45398697, w: -0.3135514}
-      scale: {x: 0.99999976, y: 1.0000001, z: 0.99999976}
+      position: {x: -0.042791802, y: 0.036532957, z: -0.043905795}
+      rotation: {x: 0.8251317, y: -0.12141117, z: -0.45398754, w: -0.31354797}
+      scale: {x: 1.0000005, y: 1.0000002, z: 1.0000004}
       transformModified: 1
     - name: Tube H02.R
-      position: {x: 0.000000014901161, y: 0.106934026, z: 0.0000000018626451}
-      rotation: {x: 0.005079849, y: -0.21073727, z: 0.084059864, w: 0.9739086}
-      scale: {x: 1, y: 1, z: 0.99999994}
+      position: {x: 0.000000027939677, y: 0.0342188, z: 0.00000005401671}
+      rotation: {x: 0.0050800433, y: -0.21073736, z: 0.084060445, w: 0.97390854}
+      scale: {x: 0.99999994, y: 1, z: 1.0000001}
       transformModified: 1
     - name: Tube H03.R
-      position: {x: -0.00000011175871, y: 0.10833385, z: -0.00000004649403}
-      rotation: {x: -0.079488315, y: -0.016325606, z: 0.05440094, w: 0.99521637}
-      scale: {x: 0.99999976, y: 1.0000002, z: 1.0000001}
+      position: {x: 0.000000037252903, y: 0.03466689, z: -0.00000009944705}
+      rotation: {x: -0.079488985, y: -0.016325237, z: 0.054401577, w: 0.9952163}
+      scale: {x: 0.99999994, y: 0.99999976, z: 1.0000001}
       transformModified: 1
     - name: Tube H03.R_end
-      position: {x: -0, y: 0.10994871, z: 0}
+      position: {x: -0, y: 0.03518357, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube I01.L
-      position: {x: 0.11287527, y: 0.11045926, z: -0.14698742}
-      rotation: {x: 0.7025382, y: 0.3399151, z: -0.6095136, w: -0.13925155}
-      scale: {x: 0.9999999, y: 1, z: 1}
+      position: {x: 0.036120083, y: 0.035346832, z: -0.047035974}
+      rotation: {x: 0.7025387, y: 0.33991608, z: -0.60951227, w: -0.13925217}
+      scale: {x: 1, y: 0.9999999, z: 1.0000001}
       transformModified: 1
     - name: Tube I02.L
-      position: {x: -0.00000044330955, y: 0.054738384, z: 0.000000040978193}
-      rotation: {x: -0.10043166, y: 0.96968055, z: 0.21020493, w: 0.07380391}
-      scale: {x: 0.99999994, y: 1.0000001, z: 1.0000001}
+      position: {x: -0.00000011676457, y: 0.01751616, z: 0.000000059138983}
+      rotation: {x: -0.10043143, y: 0.96968037, z: 0.21020646, w: 0.073802486}
+      scale: {x: 1.0000001, y: 1.0000004, z: 0.99999994}
       transformModified: 1
     - name: Tube I03.L
-      position: {x: -0.0000006053597, y: 0.08617825, z: -0.000000026077032}
-      rotation: {x: 0.24118523, y: 0.9382043, z: 0.24793264, w: -0.011481496}
-      scale: {x: 1, y: 0.9999995, z: 1.0000001}
+      position: {x: 0.00000003213063, y: 0.027577529, z: 0.0000000023283064}
+      rotation: {x: 0.24120453, y: 0.93819726, z: 0.24794021, w: -0.011486486}
+      scale: {x: 1.0000001, y: 0.9999998, z: 0.9999999}
       transformModified: 1
     - name: Tube I03.L_end
-      position: {x: -0, y: 0.07239353, z: 0}
+      position: {x: -0, y: 0.023165911, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube I01.R
-      position: {x: -0.11287509, y: 0.11045926, z: -0.14698757}
-      rotation: {x: -0.6284152, y: -0.12994541, z: 0.68568295, w: 0.34358025}
-      scale: {x: 1, y: 1, z: 0.9999999}
+      position: {x: -0.036120027, y: 0.035346832, z: -0.047036026}
+      rotation: {x: -0.62841463, y: -0.12994564, z: 0.6856824, w: 0.34358236}
+      scale: {x: 0.9999997, y: 0.9999998, z: 0.99999946}
       transformModified: 1
     - name: Tube I02.R
-      position: {x: -0.00000032735988, y: 0.054738395, z: -0.000000013038516}
-      rotation: {x: -0.11575224, y: 0.9711314, z: -0.20217197, w: 0.051301476}
-      scale: {x: 1.0000001, y: 1.0000001, z: 1}
+      position: {x: -0.000000079977326, y: 0.017516244, z: 0.000000053085387}
+      rotation: {x: -0.11575548, y: 0.97113085, z: -0.20217264, w: 0.051300786}
+      scale: {x: 1.0000001, y: 1, z: 0.9999999}
       transformModified: 1
     - name: Tube I03.R
-      position: {x: 0.00000020116568, y: 0.08617881, z: 0.000000013504177}
-      rotation: {x: 0.21592675, y: 0.9341848, z: -0.2702365, w: -0.087445624}
-      scale: {x: 1.0000002, y: 1.0000005, z: 1.0000001}
+      position: {x: 0.00000019767322, y: 0.02757749, z: -0.000000029802322}
+      rotation: {x: 0.21592431, y: 0.9341855, z: -0.27023557, w: -0.087446935}
+      scale: {x: 0.9999999, y: 0.9999996, z: 0.9999999}
       transformModified: 1
     - name: Tube I03.R_end
-      position: {x: -0, y: 0.07239353, z: 0}
+      position: {x: -0, y: 0.023165911, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Shoulder.L
-      position: {x: -0.39864215, y: 0.7504477, z: -0.0063199084}
-      rotation: {x: 0.60792977, y: -0.21978532, z: -0.5988141, w: -0.47279757}
-      scale: {x: 1.0000004, y: 0.99999994, z: 1}
+      position: {x: -0.1275655, y: 0.24014325, z: -0.0020223784}
+      rotation: {x: 0.53386945, y: -0.31957877, z: -0.58724934, w: -0.51767856}
+      scale: {x: 1.0000002, y: 1, z: 1}
       transformModified: 1
     - name: Arm.L
-      position: {x: -0.000000014901161, y: 0.25065473, z: 0.00000016205013}
-      rotation: {x: -0.2619915, y: -0.054707795, z: 0.095527254, w: 0.9587711}
-      scale: {x: 0.9999999, y: 1.0000001, z: 0.99999994}
+      position: {x: -0.000000040978193, y: 0.080209546, z: -0.000000049592927}
+      rotation: {x: 0.12927766, y: -0.02932474, z: 0.052234054, w: 0.9897975}
+      scale: {x: 0.99999994, y: 0.99999994, z: 0.9999999}
       transformModified: 1
     - name: Forearm.L
-      position: {x: 0.00000004656613, y: 0.825801, z: 0.00000014901161}
-      rotation: {x: 0.125552, y: -0.24380568, z: 0.13713095, w: 0.9518354}
-      scale: {x: 0.9999998, y: 0.99999976, z: 0.9999998}
+      position: {x: 0.0000000023283064, y: 0.26425636, z: -0.000000114087015}
+      rotation: {x: 0.04095633, y: -0.24471433, z: 0.01918534, w: 0.96853983}
+      scale: {x: 0.9999999, y: 0.9999998, z: 1}
       transformModified: 1
     - name: Hand.L
-      position: {x: -0.000000040978193, y: 0.77280897, z: 0.0000003222376}
-      rotation: {x: -0.14243472, y: 0.3862677, z: -0.020564917, w: 0.91109097}
-      scale: {x: 0.99999964, y: 0.9999997, z: 1.0000004}
+      position: {x: 0.00000004377216, y: 0.2472989, z: -0.00000004004687}
+      rotation: {x: -0.11617732, y: 0.38900998, z: -0.027908571, w: 0.9134524}
+      scale: {x: 0.99999994, y: 0.99999976, z: 1.0000006}
       transformModified: 1
     - name: PalmIndex.L
-      position: {x: -0.10308485, y: 0.26435867, z: 0.0125981085}
-      rotation: {x: 0.033450127, y: -0.16738996, z: 0.052001327, w: 0.98394996}
-      scale: {x: 0.9999998, y: 0.99999994, z: 0.9999999}
+      position: {x: -0.03298717, y: 0.08459448, z: 0.004031306}
+      rotation: {x: 0.03344994, y: -0.16739005, z: 0.052001193, w: 0.98394996}
+      scale: {x: 0.99999994, y: 0.9999998, z: 0.9999999}
       transformModified: 1
     - name: Index01.L
-      position: {x: 0.000000014901161, y: 0.18647951, z: -0.00000004656613}
-      rotation: {x: 0.007387226, y: 0.16210774, z: 0.07774674, w: 0.9836778}
-      scale: {x: 0.99999994, y: 1, z: 1}
+      position: {x: -0, y: 0.059673477, z: -0.000000026077032}
+      rotation: {x: 0.004251748, y: 0.16220245, z: 0.05977156, w: 0.98493636}
+      scale: {x: 0.9999999, y: 0.99999994, z: 1.0000001}
       transformModified: 1
     - name: Index02.L
-      position: {x: -0.000000030900992, y: 0.10475969, z: 0.0000002682209}
-      rotation: {x: -0.17033494, y: -0.06789447, z: -0.02371507, w: 0.98275834}
-      scale: {x: 0.9999999, y: 0.9999999, z: 1}
+      position: {x: 0.000000027133865, y: 0.033523, z: -0.000000037252903}
+      rotation: {x: -0.034570895, y: -0.06888004, z: -0.004813819, w: 0.99701416}
+      scale: {x: 1.0000001, y: 1.0000002, z: 1}
       transformModified: 1
     - name: Index03.L
-      position: {x: -0, y: 0.08924482, z: 0.00000019930303}
-      rotation: {x: -0.045746166, y: 0.08755267, z: -0.013135104, w: 0.99502224}
-      scale: {x: 0.9999999, y: 0.9999998, z: 0.99999994}
+      position: {x: -0.000000029802322, y: 0.028558351, z: 0.00000007497147}
+      rotation: {x: -0.039637025, y: 0.08757826, z: -0.011381685, w: 0.99530375}
+      scale: {x: 1, y: 0.9999998, z: 0.99999994}
       transformModified: 1
     - name: Index03.L_end
-      position: {x: -0, y: 0.070139684, z: 0}
+      position: {x: -0, y: 0.022444718, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: PalmMiddle.L
-      position: {x: -0.035591364, y: 0.2791338, z: 0.009381125}
-      rotation: {x: 0.020504178, y: -0.013809192, z: -0.014297843, w: 0.9995921}
-      scale: {x: 0.9999998, y: 0.9999999, z: 1}
+      position: {x: -0.0113892425, y: 0.08932272, z: 0.0030019376}
+      rotation: {x: 0.020504208, y: -0.013809188, z: -0.014297848, w: 0.9995921}
+      scale: {x: 0.99999976, y: 0.9999998, z: 0.9999997}
       transformModified: 1
     - name: Middle01.L
-      position: {x: 0.000000044703484, y: 0.16974437, z: 0.000000144355}
-      rotation: {x: 0.050576407, y: 0.04708567, z: -0.02334154, w: 0.99733657}
-      scale: {x: 0.9999998, y: 1, z: 1}
+      position: {x: -0.000000011175871, y: 0.05431817, z: 0.000000030035153}
+      rotation: {x: 0.023092598, y: 0.04276067, z: 0.073479235, w: 0.99611205}
+      scale: {x: 0.9999999, y: 1.0000001, z: 0.99999994}
       transformModified: 1
     - name: Middle02.L
-      position: {x: 0.000000011175871, y: 0.116856426, z: -0.0000003306195}
-      rotation: {x: -0.20836517, y: 0.02101495, z: 0.00847577, w: 0.97778857}
-      scale: {x: 0.99999994, y: 1.0000001, z: 1.0000001}
+      position: {x: 0.0000000037252903, y: 0.037394222, z: -0.00000004377216}
+      rotation: {x: -0.032954767, y: 0.0214762, z: 0.0013401204, w: 0.9992252}
+      scale: {x: 0.99999994, y: 0.99999976, z: 0.99999994}
       transformModified: 1
     - name: Middle03.L
-      position: {x: 0.000000022351742, y: 0.11830845, z: -0.00000020675361}
-      rotation: {x: -0.05698738, y: 0.04620285, z: 0.018219987, w: 0.9971388}
-      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000004}
+      position: {x: 0.000000013038516, y: 0.037858736, z: -0.000000030733645}
+      rotation: {x: -0.03870171, y: 0.046247836, z: 0.012373684, w: 0.9981033}
+      scale: {x: 0.99999976, y: 0.99999976, z: 0.9999999}
       transformModified: 1
     - name: Middle03.L_end
-      position: {x: -0, y: 0.07314095, z: 0}
+      position: {x: -0, y: 0.02340512, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: PalmPinky.L
-      position: {x: 0.08012759, y: 0.24610257, z: -0.06653866}
-      rotation: {x: -0.017677533, y: 0.39643857, z: -0.16814359, w: 0.90235895}
-      scale: {x: 1, y: 0.9999997, z: 0.99999994}
+      position: {x: 0.025640877, y: 0.07875261, z: -0.02129253}
+      rotation: {x: -0.017677506, y: 0.39643848, z: -0.16814367, w: 0.902359}
+      scale: {x: 0.99999964, y: 0.99999964, z: 0.9999998}
       transformModified: 1
     - name: Pinky01.L
-      position: {x: 0.00000009313226, y: 0.14472963, z: -0.000000044703484}
-      rotation: {x: -0.15207373, y: -0.19285122, z: -0.107234664, w: 0.9634224}
-      scale: {x: 1.0000001, y: 0.9999997, z: 1}
+      position: {x: 0.00000002142042, y: 0.04631343, z: 0.000000048428774}
+      rotation: {x: -0.10721837, y: -0.14573607, z: 0.21746382, w: 0.9591532}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
       transformModified: 1
     - name: Pinky02.L
-      position: {x: -0, y: 0.08160216, z: 0.000000011175871}
-      rotation: {x: -0.14200337, y: -0.0004921145, z: -0.011637168, w: 0.98979765}
-      scale: {x: 1, y: 0.9999999, z: 0.9999999}
+      position: {x: 0.0000000055879354, y: 0.026112832, z: 0.000000027939677}
+      rotation: {x: -0.036307536, y: -0.0004966556, z: -0.0029743307, w: 0.9993361}
+      scale: {x: 1.0000001, y: 0.9999999, z: 0.9999998}
       transformModified: 1
     - name: Pinky03.L
-      position: {x: -0.000000007450581, y: 0.06586026, z: 0.00000012293458}
-      rotation: {x: 0.0151172, y: -0.002786323, z: 0.0046060067, w: 0.99987125}
-      scale: {x: 0.99999976, y: 0.9999998, z: 0.9999997}
+      position: {x: 0.000000031664968, y: 0.0210754, z: -0.00000004004687}
+      rotation: {x: 0.015117086, y: -0.0027865854, z: 0.004605977, w: 0.99987125}
+      scale: {x: 0.9999998, y: 0.9999999, z: 0.9999998}
       transformModified: 1
     - name: Pinky03.L_end
-      position: {x: -0, y: 0.052259255, z: 0}
+      position: {x: -0, y: 0.016722953, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: PalmRing.L
-      position: {x: 0.030016119, y: 0.27509412, z: -0.016775027}
-      rotation: {x: -0.0008699776, y: 0.12757237, z: -0.08652447, w: 0.9880476}
-      scale: {x: 0.99999976, y: 0.9999998, z: 0.99999976}
+      position: {x: 0.009605186, y: 0.088029854, z: -0.005368014}
+      rotation: {x: -0.00086995977, y: 0.12757237, z: -0.08652455, w: 0.9880476}
+      scale: {x: 0.99999994, y: 0.9999999, z: 0.9999999}
       transformModified: 1
     - name: Ring01.L
-      position: {x: -0.000000014901161, y: 0.158475, z: 0.00000005401671}
-      rotation: {x: 0.005597933, y: 0.11558498, z: 0.010319827, w: 0.99322826}
-      scale: {x: 1, y: 0.99999976, z: 1.0000001}
+      position: {x: -0.000000029802322, y: 0.050711945, z: -0.000000011641532}
+      rotation: {x: -0.028049195, y: 0.11325789, z: 0.14382084, w: 0.9827011}
+      scale: {x: 0.99999994, y: 0.99999994, z: 1}
       transformModified: 1
     - name: Ring02.L
-      position: {x: -0.00000014156103, y: 0.10857119, z: 0.00000013411045}
-      rotation: {x: -0.22107317, y: -0.055665627, z: -0.023543261, w: 0.97338265}
-      scale: {x: 1.0000001, y: 1.0000001, z: 0.99999994}
+      position: {x: 0.000000044703484, y: 0.03474298, z: 0.000000013504177}
+      rotation: {x: -0.03207308, y: -0.05706574, z: -0.0034160297, w: 0.9978493}
+      scale: {x: 0.99999994, y: 0.99999976, z: 0.99999976}
       transformModified: 1
     - name: Ring03.L
-      position: {x: -0.000000081490725, y: 0.11312371, z: 0.00000015529804}
-      rotation: {x: -0.07440623, y: -0.021156464, z: -0.032234505, w: 0.9964824}
-      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000001}
+      position: {x: 0.000000026077032, y: 0.03619956, z: 0.00000003457535}
+      rotation: {x: -0.036304377, y: -0.02120828, z: -0.015728738, w: 0.99899197}
+      scale: {x: 1, y: 0.99999994, z: 1.0000001}
       transformModified: 1
     - name: Ring03.L_end
-      position: {x: -0, y: 0.05436239, z: 0}
+      position: {x: -0, y: 0.017395979, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Thumb01.L
-      position: {x: -0.116183184, y: 0.11801784, z: -0.03333829}
-      rotation: {x: -0.07259179, y: -0.48166117, z: 0.38304156, w: 0.78486437}
-      scale: {x: 1, y: 0.9999999, z: 0.9999999}
+      position: {x: -0.03717864, y: 0.03776551, z: -0.01066826}
+      rotation: {x: 0.10541022, y: -0.39354384, z: 0.45243657, w: 0.79329264}
+      scale: {x: 1, y: 0.99999976, z: 1}
       transformModified: 1
     - name: Thumb02.L
-      position: {x: 0.000000048428774, y: 0.16261518, z: -0.000000044703484}
-      rotation: {x: -0.09683129, y: -0.35069907, z: 0.017652933, w: 0.9313014}
-      scale: {x: 1, y: 0.99999976, z: 0.9999999}
+      position: {x: 0.000000009313226, y: 0.05203677, z: -0.000000040978193}
+      rotation: {x: -0.03805785, y: -0.3521466, z: 0.0069399006, w: 0.935145}
+      scale: {x: 0.9999998, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Thumb03.L
-      position: {x: -0.00000014156103, y: 0.12577401, z: -0.000000044703484}
-      rotation: {x: -0.009616552, y: -0.046856564, z: 0.036689818, w: 0.9981813}
-      scale: {x: 0.99999994, y: 1.0000001, z: 0.99999994}
+      position: {x: 0.0000000055879354, y: 0.040247627, z: -0.000000037252903}
+      rotation: {x: -0.009617177, y: -0.046856202, z: 0.036689594, w: 0.99818134}
+      scale: {x: 0.99999976, y: 0.9999999, z: 0.9999998}
       transformModified: 1
     - name: Thumb03.L_end
-      position: {x: -0, y: 0.081524186, z: 0}
+      position: {x: -0, y: 0.026087768, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Shoulder.R
-      position: {x: 0.3986422, y: 0.7504477, z: -0.00632021}
-      rotation: {x: 0.6079251, y: 0.21980348, z: 0.5988143, w: -0.47279483}
-      scale: {x: 0.99999994, y: 0.99999994, z: 1}
+      position: {x: 0.12756549, y: 0.24014314, z: -0.0020224822}
+      rotation: {x: 0.5338738, y: 0.3195838, z: 0.5872495, w: -0.51767087}
+      scale: {x: 1, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Arm.R
-      position: {x: -0.000000067055225, y: 0.25065476, z: -0.0000008037314}
-      rotation: {x: -0.26200795, y: 0.054625034, z: -0.09548396, w: 0.9587757}
-      scale: {x: 1, y: 0.9999999, z: 0.9999998}
+      position: {x: -0.000000011175871, y: 0.08020954, z: 0.00000015995465}
+      rotation: {x: 0.12927605, y: 0.029241972, z: -0.05224261, w: 0.9897997}
+      scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Forearm.R
-      position: {x: -0.000000018626451, y: 0.82580066, z: -0.00000032782555}
-      rotation: {x: 0.12553996, y: 0.24395777, z: -0.13714342, w: 0.9517962}
-      scale: {x: 0.9999998, y: 0.9999998, z: 0.9999999}
+      position: {x: 0.000000011175871, y: 0.2642562, z: -0.000000053551048}
+      rotation: {x: 0.04095413, y: 0.24486916, z: -0.019188438, w: 0.96850073}
+      scale: {x: 1.0000001, y: 0.99999994, z: 1}
       transformModified: 1
     - name: Hand.R
-      position: {x: 0.00000009685755, y: 0.77280915, z: 0.0000002924353}
-      rotation: {x: -0.14242838, y: -0.38633317, z: 0.02055729, w: 0.9110644}
-      scale: {x: 0.99999994, y: 0.99999976, z: 1.0000002}
+      position: {x: -0.000000023283064, y: 0.24729878, z: 0.000000018626451}
+      rotation: {x: -0.11617945, y: -0.3890749, z: 0.027899956, w: 0.9134248}
+      scale: {x: 1.0000002, y: 0.9999993, z: 0.9999997}
       transformModified: 1
     - name: PalmIndex.R
-      position: {x: 0.10308487, y: 0.2643587, z: 0.01259793}
-      rotation: {x: 0.033450108, y: 0.16738996, z: -0.05200133, w: 0.98394996}
-      scale: {x: 0.99999994, y: 0.9999998, z: 1}
+      position: {x: 0.032987155, y: 0.08459453, z: 0.004031381}
+      rotation: {x: 0.033449918, y: 0.16739005, z: -0.052001186, w: 0.98394996}
+      scale: {x: 1, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Index01.R
-      position: {x: -0, y: 0.18647918, z: 0.00000008009374}
-      rotation: {x: 0.0073872646, y: -0.1621077, z: -0.07774682, w: 0.98367774}
-      scale: {x: 0.9999999, y: 1, z: 1.0000002}
+      position: {x: 0.000000018626451, y: 0.05967352, z: -9.313226e-10}
+      rotation: {x: 0.004251479, y: -0.16220248, z: -0.059772655, w: 0.98493636}
+      scale: {x: 1.0000002, y: 1, z: 1}
       transformModified: 1
     - name: Index02.R
-      position: {x: -0.0000000425498, y: 0.104759365, z: 0.00000012665987}
-      rotation: {x: -0.1703348, y: 0.06789451, z: 0.02371503, w: 0.9827584}
-      scale: {x: 1, y: 0.9999999, z: 0.99999994}
+      position: {x: -0.0000000117506715, y: 0.03352309, z: -0.000000008381903}
+      rotation: {x: -0.034564182, y: 0.06887989, z: 0.004813341, w: 0.9970144}
+      scale: {x: 1.0000001, y: 1, z: 1.0000002}
       transformModified: 1
     - name: Index03.R
-      position: {x: -0.000000029802322, y: 0.089244775, z: 0.000000055879354}
-      rotation: {x: -0.045746144, y: -0.087552615, z: 0.013135072, w: 0.9950223}
-      scale: {x: 1.0000001, y: 1.0000002, z: 1.0000002}
+      position: {x: 0.000000037252903, y: 0.028558282, z: -0.000000030267984}
+      rotation: {x: -0.039640736, y: -0.08757804, z: 0.011382425, w: 0.9953036}
+      scale: {x: 0.9999998, y: 0.9999999, z: 0.9999998}
       transformModified: 1
     - name: Index03.R_end
-      position: {x: -0, y: 0.070139684, z: 0}
+      position: {x: -0, y: 0.022444716, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: PalmMiddle.R
-      position: {x: 0.035591498, y: 0.2791341, z: 0.009381002}
-      rotation: {x: 0.020504193, y: 0.0138092665, z: 0.014297828, w: 0.9995921}
-      scale: {x: 1.0000001, y: 0.9999999, z: 0.9999999}
+      position: {x: 0.011389262, y: 0.08932275, z: 0.0030019316}
+      rotation: {x: 0.020504177, y: 0.013809279, z: 0.014297877, w: 0.9995921}
+      scale: {x: 1, y: 1, z: 1.0000004}
       transformModified: 1
     - name: Middle01.R
-      position: {x: -0.000000022351742, y: 0.1697439, z: 0.00000007543713}
-      rotation: {x: 0.0505763, y: -0.047085777, z: 0.023341604, w: 0.99733657}
-      scale: {x: 0.99999994, y: 0.99999994, z: 0.9999998}
+      position: {x: -0.0000000018626451, y: 0.054318033, z: 0.00000005401671}
+      rotation: {x: 0.023092274, y: -0.042760592, z: -0.073479466, w: 0.996112}
+      scale: {x: 0.9999999, y: 0.99999994, z: 0.99999994}
       transformModified: 1
     - name: Middle02.R
-      position: {x: -0.00000010058284, y: 0.11685675, z: 0.000000115484}
-      rotation: {x: -0.20836541, y: -0.021014877, z: -0.0084758, w: 0.9777885}
-      scale: {x: 1, y: 0.9999998, z: 1.0000001}
+      position: {x: -0.000000016763806, y: 0.037394125, z: 0.000000039115548}
+      rotation: {x: -0.032951903, y: -0.021476107, z: -0.0013404182, w: 0.9992253}
+      scale: {x: 1, y: 0.99999994, z: 1.0000001}
       transformModified: 1
     - name: Middle03.R
-      position: {x: -0, y: 0.118308455, z: -0.000000024214387}
-      rotation: {x: -0.056987584, y: -0.046202846, z: -0.018219955, w: 0.9971388}
-      scale: {x: 0.99999994, y: 0.9999999, z: 1}
+      position: {x: 0.000000007450581, y: 0.037858687, z: -0.000000040512532}
+      rotation: {x: -0.038705446, y: -0.04624778, z: -0.0123742735, w: 0.9981032}
+      scale: {x: 0.99999994, y: 0.9999999, z: 0.9999999}
       transformModified: 1
     - name: Middle03.R_end
-      position: {x: -0, y: 0.07314095, z: 0}
+      position: {x: -0, y: 0.02340512, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: PalmPinky.R
-      position: {x: -0.08012769, y: 0.24610274, z: -0.06653909}
-      rotation: {x: -0.017677424, y: -0.39643866, z: 0.16814356, w: 0.90235895}
-      scale: {x: 1, y: 0.99999976, z: 1}
+      position: {x: -0.025640879, y: 0.07875259, z: -0.02129239}
+      rotation: {x: -0.017677518, y: -0.39643854, z: 0.16814364, w: 0.902359}
+      scale: {x: 1, y: 0.9999998, z: 1}
       transformModified: 1
     - name: Pinky01.R
-      position: {x: 0.000000014901161, y: 0.1447295, z: -0.000000052154064}
-      rotation: {x: -0.15207377, y: 0.1928513, z: 0.10723471, w: 0.96342236}
-      scale: {x: 1.0000002, y: 1, z: 1}
+      position: {x: -0.000000049360096, y: 0.046313506, z: -0.000000020489097}
+      rotation: {x: -0.10722006, y: 0.14573811, z: -0.21746123, w: 0.95915323}
+      scale: {x: 0.99999976, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Pinky02.R
-      position: {x: -0, y: 0.08160238, z: 0.000000070780516}
-      rotation: {x: -0.14200337, y: 0.0004919678, z: 0.011637178, w: 0.98979765}
-      scale: {x: 0.99999994, y: 1, z: 0.99999994}
+      position: {x: -0.000000020489097, y: 0.026112862, z: 0.000000024214387}
+      rotation: {x: -0.03630566, y: 0.0004963872, z: 0.002974419, w: 0.99933624}
+      scale: {x: 1.0000001, y: 1, z: 1.0000001}
       transformModified: 1
     - name: Pinky03.R
-      position: {x: -0.00000010430813, y: 0.06586019, z: 0.000000022351742}
-      rotation: {x: 0.015117248, y: 0.002801092, z: -0.0046057957, w: 0.9998712}
-      scale: {x: 0.9999997, y: 0.99999976, z: 1}
+      position: {x: 0.0000000037252903, y: 0.021075247, z: -0.000000033527613}
+      rotation: {x: 0.015117092, y: 0.0028012407, z: -0.004605744, w: 0.9998712}
+      scale: {x: 0.99999994, y: 1.0000002, z: 0.9999998}
       transformModified: 1
     - name: Pinky03.R_end
-      position: {x: -0, y: 0.052259255, z: 0}
+      position: {x: -0, y: 0.016722953, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: PalmRing.R
-      position: {x: -0.030016286, y: 0.27509424, z: -0.01677476}
-      rotation: {x: -0.0008699766, y: -0.1275724, z: 0.0865245, w: 0.9880476}
-      scale: {x: 0.99999994, y: 1, z: 1}
+      position: {x: -0.009605152, y: 0.08802988, z: -0.0053680115}
+      rotation: {x: -0.0008699888, y: -0.12757239, z: 0.08652454, w: 0.9880476}
+      scale: {x: 0.99999994, y: 1.0000001, z: 1}
       transformModified: 1
     - name: Ring01.R
-      position: {x: 0.0000000018626451, y: 0.15847522, z: -0.00000008288771}
-      rotation: {x: 0.005597896, y: -0.115585014, z: -0.010319837, w: 0.99322826}
-      scale: {x: 0.9999999, y: 0.9999999, z: 0.9999998}
+      position: {x: -0.000000037252903, y: 0.05071184, z: -0.000000044703484}
+      rotation: {x: -0.028048335, y: -0.113258146, z: -0.14382136, w: 0.98270106}
+      scale: {x: 0.9999998, y: 1.0000001, z: 1}
       transformModified: 1
     - name: Ring02.R
-      position: {x: 0.00000006519258, y: 0.10857149, z: 0.00000016391277}
-      rotation: {x: -0.2210733, y: 0.055665795, z: 0.023543313, w: 0.9733826}
-      scale: {x: 0.9999998, y: 1, z: 1}
+      position: {x: -0.000000024680048, y: 0.03474282, z: -0.0000000060535967}
+      rotation: {x: -0.032068875, y: 0.05706594, z: 0.0034148076, w: 0.9978494}
+      scale: {x: 1, y: 0.9999999, z: 0.9999999}
       transformModified: 1
     - name: Ring03.R
-      position: {x: -0.0000000013969839, y: 0.11312356, z: -0.000000031199306}
-      rotation: {x: -0.07440663, y: 0.021166177, z: 0.0322338, w: 0.99648213}
-      scale: {x: 1, y: 0.99999994, z: 0.99999976}
+      position: {x: -0.000000037136488, y: 0.03619957, z: -0.000000015308615}
+      rotation: {x: -0.036305364, y: 0.021218052, z: 0.015728734, w: 0.99899167}
+      scale: {x: 0.9999999, y: 0.99999994, z: 1}
       transformModified: 1
     - name: Ring03.R_end
-      position: {x: -0, y: 0.05436239, z: 0}
+      position: {x: -0, y: 0.017395979, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Thumb01.R
-      position: {x: 0.11618304, y: 0.11801765, z: -0.033338144}
-      rotation: {x: -0.0726068, y: 0.48163047, z: -0.3830388, w: 0.7848832}
-      scale: {x: 1, y: 0.9999999, z: 0.99999994}
+      position: {x: 0.037178576, y: 0.03776539, z: -0.010668263}
+      rotation: {x: 0.105390854, y: 0.39351305, z: -0.45244098, w: 0.79330796}
+      scale: {x: 1, y: 1, z: 0.99999994}
       transformModified: 1
     - name: Thumb02.R
-      position: {x: 0.00000017508864, y: 0.16261543, z: -0.00000013411045}
-      rotation: {x: -0.09683191, y: 0.3507356, z: -0.017649097, w: 0.93128765}
-      scale: {x: 0.9999999, y: 0.9999998, z: 0.9999999}
+      position: {x: -0.000000026077032, y: 0.052036874, z: -0.000000007450581}
+      rotation: {x: -0.038059298, y: 0.35218334, z: -0.0069362395, w: 0.93513113}
+      scale: {x: 0.9999999, y: 0.9999999, z: 0.9999999}
       transformModified: 1
     - name: Thumb03.R
-      position: {x: -0.000000044703484, y: 0.12577409, z: 0.00000011920929}
-      rotation: {x: -0.009616748, y: 0.04685632, z: -0.036689863, w: 0.9981813}
-      scale: {x: 1.0000001, y: 0.99999976, z: 0.99999994}
+      position: {x: 0.000000027939677, y: 0.040247623, z: 0.000000007450581}
+      rotation: {x: -0.009617349, y: 0.046856053, z: -0.036689624, w: 0.99818134}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000001}
       transformModified: 1
     - name: Thumb03.R_end
-      position: {x: -0, y: 0.081524186, z: 0}
+      position: {x: -0, y: 0.026087768, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Aend
-      position: {x: -0.00000007267886, y: 0.70410675, z: -0.22650468}
-      rotation: {x: -0.65948546, y: 0.00000012144326, z: 0.00000010654285, w: 0.7517173}
+      position: {x: -0.000000023257241, y: 0.22531414, z: -0.07248149}
+      rotation: {x: -0.6594855, y: 0.00000012144334, z: 0.000000106542856, w: 0.75171727}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Aend_end
-      position: {x: -0, y: 0.1896649, z: 0}
+      position: {x: -0, y: 0.060692757, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Dend.L
-      position: {x: -0.031324793, y: 0.58950883, z: 0.26961008}
-      rotation: {x: 0.0000000763073, y: 0.65948546, z: 0.7517173, w: -0.00000016737869}
-      scale: {x: 1, y: 0.99999976, z: 0.99999994}
+      position: {x: -0.010023933, y: 0.18864283, z: 0.086275235}
+      rotation: {x: 0.00000007072461, y: 0.6594856, z: 0.7517172, w: -0.00000016248099}
+      scale: {x: 1, y: 1.0000002, z: 1.0000001}
       transformModified: 1
     - name: Tube Dend.L_end
-      position: {x: -0, y: 0.14294457, z: 0}
+      position: {x: -0, y: 0.045742266, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Dend.R
-      position: {x: 0.031324964, y: 0.58950883, z: 0.26961008}
-      rotation: {x: 0.0000000763073, y: 0.65948546, z: 0.7517173, w: -0.00000016737869}
-      scale: {x: 1, y: 0.99999976, z: 0.99999994}
+      position: {x: 0.010023989, y: 0.18864283, z: 0.086275235}
+      rotation: {x: 0.00000007072461, y: 0.6594856, z: 0.7517172, w: -0.00000016248099}
+      scale: {x: 1, y: 1.0000002, z: 1.0000001}
       transformModified: 1
     - name: Tube Dend.R_end
-      position: {x: -0, y: 0.14294457, z: 0}
+      position: {x: -0, y: 0.045742266, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Eend
-      position: {x: 0.00000004945307, y: 0.7491432, z: 0.15263876}
-      rotation: {x: 0.000000068409726, y: 0.6594855, z: 0.75171727, w: -0.00000016045011}
-      scale: {x: 1, y: 1.0000004, z: 1.0000001}
+      position: {x: 0.000000015824986, y: 0.23972572, z: 0.048844423}
+      rotation: {x: 0.00000006840985, y: 0.6594855, z: 0.75171727, w: -0.00000016045021}
+      scale: {x: 1, y: 1.0000002, z: 1.0000001}
       transformModified: 1
     - name: Tube Eend_end
-      position: {x: -0, y: 0.17750655, z: 0}
+      position: {x: -0, y: 0.056802098, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Fend.L
-      position: {x: -0.3803201, y: 0.69655645, z: 0.08959927}
-      rotation: {x: -0.70560133, y: 0.70560145, z: 0.046116065, w: 0.04611575}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: -0.12170244, y: 0.2228981, z: 0.028671786}
+      rotation: {x: -0.70560133, y: 0.70560145, z: 0.04611606, w: 0.046115417}
+      scale: {x: 0.99999994, y: 1, z: 0.99999994}
       transformModified: 1
     - name: Tube Fend.L_end
-      position: {x: -0, y: 0.19860414, z: 0}
+      position: {x: -0, y: 0.06355332, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Fend.R
-      position: {x: 0.38032022, y: 0.69655645, z: 0.08959902}
-      rotation: {x: -0.4663268, y: -0.46632656, z: -0.5315444, w: 0.5315444}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: 0.121702455, y: 0.2228981, z: 0.028671702}
+      rotation: {x: -0.46632686, y: -0.4663265, z: -0.53154445, w: 0.5315443}
+      scale: {x: 1, y: 1, z: 1.0000001}
       transformModified: 1
     - name: Tube Fend.R_end
-      position: {x: -0, y: 0.19860414, z: 0}
+      position: {x: -0, y: 0.06355332, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Gend.L
-      position: {x: -0.2964443, y: 0.7215704, z: 0.10722664}
-      rotation: {x: 0.00000017345022, y: 0.6594855, z: 0.75171727, w: -0.00000009402007}
-      scale: {x: 1, y: 0.99999964, z: 0.9999999}
+      position: {x: -0.094862185, y: 0.23090254, z: 0.034312524}
+      rotation: {x: 0.00000005902979, y: 0.6594856, z: 0.7517172, w: -0.00000015222106}
+      scale: {x: 1, y: 1.0000002, z: 1.0000001}
       transformModified: 1
     - name: Tube Gend.L_end
-      position: {x: -0, y: 0.15601812, z: 0}
+      position: {x: -0, y: 0.049925797, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Gend.R
-      position: {x: 0.29644442, y: 0.7215704, z: 0.107226446}
-      rotation: {x: 0.00000017345023, y: 0.6594855, z: 0.75171727, w: -0.000000094020095}
-      scale: {x: 1, y: 0.9999996, z: 0.9999998}
+      position: {x: 0.0948622, y: 0.23090254, z: 0.034312468}
+      rotation: {x: 0.00000005902979, y: 0.6594856, z: 0.7517172, w: -0.00000015222106}
+      scale: {x: 1, y: 1.0000004, z: 1.0000004}
       transformModified: 1
     - name: Tube Gend.R_end
-      position: {x: -0, y: 0.15601812, z: 0}
+      position: {x: -0, y: 0.049925797, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Hend.L
-      position: {x: -0.2925725, y: 0.61806417, z: 0.20274837}
-      rotation: {x: 0.00000012849225, y: 0.6594855, z: 0.75171727, w: -0.000000012293024}
-      scale: {x: 1, y: 0.99999964, z: 0.9999999}
+      position: {x: -0.09362321, y: 0.19778053, z: 0.064879484}
+      rotation: {x: 0.000000031043438, y: 0.6594855, z: 0.75171727, w: -0.000000085383284}
+      scale: {x: 1, y: 0.9999997, z: 0.9999998}
       transformModified: 1
     - name: Tube Hend.L_end
-      position: {x: -0, y: 0.14831139, z: 0}
+      position: {x: -0, y: 0.047459643, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Hend.R
-      position: {x: 0.29257274, y: 0.61806417, z: 0.20274821}
-      rotation: {x: 0.00000012849225, y: 0.6594855, z: 0.75171727, w: -0.000000012293024}
-      scale: {x: 1, y: 0.99999964, z: 0.9999999}
+      position: {x: 0.09362326, y: 0.19778053, z: 0.064879425}
+      rotation: {x: 0.000000031043403, y: 0.6594855, z: 0.75171727, w: -0.00000008538325}
+      scale: {x: 1, y: 0.9999998, z: 1}
       transformModified: 1
     - name: Tube Hend.R_end
-      position: {x: -0, y: 0.14831142, z: 0}
+      position: {x: -0, y: 0.04745966, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Iend.L
-      position: {x: -0.15115951, y: 0.699197, z: 0.2092833}
-      rotation: {x: 0.00000006782779, y: 0.65948546, z: 0.7517173, w: -0.00000015993957}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: -0.048371047, y: 0.22374298, z: 0.06697065}
+      rotation: {x: 0.00000013007566, y: 0.6594856, z: 0.7517172, w: -0.00000017226479}
+      scale: {x: 1, y: 1.0000002, z: 1}
       transformModified: 1
     - name: Tube Iend.L_end
-      position: {x: -0, y: 0.1401355, z: 0}
+      position: {x: -0, y: 0.044843357, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Iend.R
-      position: {x: 0.15115966, y: 0.699197, z: 0.20928317}
-      rotation: {x: 0.00000006782779, y: 0.65948546, z: 0.7517173, w: -0.00000015993957}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: 0.048371084, y: 0.22374298, z: 0.06697061}
+      rotation: {x: 0.00000013007566, y: 0.6594856, z: 0.7517172, w: -0.00000017226479}
+      scale: {x: 1, y: 1.0000002, z: 1}
       transformModified: 1
     - name: Tube Iend.R_end
-      position: {x: -0, y: 0.1401355, z: 0}
+      position: {x: -0, y: 0.044843357, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube J01.L
-      position: {x: -0.27031705, y: -0.075659536, z: 0.12540536}
-      rotation: {x: 0.828752, y: 0.37686962, z: 0.3163854, w: 0.26653308}
-      scale: {x: 1, y: 1.0000001, z: 1}
+      position: {x: -0.08650146, y: -0.02421096, z: 0.040129695}
+      rotation: {x: 0.8287517, y: 0.37686974, z: 0.31638578, w: 0.26653308}
+      scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube J02.L
-      position: {x: 0.00000029429793, y: 0.119410835, z: 0.000000029802322}
-      rotation: {x: 0.0049553574, y: 0.9240923, z: 0.21811171, w: 0.31377724}
-      scale: {x: 0.9999999, y: 1.0000001, z: 1}
+      position: {x: 0.00000019650906, y: 0.03821145, z: -0.000000011175871}
+      rotation: {x: 0.0049556564, y: 0.9240923, z: 0.21811251, w: 0.31377667}
+      scale: {x: 1, y: 0.9999998, z: 0.9999998}
       transformModified: 1
     - name: Tube J03.L
-      position: {x: -0.00000032782555, y: 0.12280297, z: -0.00000014714897}
-      rotation: {x: 0.006815589, y: 0.92318195, z: -0.279338, w: -0.26392984}
-      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+      position: {x: -0.000000013038516, y: 0.039297, z: 0.000000011990778}
+      rotation: {x: 0.0068148053, y: 0.9231821, z: -0.2793387, w: -0.2639288}
+      scale: {x: 0.99999994, y: 0.9999993, z: 1}
       transformModified: 1
     - name: Tube J03.L_end
-      position: {x: -0, y: 0.09272697, z: 0}
+      position: {x: -0, y: 0.02967257, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube J01.R
-      position: {x: 0.27031717, y: -0.075659536, z: 0.12540518}
-      rotation: {x: 0.7381061, y: -0.0011781298, z: 0.49206626, w: 0.4615938}
-      scale: {x: 0.99999994, y: 0.99999994, z: 0.99999994}
+      position: {x: 0.08650149, y: -0.024210958, z: 0.040129635}
+      rotation: {x: 0.738106, y: -0.001177883, z: 0.49206603, w: 0.46159416}
+      scale: {x: 1, y: 0.9999999, z: 0.9999999}
       transformModified: 1
     - name: Tube J02.R
-      position: {x: -0.00000014901161, y: 0.119410984, z: -0.000000094119876}
-      rotation: {x: -0.18540327, y: 0.8135743, z: 0.11499014, w: 0.53898025}
-      scale: {x: 0.99999994, y: 0.99999964, z: 0.99999976}
+      position: {x: -0.000000018626451, y: 0.038211416, z: 0.00000006864769}
+      rotation: {x: -0.18540363, y: 0.81357414, z: 0.114990324, w: 0.53898036}
+      scale: {x: 0.99999994, y: 1, z: 1}
       transformModified: 1
     - name: Tube J03.R
-      position: {x: 0.0000003427267, y: 0.122803256, z: 0.0000001527369}
-      rotation: {x: 0.030375157, y: 0.93583, z: -0.27776513, w: 0.21481666}
-      scale: {x: 1, y: 0.9999999, z: 0.99999994}
+      position: {x: -0.00000009685755, y: 0.039296962, z: 0.000000064610504}
+      rotation: {x: 0.030375998, y: 0.9358301, z: -0.27776533, w: 0.21481554}
+      scale: {x: 1.0000001, y: 1.0000001, z: 0.9999999}
       transformModified: 1
     - name: Tube J03.R_end
-      position: {x: -0, y: 0.09272697, z: 0}
+      position: {x: -0, y: 0.029672569, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube K01.L
-      position: {x: -0.27261832, y: -0.18503042, z: -0.105673425}
-      rotation: {x: 0.47471282, y: 0.5141023, z: 0.6015952, w: 0.38526583}
-      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+      position: {x: -0.08723788, y: -0.05920961, z: -0.033815492}
+      rotation: {x: 0.47471306, y: 0.5141024, z: 0.60159457, w: 0.3852664}
+      scale: {x: 1.0000001, y: 1, z: 0.9999998}
       transformModified: 1
     - name: Tube K02.L
-      position: {x: -0.0000000721775, y: 0.17476298, z: 0.00000006263144}
-      rotation: {x: -0.10672905, y: 0.46970943, z: 0.20119002, w: 0.8529388}
-      scale: {x: 0.9999999, y: 0.9999997, z: 1}
+      position: {x: 0.00000008614734, y: 0.055924125, z: 0.000000046304194}
+      rotation: {x: -0.106729455, y: 0.4697093, z: 0.20119037, w: 0.8529387}
+      scale: {x: 0.9999998, y: 0.99999964, z: 1}
       transformModified: 1
     - name: Tube K03.L
-      position: {x: -0.00000011920929, y: 0.15885827, z: -0.00000012665987}
-      rotation: {x: -0.23228967, y: 0.3326854, z: 0.18528797, w: 0.89500296}
+      position: {x: 0.0000000055879354, y: 0.05083472, z: -0.000000067055225}
+      rotation: {x: -0.23228928, y: 0.33268544, z: 0.18528713, w: 0.8950032}
       scale: {x: 1, y: 1.0000001, z: 1}
       transformModified: 1
     - name: Tube K04.L
-      position: {x: -0.000000013038516, y: 0.1425938, z: -0.000000063329935}
-      rotation: {x: -0.2372895, y: 0.7760364, z: -0.22747785, w: 0.5382518}
-      scale: {x: 1, y: 0.99999964, z: 1.0000001}
+      position: {x: 0.0000000023283064, y: 0.045630157, z: -0.000000034458935}
+      rotation: {x: -0.23728895, y: 0.7760365, z: -0.2274769, w: 0.5382524}
+      scale: {x: 1, y: 0.9999998, z: 0.9999999}
       transformModified: 1
     - name: Tube K04.L_end
-      position: {x: -0, y: 0.16822942, z: 0}
+      position: {x: -0, y: 0.05383338, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube K01.R
-      position: {x: 0.27261838, y: -0.18503042, z: -0.105673596}
-      rotation: {x: 0.46185812, y: 0.50284123, z: 0.6115193, w: 0.39985242}
-      scale: {x: 0.9999998, y: 1, z: 1}
+      position: {x: 0.087237865, y: -0.05920961, z: -0.03381555}
+      rotation: {x: 0.461858, y: 0.50284076, z: 0.6115192, w: 0.39985323}
+      scale: {x: 0.99999994, y: 0.9999998, z: 0.99999976}
       transformModified: 1
     - name: Tube K02.R
-      position: {x: -0.00000005075708, y: 0.174763, z: 0.000000103609636}
-      rotation: {x: -0.19087669, y: 0.43786472, z: 0.124236, w: 0.86971605}
-      scale: {x: 1.0000001, y: 1.0000002, z: 0.9999999}
+      position: {x: -0.0000002438901, y: 0.055924136, z: -0.000000015832484}
+      rotation: {x: -0.19087695, y: 0.43786466, z: 0.12423662, w: 0.8697159}
+      scale: {x: 1, y: 0.9999998, z: 0.99999994}
       transformModified: 1
     - name: Tube K03.R
-      position: {x: -0.00000022351742, y: 0.1588584, z: -0.000000037252903}
-      rotation: {x: -0.2567726, y: 0.17881241, z: -0.1495263, w: 0.9379423}
-      scale: {x: 0.9999998, y: 1, z: 0.9999999}
+      position: {x: 0.000000023748726, y: 0.05083464, z: 0.00000004656613}
+      rotation: {x: -0.25677174, y: 0.17881249, z: -0.1495255, w: 0.9379427}
+      scale: {x: 0.9999999, y: 1, z: 0.9999998}
       transformModified: 1
     - name: Tube K04.R
-      position: {x: -0.000000037252903, y: 0.14259374, z: 0.000000078231096}
-      rotation: {x: -0.13894027, y: 0.48233715, z: -0.29790637, w: 0.81197184}
-      scale: {x: 1, y: 1, z: 1}
+      position: {x: -0, y: 0.04563002, z: -0.000000081025064}
+      rotation: {x: -0.13893938, y: 0.48233756, z: -0.29790527, w: 0.81197214}
+      scale: {x: 0.9999999, y: 0.99999976, z: 0.9999999}
       transformModified: 1
     - name: Tube K04.R_end
-      position: {x: -0, y: 0.16822942, z: 0}
+      position: {x: -0, y: 0.05383338, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube L01.L
-      position: {x: -0.08956492, y: 0.004310997, z: -0.22658682}
-      rotation: {x: 0.7792258, y: -0.23680064, z: 0.56157446, w: -0.14617364}
-      scale: {x: 1.0000002, y: 1.0000001, z: 1.0000006}
+      position: {x: -0.028660772, y: 0.0013793359, z: -0.0725078}
+      rotation: {x: 0.7792277, y: -0.23679912, z: 0.5615731, w: -0.14617136}
+      scale: {x: 0.99999994, y: 1, z: 1.0000001}
       transformModified: 1
     - name: Tube L02.L
-      position: {x: 0.00000021606684, y: 0.11686696, z: 0.000000067055225}
-      rotation: {x: -0.22862092, y: 0.36869925, z: -0.32523388, w: 0.84024775}
-      scale: {x: 1, y: 1, z: 0.9999999}
+      position: {x: 9.313226e-10, y: 0.037397575, z: -0.000000013038516}
+      rotation: {x: -0.22862114, y: 0.3686992, z: -0.3252336, w: 0.8402478}
+      scale: {x: 0.9999999, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Tube L03.L
-      position: {x: -0.0000001527369, y: 0.20754355, z: 0.00000037252903}
-      rotation: {x: 0.24383977, y: 0.568108, z: -0.241063, w: 0.74812037}
-      scale: {x: 0.9999998, y: 1.0000001, z: 0.9999999}
+      position: {x: -0.000000017695129, y: 0.06641411, z: 0.000000117346644}
+      rotation: {x: 0.24383956, y: 0.5681079, z: -0.24106228, w: 0.74812084}
+      scale: {x: 0.99999964, y: 0.9999998, z: 0.9999999}
       transformModified: 1
     - name: Tube L04.L
-      position: {x: -0.000000049360096, y: 0.22293282, z: -0.000000109896064}
-      rotation: {x: 0.08847212, y: 0.009664046, z: 0.1270956, w: 0.98788965}
+      position: {x: 0.000000077532604, y: 0.07133846, z: 0.00000010244548}
+      rotation: {x: 0.08847248, y: 0.0096641, z: 0.12709518, w: 0.9878897}
       scale: {x: 1, y: 0.9999999, z: 1}
       transformModified: 1
     - name: Tube L05.L
-      position: {x: 0.0000004819012, y: 0.18384835, z: -0.000000346452}
-      rotation: {x: -0.20362718, y: 0.33458987, z: 0.39397866, w: 0.83148444}
-      scale: {x: 1, y: 0.9999999, z: 0.99999976}
+      position: {x: -0.00000008242205, y: 0.058831412, z: -0.00000008009374}
+      rotation: {x: -0.203628, y: 0.33459, z: 0.39397871, w: 0.83148426}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1}
       transformModified: 1
     - name: Tube L06.L
-      position: {x: -0.000000033527613, y: 0.16688508, z: -0.00000013411045}
-      rotation: {x: -0.19650847, y: 0.670063, z: -0.01739225, w: 0.71560985}
-      scale: {x: 0.9999999, y: 0.99999976, z: 1}
+      position: {x: -0.0000000027939677, y: 0.053403363, z: 0.000000117346644}
+      rotation: {x: -0.19650848, y: 0.67006254, z: -0.017391348, w: 0.7156103}
+      scale: {x: 1, y: 1.0000005, z: 1}
       transformModified: 1
     - name: Tube L07.L
-      position: {x: -0.000000039115548, y: 0.1573075, z: 0.00000020116568}
-      rotation: {x: 0.10654186, y: 0.2805611, z: -0.20292255, w: 0.93207127}
-      scale: {x: 1, y: 0.9999999, z: 0.9999999}
+      position: {x: 0.000000018626451, y: 0.05033834, z: -0.000000044703484}
+      rotation: {x: 0.106542416, y: 0.28056148, z: -0.20292264, w: 0.93207103}
+      scale: {x: 1, y: 0.99999994, z: 1.0000001}
       transformModified: 1
     - name: Tube L07.L_end
-      position: {x: -0, y: 0.14444712, z: 0}
+      position: {x: -0, y: 0.046223078, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube L01.R
-      position: {x: 0.089564756, y: 0.004310997, z: -0.22658688}
-      rotation: {x: 0.7465501, y: -0.07883165, z: 0.60433674, w: -0.26688132}
-      scale: {x: 1.0000001, y: 0.9999999, z: 1.0000002}
+      position: {x: 0.028660722, y: 0.0013793347, z: -0.07250781}
+      rotation: {x: 0.74655, y: -0.0788319, z: 0.60433716, w: -0.26688054}
+      scale: {x: 1.0000001, y: 1.0000001, z: 1.0000002}
       transformModified: 1
     - name: Tube L02.R
-      position: {x: 0.000000014901161, y: 0.11686737, z: -0.000000026077032}
-      rotation: {x: 0.21184388, y: 0.061827164, z: -0.33640274, w: 0.91549593}
-      scale: {x: 0.99999994, y: 0.99999994, z: 0.99999994}
+      position: {x: -0.000000024214387, y: 0.037397563, z: -0.000000027939677}
+      rotation: {x: 0.21184415, y: 0.061826915, z: -0.33640257, w: 0.91549593}
+      scale: {x: 0.9999998, y: 1, z: 1.0000001}
       transformModified: 1
     - name: Tube L03.R
-      position: {x: 0.00000008940697, y: 0.20754363, z: -0.0000003122259}
-      rotation: {x: 0.1412346, y: 0.12732494, z: -0.31244457, w: 0.9307092}
-      scale: {x: 0.9999999, y: 0.9999998, z: 0.99999976}
-      transformModified: 1
-    - name: Tube L04.R
-      position: {x: -0.00000033900142, y: 0.22293286, z: -0.0000011478551}
-      rotation: {x: -0.076758265, y: 0.0039405418, z: -0.13449435, w: 0.9879291}
+      position: {x: -0.00000002142042, y: 0.06641397, z: -0.00000006600749}
+      rotation: {x: 0.14123414, y: 0.1273253, z: -0.3124444, w: 0.93070924}
       scale: {x: 0.9999998, y: 0.99999994, z: 0.9999997}
       transformModified: 1
+    - name: Tube L04.R
+      position: {x: -0.000000052619725, y: 0.07133848, z: -0.00000004537287}
+      rotation: {x: -0.07675772, y: 0.0039405334, z: -0.13449462, w: 0.9879291}
+      scale: {x: 0.9999998, y: 0.9999998, z: 0.9999998}
+      transformModified: 1
     - name: Tube L05.R
-      position: {x: -0.00000014156103, y: 0.18384814, z: -0.00000007636845}
-      rotation: {x: -0.34906015, y: 0.26602787, z: -0.27356952, w: 0.85588896}
-      scale: {x: 1, y: 0.99999994, z: 0.9999999}
+      position: {x: 0.000000018626451, y: 0.058831446, z: 0.00000016530976}
+      rotation: {x: -0.3490607, y: 0.2660278, z: -0.27356914, w: 0.85588884}
+      scale: {x: 1, y: 0.99999994, z: 1}
       transformModified: 1
     - name: Tube L06.R
-      position: {x: 0.000000007450581, y: 0.16688493, z: -0.000000070780516}
-      rotation: {x: -0.024104897, y: 0.49486154, z: -0.19579826, w: 0.8462825}
-      scale: {x: 1.0000001, y: 0.99999976, z: 1}
+      position: {x: 0.000000007450581, y: 0.05340334, z: -0.00000006519258}
+      rotation: {x: -0.024103977, y: 0.49486223, z: -0.19579825, w: 0.8462821}
+      scale: {x: 0.9999998, y: 1, z: 1}
       transformModified: 1
     - name: Tube L07.R
-      position: {x: 0.000000044703484, y: 0.15730752, z: -0.00000016763806}
-      rotation: {x: -0.114790805, y: -0.009872203, z: -0.19837274, w: 0.97333133}
-      scale: {x: 0.99999994, y: 1.0000002, z: 0.99999994}
+      position: {x: 0.000000039115548, y: 0.050338313, z: 0.000000021071173}
+      rotation: {x: -0.11479134, y: -0.009872846, z: -0.19837284, w: 0.9733313}
+      scale: {x: 0.9999999, y: 0.9999998, z: 0.99999976}
       transformModified: 1
     - name: Tube L07.R_end
-      position: {x: -0, y: 0.14444713, z: 0}
+      position: {x: -0, y: 0.04622308, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Jend.L
-      position: {x: -0.07584437, y: 0.55761695, z: 0.25767636}
-      rotation: {x: 0.00000005338508, y: 0.7071068, z: 0.7071067, w: 0.000000053385072}
+      position: {x: -0.0242702, y: 0.17843747, z: 0.08245643}
+      rotation: {x: -0.00000004212741, y: 0.7071068, z: 0.7071067, w: -0.00000006464275}
       scale: {x: 1, y: 0.9999997, z: 0.99999994}
       transformModified: 1
     - name: Tube Jend.L_end
-      position: {x: -0, y: 0.18280438, z: 0}
+      position: {x: -0, y: 0.058497407, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Jend.R
-      position: {x: 0.07584437, y: 0.55761695, z: 0.25767636}
-      rotation: {x: 0.00000005338508, y: 0.7071068, z: 0.7071067, w: 0.000000053385072}
+      position: {x: 0.024270197, y: 0.17843747, z: 0.08245643}
+      rotation: {x: -0.00000004212741, y: 0.7071068, z: 0.7071067, w: -0.00000006464275}
       scale: {x: 1, y: 0.9999997, z: 0.99999994}
       transformModified: 1
     - name: Tube Jend.R_end
-      position: {x: -0, y: 0.18280438, z: 0}
+      position: {x: -0, y: 0.058497407, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Kend.L
-      position: {x: -0.08121019, y: 0.30282903, z: 0.26883373}
-      rotation: {x: -0.00000005338508, y: 0.7071068, z: 0.7071067, w: -0.000000053385072}
+      position: {x: -0.02598726, y: 0.09690535, z: 0.08602678}
+      rotation: {x: 0.00000006331603, y: 0.7071068, z: 0.7071067, w: 0.000000043454122}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Kend.L_end
-      position: {x: -0, y: 0.20722607, z: 0}
+      position: {x: -0, y: 0.06631234, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Kend.R
-      position: {x: 0.08121019, y: 0.30282903, z: 0.26883373}
-      rotation: {x: -0.00000005338508, y: 0.7071068, z: 0.7071067, w: -0.000000053385072}
+      position: {x: 0.025987258, y: 0.09690535, z: 0.086026795}
+      rotation: {x: -0.000000033523182, y: 0.7071068, z: 0.7071067, w: -0.00000007324697}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Kend.R_end
-      position: {x: -0, y: 0.20722607, z: 0}
+      position: {x: -0, y: 0.06631234, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Lend.L
-      position: {x: -0.14681076, y: 0.05960226, z: 0.21942127}
-      rotation: {x: 0.00000005338508, y: 0.7071068, z: 0.7071067, w: 0.000000053385072}
+      position: {x: -0.046979442, y: 0.019072771, z: 0.0702148}
+      rotation: {x: -0.000000030890277, y: 0.7071068, z: 0.7071067, w: -0.00000007587988}
       scale: {x: 1, y: 0.9999997, z: 0.99999994}
       transformModified: 1
     - name: Tube Lend.L_end
-      position: {x: -0, y: 0.18297125, z: 0}
+      position: {x: -0, y: 0.058550805, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Lend.R
-      position: {x: 0.14681076, y: 0.05960226, z: 0.21942127}
-      rotation: {x: 0.00000005338508, y: 0.7071068, z: 0.7071067, w: 0.000000053385072}
-      scale: {x: 1, y: 0.9999997, z: 0.99999994}
+      position: {x: 0.04697944, y: 0.019072771, z: 0.07021481}
+      rotation: {x: -0.000000030890266, y: 0.7071068, z: 0.7071067, w: -0.00000007587989}
+      scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: Tube Lend.R_end
-      position: {x: -0, y: 0.18297122, z: 0}
+      position: {x: -0, y: 0.058550783, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     - name: BOT_body
       position: {x: 0, y: 0, z: 0}
-      rotation: {x: 0.000000021855694, y: -0.0000000754979, z: 1.7112915e-15, w: 1}
+      rotation: {x: 0.00000008146034, y: -0.00000019470718, z: 1.8434293e-14, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
     armTwist: 0.5

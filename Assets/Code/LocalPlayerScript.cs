@@ -74,6 +74,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	private static float footStepCooldownMax = 0.35f;
 	private float footStepCooldown = footStepCooldownMax/2f;
 
+	public bool gameEnded = false;
+
 	void Awake () {
 
 		GlobalData.Start ();
@@ -84,7 +86,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
 		personalCamera.transform.localPosition = centerOfCamera;
 		firstPersonCamera = this.gameObject.transform.FindChild ("PersonalCamera/FirstPersonCamera").gameObject;
-		visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
+		visualAvatar = Instantiate (Resources.Load("Prefabs/BOT") as GameObject);
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
 		visualAvatar.transform.localScale = new Vector3 (0.9f, 0.9f, 0.9f);
@@ -130,7 +132,9 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		handleAttack ();
+		if (!gameEnded) {
+			handleAttack ();
+		}
 		handleSprintCooldown ();
 		handleCameraChanges ();
 		//adjustFirstPersonObjects ();

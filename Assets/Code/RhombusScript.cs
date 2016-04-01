@@ -549,11 +549,13 @@ public class RhombusScript : MonoBehaviour {
 			if (c == "\b" [0]) {
 				if (s.Length != 0) {
 					s = s.Substring (0, s.Length - 1);
+					SoundType ();
 				}	
 			} else if (c == "\n" [0] || c == "\r" [0]) {
 				// RETURN KEY
 			} else {
 				s += c;
+				SoundType ();
 			}
 
 		}
@@ -573,6 +575,17 @@ public class RhombusScript : MonoBehaviour {
 		} else {
 			typeText.SetActive (false);
 		}
+
+	}
+
+	private void SoundType ()
+	{
+
+		int aux = Random.Range (1, 4);
+		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/Text/Text_"+aux.ToString("00"));
+		audio.volume = 1f;
+		audio.pitch = UnityEngine.Random.Range (0.85f, 1.15f);
+		audio.Play ();
 
 	}
 

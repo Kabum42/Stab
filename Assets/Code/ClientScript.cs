@@ -15,7 +15,7 @@ public class ClientScript : MonoBehaviour {
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
-	public float remainingSeconds = 600f;
+	public float remainingSeconds = (0.3f)*(60f); // 5 MINUTES
 
 	private ChatManager chatManager;
 
@@ -80,6 +80,19 @@ public class ClientScript : MonoBehaviour {
 		updateMyInfoInOtherClients ();
 		synchronizeOtherPlayers ();
 		updateHacking ();
+
+		if (remainingSeconds <= 0f) {
+			localPlayer.gameEnded = true;
+			localPlayer.attacking = 0f;
+			/** HACK AQUI HAY QUE HACER QUE SE DECIDA EL GANADOR CON UN RPC DESDE EL SERVER, QUE SI NO HAY DESINCRONIZACIONES HACK **/
+			if (listPlayers [0].playerCode == myCode) {
+				textBig.GetComponent<Text>().text = "<color=#44FF44>CONGRATULATIONS!</color> YOU WON";
+			} else {
+				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+listPlayers[0].playerCode+"</color> HAS WON";
+			}
+
+			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+		}
 
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			Network.Disconnect ();
@@ -303,10 +316,12 @@ public class ClientScript : MonoBehaviour {
 
 			rankingBackground.SetActive (true);
 			chatManager.chatPanel.SetActive(false);
+			textBig.SetActive (false);
 
 		} else {
 			
 			rankingBackground.SetActive (false);
+			textBig.SetActive (true);
 
 			// SHOW CHAT PANEL
 			if (chatManager.lastChatPannelInteraction >= chatManager.chatPannelInteractionThreshold) {
@@ -472,8 +487,8 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void sendRemainingSecondsRPC(string playerCode, float auxRemainingSeconds)
 	{
-		if (playerCode == Network.player.ToString()) {
-			gameScript.clientScript.remainingSeconds = auxRemainingSeconds;
+		if (playerCode == myCode) {
+			remainingSeconds = auxRemainingSeconds;
 		}
 	}
 
@@ -556,7 +571,7 @@ public class ClientScript : MonoBehaviour {
 
 		public Player(string auxPlayerCode) {
 
-			visualAvatar = Instantiate (Resources.Load("Prefabs/Subject") as GameObject);
+			visualAvatar = Instantiate (Resources.Load("Prefabs/BOT") as GameObject);
 			Initialize(auxPlayerCode, visualAvatar);
 
 		}
