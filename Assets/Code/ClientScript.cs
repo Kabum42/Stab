@@ -21,6 +21,7 @@ public class ClientScript : MonoBehaviour {
 
 	private GameObject rankingBackground;
 	private GameObject textTargeted;
+	private GameObject textBig;
 	public GameObject map;
 
 	public LocalPlayerScript localPlayer;
@@ -42,6 +43,8 @@ public class ClientScript : MonoBehaviour {
 
 		textTargeted = GameObject.Find ("Canvas/TextTargeted");
 		textTargeted.SetActive (false);
+
+		textBig = GameObject.Find ("Canvas/TextBig");
 
 		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
 
@@ -73,9 +76,18 @@ public class ClientScript : MonoBehaviour {
 		checkIfActivateChat ();
 		updateChat ();
 		updateRanking ();
+		updateCanvas ();
 		updateMyInfoInOtherClients ();
 		synchronizeOtherPlayers ();
 		updateHacking ();
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			Network.Disconnect ();
+		}
+	
+	}
+
+	void updateCanvas() {
 
 		if (myPlayer.hackingPlayerCode == "-1") {
 			localPlayer.crossHair.GetComponent<Image>().color = new Color(1f, 1f, 1f);
@@ -87,10 +99,8 @@ public class ClientScript : MonoBehaviour {
 			textTargeted.GetComponent<Text>().text = "<Player "+myPlayer.hackingPlayerCode+">";
 		}
 
-		if (Input.GetKeyDown (KeyCode.Escape)) {
-			Network.Disconnect ();
-		}
-	
+		textBig.GetComponent<CanvasRenderer> ().SetAlpha (Mathf.Max(0f, textBig.GetComponent<CanvasRenderer> ().GetAlpha() - Time.deltaTime * (1f/5f)));
+
 	}
 
 	void updateHacking() {
@@ -493,11 +503,30 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
+	void killRPC(string assassinCode, string victimCode)
+	{
+		if (assassinCode == myCode) {
+			// YOU SLAYED VICTIMCODE
+			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+			textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimCode+"</color>";
+			localPlayer.nextCooldownFree = true;
+		} else if (victimCode == myCode) {
+			// SLAYED BY ASSASSINCODE
+			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinCode+"</color>";
+		}
+	}
+
+	[RPC]
 	void respawnRPC(string playerCode, Vector3 position, Vector3 eulerAngles)
 	{
-		if (Network.player.ToString () == playerCode) {
+		if (playerCode == myCode) {
 			localPlayer.transform.position = position;
 			localPlayer.transform.eulerAngles = eulerAngles;
+		} else {
+			Player auxPlayer = PlayerByCode (playerCode);
+			auxPlayer.visualAvatar.transform.position = position;
+			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
 		}
 	}
 

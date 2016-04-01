@@ -53,8 +53,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	//public AnimationCurve attackCameraDistance;
 
+	public bool nextCooldownFree = false;
 	private static float attackChargeCooldownMax = 1.5f;
-	private float attackChargeCooldown = 0f;
+	public float attackChargeCooldown = 0f;
 	private bool attackCharging = false;
 	private static float attackChargeMax = 0.1f;
 	private float attackCharge = 0f;
@@ -176,7 +177,12 @@ public class LocalPlayerScript : MonoBehaviour {
 			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*10f);
 			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 80f, Time.deltaTime * 5f);
 
-			if (attacking == attackingMax) { attacking = 0f; }
+			if (attacking == attackingMax) { 
+				attacking = 0f;
+				if (nextCooldownFree) {
+					attackChargeCooldown = 0f;
+				}
+			}
 
 		} else {
 

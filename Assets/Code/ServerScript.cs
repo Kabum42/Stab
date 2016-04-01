@@ -54,6 +54,7 @@ public class ServerScript : MonoBehaviour {
 					if (currentPlayer.immune == 0f) {
 
 						gameScript.clientScript.listPlayers[i].kills++;
+						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, gameScript.clientScript.listPlayers[i].playerCode, currentPlayer.playerCode);
 						respawn (currentPlayer.playerCode);
 						currentPlayer.immune = 5f;
 						sendRankingData ();

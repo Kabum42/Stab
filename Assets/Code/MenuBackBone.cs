@@ -19,6 +19,7 @@ public class MenuBackBone : MonoBehaviour {
 
 	private bool lastActionAddition = false;
 
+	private AudioSource menuMusic;
     private PositronicBrain pB;
 
 	public Vector3 neuronOffset = new Vector3(-8f, -3.5f, 1f);
@@ -27,6 +28,13 @@ public class MenuBackBone : MonoBehaviour {
 	void Start () {
 
 		GlobalData.Start ();
+
+		menuMusic = this.gameObject.AddComponent<AudioSource> ();
+		menuMusic.clip = Resources.Load("Sound/Music/Ossuary_6_Air") as AudioClip;
+		menuMusic.loop = true;
+		menuMusic.spatialBlend = 0f;
+		menuMusic.volume = 1f;
+		menuMusic.Play ();
 
 		Cursor.visible = false;
 		Cursor.lockState = CursorLockMode.Locked;
