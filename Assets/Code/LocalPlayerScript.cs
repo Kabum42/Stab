@@ -53,10 +53,10 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	//public AnimationCurve attackCameraDistance;
 
-	private static float attackChargeCooldownMax = 2f;
+	private static float attackChargeCooldownMax = 1.5f;
 	private float attackChargeCooldown = 0f;
 	private bool attackCharging = false;
-	private static float attackChargeMax = 0.5f;
+	private static float attackChargeMax = 0.1f;
 	private float attackCharge = 0f;
 	public float attacking = 0f;
 	private float attackingMax = 0.5f;
@@ -141,7 +141,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	void FixedUpdate() {
 
 		handleMovementInput ();
-		//checkIfLookingAtPlayer ();
 
 	}
 
@@ -168,11 +167,11 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			receiveInput2 = false;
 
-			attacking += Time.deltaTime;
+			attacking += Time.deltaTime*2f;
 			if (attacking >= attackingMax) { attacking = attackingMax; }
 
 			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
-			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 10f);
+			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 20f);
 
 			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*10f);
 			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 80f, Time.deltaTime * 5f);

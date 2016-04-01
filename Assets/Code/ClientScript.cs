@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
+using System.Linq;
 
 public class ClientScript : MonoBehaviour {
 
@@ -28,8 +29,8 @@ public class ClientScript : MonoBehaviour {
 	public List<Player> listPlayers = new List<Player>();
 
 	private static float slowSpeed = 1f/(1f);
-	private static float hackingSpeed = 1f/(0.5f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
-	private static float fastSpeed = 1f/(0.15f);
+	private static float hackingSpeed = 1f/(0.25f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
+	private static float fastSpeed = 1f/(0.05f);
 
 	// Use this for initialization
 	void Awake () {
@@ -267,9 +268,10 @@ public class ClientScript : MonoBehaviour {
 			int minutes = totalSeconds / 60;
 			string auxTime = minutes.ToString("00") + ":" + seconds.ToString("00");
 
+			listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.playerCode).ToList();
 
 			for (int i = 0; i < listPlayers.Count; i++) {
-				if (Network.player.ToString() == listPlayers[i].playerCode) {
+				if (listPlayers[i].playerCode == myCode) {
 					auxPlayers += "<color=#D7D520>" + "Player"+listPlayers[i].playerCode + "</color>";
 				}
 				else {
