@@ -51,6 +51,10 @@ public class ClientScript : MonoBehaviour {
 
 		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Shit") as GameObject);
 
+		if (!Network.isServer) {
+			map.transform.FindChild ("RespawnPoints").gameObject.SetActive (false);
+		}
+
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
 		localPlayer.gameScript = gameScript;
 
