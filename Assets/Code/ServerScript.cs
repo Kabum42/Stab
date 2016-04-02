@@ -74,7 +74,7 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	void respawn(string playerCode) {
+	public void respawn(string playerCode) {
 
         List<int> possibleRespawns = new List<int>();
         float cooldown = 5f;

@@ -217,6 +217,9 @@ public class ClientScript : MonoBehaviour {
 					Player auxPlayer = hits[i].collider.gameObject.GetComponent<PlayerMarker> ().player;
 					if (auxPlayer.hackingMyPlayer < 1f) {
 						// YOU CAN SEE IT
+						if (p1.lastTargetCode != auxPlayer.playerCode) {
+							//StartCoroutine(TargetDetected());
+						}
 						p1.lastTargetCode = auxPlayer.playerCode;
 						return auxPlayer;
 					}
@@ -266,8 +269,8 @@ public class ClientScript : MonoBehaviour {
 
 			if (listPlayers [i].playerCode != myCode) {
 
-				listPlayers [i].visualAvatar.transform.position = Hacks.LerpVector3 (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
-				listPlayers [i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
+				listPlayers [i].visualAvatar.transform.position = Vector3.Lerp (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
+				listPlayers [i].visualAvatar.transform.eulerAngles = Vector3.Lerp (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
 				listPlayers [i].attacking = Mathf.Max (0f, listPlayers [i].attacking - Time.deltaTime);
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 
@@ -396,6 +399,26 @@ public class ClientScript : MonoBehaviour {
 		chatManager.chatInputField.GetComponent<InputField> ().MoveTextEnd (true);
 	}
 
+	/*
+	private IEnumerator TargetDetected() {
+
+		int aux = UnityEngine.Random.Range (1, 6);
+		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/BeepHeart/BeepHeart_"+aux.ToString("00"));
+		audio.volume = 0.25f;
+		audio.pitch = UnityEngine.Random.Range (0.80f, 0.85f);
+		audio.Play ();
+
+		yield return new WaitForSeconds(0.15f);
+
+		aux = UnityEngine.Random.Range (1, 6);
+		audio = Hacks.GetAudioSource ("Sound/Effects/BeepHeart/BeepHeart_"+aux.ToString("00"));
+		audio.volume = 0.25f;
+		audio.pitch = UnityEngine.Random.Range (0.90f, 0.95f);
+		audio.Play ();
+
+	}
+	*/
+
 	public NetworkPlayer NetworkPlayerByCode(string playerCode) {
 
 		if (Network.player.ToString () == playerCode) {
@@ -474,7 +497,10 @@ public class ClientScript : MonoBehaviour {
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
 				gameScript.serverScript.sendRankingData();
+				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
 				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, playerCode, remainingSeconds);
+				// Y LE ASIGNAMOS UN SITIO DONDE APARECER
+				gameScript.serverScript.respawn(playerCode);
 
 			}
 
