@@ -184,6 +184,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			if (attacking == attackingMax) { 
 				attacking = 0f;
 				if (nextCooldownFree) {
+					nextCooldownFree = false;
 					attackChargeCooldown = 0f;
 				}
 			}

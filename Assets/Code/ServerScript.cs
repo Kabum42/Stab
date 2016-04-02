@@ -64,14 +64,17 @@ public class ServerScript : MonoBehaviour {
 				}
 			}
 
+			// THIS CHECKS IF SOMEONE IS FALLING INTO THE ETERNAL VOID OF THE BUGSPHERE
+			if (gameScript.clientScript.listPlayers [i].visualAvatar.transform.position.y < -100f) {
+				respawn (gameScript.clientScript.listPlayers [i].playerCode);
+			}
+
 		}
 
 
 	}
 
 	void respawn(string playerCode) {
-
-		Debug.Log ("RESPAWNING: "+playerCode);
 
         List<int> possibleRespawns = new List<int>();
         float cooldown = 5f;

@@ -547,6 +547,7 @@ public class ClientScript : MonoBehaviour {
 	void respawnRPC(string playerCode, Vector3 position, Vector3 eulerAngles)
 	{
 		if (playerCode == myCode) {
+			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			localPlayer.transform.position = position;
 			localPlayer.transform.eulerAngles = eulerAngles;
 		} else {
