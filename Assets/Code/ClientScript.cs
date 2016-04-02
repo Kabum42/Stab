@@ -15,7 +15,7 @@ public class ClientScript : MonoBehaviour {
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
-	public float remainingSeconds = (5f)*(60f); // 5 MINUTES
+	public float remainingSeconds = (8f)*(60f); // 5 MINUTES
 
 	private ChatManager chatManager;
 
@@ -49,7 +49,7 @@ public class ClientScript : MonoBehaviour {
 
 		textBig = GameObject.Find ("Canvas/TextBig");
 
-		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Shit") as GameObject);
+		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
 
 		if (!Network.isServer) {
 			map.transform.FindChild ("RespawnPoints").gameObject.SetActive (false);
