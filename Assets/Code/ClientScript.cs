@@ -15,13 +15,14 @@ public class ClientScript : MonoBehaviour {
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
-	public float remainingSeconds = (0.3f)*(60f); // 5 MINUTES
+	public float remainingSeconds = (5f)*(60f); // 5 MINUTES
 
 	private ChatManager chatManager;
 
 	private GameObject rankingBackground;
 	private GameObject textTargeted;
 	private GameObject textBig;
+	private float textBigAlpha = 0f;
 	public GameObject map;
 
 	public LocalPlayerScript localPlayer;
@@ -32,6 +33,8 @@ public class ClientScript : MonoBehaviour {
 	private static float slowSpeed = 1f/(1f);
 	private static float hackingSpeed = 1f/(0.25f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
 	private static float fastSpeed = 1f/(0.05f);
+
+	private string winnerCode = "-1";
 
 	// Use this for initialization
 	void Awake () {
@@ -84,15 +87,22 @@ public class ClientScript : MonoBehaviour {
 		if (remainingSeconds <= 0f) {
 			localPlayer.gameEnded = true;
 			localPlayer.attacking = 0f;
-			/** HACK AQUI HAY QUE HACER QUE SE DECIDA EL GANADOR CON UN RPC DESDE EL SERVER, QUE SI NO HAY DESINCRONIZACIONES HACK **/
-			if (listPlayers [0].playerCode == myCode) {
+
+			if (winnerCode == "-1") {
+				if (Network.isServer) { 
+					listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.playerCode).ToList();
+					GetComponent<NetworkView> ().RPC ("winnerRPC", RPCMode.All, listPlayers[0].playerCode);
+				}
+			} else if (winnerCode == myCode) {
 				textBig.GetComponent<Text>().text = "<color=#44FF44>CONGRATULATIONS!</color> YOU WON";
 			} else {
-				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+listPlayers[0].playerCode+"</color> HAS WON";
+				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+winnerCode+"</color> HAS WON";
 			}
 
-			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+			textBigAlpha = 1f;
 		}
+
+		textBig.GetComponent<CanvasRenderer> ().SetAlpha (textBigAlpha);
 
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			Network.Disconnect ();
@@ -112,7 +122,7 @@ public class ClientScript : MonoBehaviour {
 			textTargeted.GetComponent<Text>().text = "<Player "+myPlayer.hackingPlayerCode+">";
 		}
 
-		textBig.GetComponent<CanvasRenderer> ().SetAlpha (Mathf.Max(0f, textBig.GetComponent<CanvasRenderer> ().GetAlpha() - Time.deltaTime * (1f/5f)));
+		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
 
 	}
 
@@ -207,6 +217,9 @@ public class ClientScript : MonoBehaviour {
 					Player auxPlayer = hits[i].collider.gameObject.GetComponent<PlayerMarker> ().player;
 					if (auxPlayer.hackingMyPlayer < 1f) {
 						// YOU CAN SEE IT
+						if (p1.lastTargetCode != auxPlayer.playerCode) {
+							//StartCoroutine(TargetDetected());
+						}
 						p1.lastTargetCode = auxPlayer.playerCode;
 						return auxPlayer;
 					}
@@ -256,13 +269,14 @@ public class ClientScript : MonoBehaviour {
 
 			if (listPlayers [i].playerCode != myCode) {
 
-				listPlayers [i].visualAvatar.transform.position = Hacks.LerpVector3 (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
-				listPlayers [i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
+				listPlayers [i].visualAvatar.transform.position = Vector3.Lerp (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
+				listPlayers [i].visualAvatar.transform.eulerAngles = Vector3.Lerp (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
 				listPlayers [i].attacking = Mathf.Max (0f, listPlayers [i].attacking - Time.deltaTime);
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 
 				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].hackingMyPlayer), Time.fixedDeltaTime * 5f);
 				listPlayers [i].visualMaterial.SetColor ("_Color", c);
+				listPlayers [i].visualMaterial.SetFloat ("_Cutoff", 1f - c.a);
 
 				if (listPlayers [i].sprintActive && !listPlayers [i].sprintTrail.Emit) {
 					listPlayers [i].sprintTrail.Emit = true;
@@ -385,6 +399,26 @@ public class ClientScript : MonoBehaviour {
 		chatManager.chatInputField.GetComponent<InputField> ().MoveTextEnd (true);
 	}
 
+	/*
+	private IEnumerator TargetDetected() {
+
+		int aux = UnityEngine.Random.Range (1, 6);
+		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/BeepHeart/BeepHeart_"+aux.ToString("00"));
+		audio.volume = 0.25f;
+		audio.pitch = UnityEngine.Random.Range (0.80f, 0.85f);
+		audio.Play ();
+
+		yield return new WaitForSeconds(0.15f);
+
+		aux = UnityEngine.Random.Range (1, 6);
+		audio = Hacks.GetAudioSource ("Sound/Effects/BeepHeart/BeepHeart_"+aux.ToString("00"));
+		audio.volume = 0.25f;
+		audio.pitch = UnityEngine.Random.Range (0.90f, 0.95f);
+		audio.Play ();
+
+	}
+	*/
+
 	public NetworkPlayer NetworkPlayerByCode(string playerCode) {
 
 		if (Network.player.ToString () == playerCode) {
@@ -463,7 +497,10 @@ public class ClientScript : MonoBehaviour {
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
 				gameScript.serverScript.sendRankingData();
+				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
 				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, playerCode, remainingSeconds);
+				// Y LE ASIGNAMOS UN SITIO DONDE APARECER
+				gameScript.serverScript.respawn(playerCode);
 
 			}
 
@@ -522,12 +559,12 @@ public class ClientScript : MonoBehaviour {
 	{
 		if (assassinCode == myCode) {
 			// YOU SLAYED VICTIMCODE
-			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+			textBigAlpha = 1f;
 			textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimCode+"</color>";
 			localPlayer.nextCooldownFree = true;
 		} else if (victimCode == myCode) {
 			// SLAYED BY ASSASSINCODE
-			textBig.GetComponent<CanvasRenderer> ().SetAlpha (1f);
+			textBigAlpha = 1f;
 			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinCode+"</color>";
 		}
 	}
@@ -536,6 +573,7 @@ public class ClientScript : MonoBehaviour {
 	void respawnRPC(string playerCode, Vector3 position, Vector3 eulerAngles)
 	{
 		if (playerCode == myCode) {
+			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			localPlayer.transform.position = position;
 			localPlayer.transform.eulerAngles = eulerAngles;
 		} else {
@@ -543,6 +581,12 @@ public class ClientScript : MonoBehaviour {
 			auxPlayer.visualAvatar.transform.position = position;
 			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
 		}
+	}
+
+	[RPC]
+	void winnerRPC(string playerCode)
+	{
+		winnerCode = playerCode;
 	}
 
 	// CLASSES
