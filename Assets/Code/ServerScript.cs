@@ -11,7 +11,8 @@ public class ServerScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 	
-		createRespawnPoints(gameScript.clientScript.map.transform.FindChild ("Scenario/RespawnPoints").gameObject);
+		createRespawnPoints(gameScript.clientScript.map.transform.FindChild ("RespawnPoints").gameObject);
+		respawn (gameScript.clientScript.myCode);
 
 	}
 	
