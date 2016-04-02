@@ -26,7 +26,7 @@ public class ClientScript : MonoBehaviour {
 	public GameObject map;
 
 	public LocalPlayerScript localPlayer;
-	private string myCode;
+	public string myCode;
 	private Player myPlayer;
 	public List<Player> listPlayers = new List<Player>();
 
@@ -49,7 +49,7 @@ public class ClientScript : MonoBehaviour {
 
 		textBig = GameObject.Find ("Canvas/TextBig");
 
-		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
+		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Shit") as GameObject);
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
 		localPlayer.gameScript = gameScript;
