@@ -508,6 +508,10 @@ public class ClientScript : MonoBehaviour {
 
 			}
 
+			chatManager.Add(new ChatMessage("System", "Player "+aux.playerCode+" has joined the game."));
+			chatManager.Write ();
+			chatManager.lastChatPannelInteraction = 0f;
+
 		}
 
 	}
@@ -542,6 +546,10 @@ public class ClientScript : MonoBehaviour {
 
 				Destroy(gameScript.clientScript.listPlayers[i].visualAvatar);
 				gameScript.clientScript.listPlayers.RemoveAt(i);
+
+				chatManager.Add(new ChatMessage("System", "Player "+playerCode+" has left the game."));
+				chatManager.Write ();
+				chatManager.lastChatPannelInteraction = 0f;
 
 				break;
 			}

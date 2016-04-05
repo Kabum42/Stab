@@ -205,4 +205,52 @@ public static class Hacks {
 		Cursor.lockState = CursorLockMode.Locked;
 	}
 
+	// TEXTURE2D
+	public static Texture2D GlitchTexture2D(Texture2D sourceTex) {
+
+		bool corrupted = false;
+		Texture2D newTex = sourceTex;
+
+		while (!corrupted) {
+
+			byte[] bytes = sourceTex.EncodeToJPG();
+			string data = System.Convert.ToBase64String(bytes);
+
+			string newData = data;
+			int iterations = UnityEngine.Random.Range(1, 100);
+
+			for (int i = 0; i < iterations; i++)
+			{
+				newData = modifyInfo(newData);
+			}
+
+			byte[] newBytes = System.Convert.FromBase64String(newData);
+
+			newTex = MonoBehaviour.Instantiate(sourceTex);
+			newTex.LoadImage(newBytes);
+
+			if (newTex.height != 8)
+			{
+				corrupted = true;
+			}
+
+		}
+
+		return newTex;
+
+	}
+		
+	private static string modifyInfo(string data)
+	{
+		int delete = 1;
+		int position = UnityEngine.Random.Range(0, data.Length -delete);
+
+		string prefix = data.Substring(0, position);
+		string sufix = data.Substring(position + delete, data.Length - (position + delete));
+
+		string randomChar = UnityEngine.Random.Range(1, 9).ToString();
+
+		return (prefix + randomChar + sufix);
+	}
+
 }
