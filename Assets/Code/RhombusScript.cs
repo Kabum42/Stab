@@ -63,7 +63,11 @@ public class RhombusScript : MonoBehaviour {
 
 
 	// JOIN MENU
+	private bool checkedMatches = false;
 	private GameObject joinMenu;
+	private GameObject joinMenuLoading;
+	private GameObject joinMenuLoadingText;
+	private GameObject joinMenuLoadingIcon;
 	private List<Match> currentMatches = new List<Match> ();
 	private List<Match> toRecycleMatches = new List<Match> ();
 	private int selectedMatch = -1;
@@ -259,18 +263,14 @@ public class RhombusScript : MonoBehaviour {
 		joinMenu.transform.SetParent (this.transform);
 		joinMenu.transform.localPosition = new Vector3 (0f, 0f, 0f);
 
-		/*
-		for (int i = 0; i < 9; i++) {
-			GameObject g;
-			g = Instantiate (textSource);
-			g.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
-			g.GetComponent<TextMesh> ().fontSize = 140;
-			g.GetComponent<TextMesh> ().text = "Match_"+i;
-			g.name = "Match_"+i;
-			g.transform.SetParent (joinMenu.transform);
-			g.transform.localPosition = new Vector3 (-5f, 2f - i*(0.75f), -0.1f);
-		}
-		*/
+		joinMenuLoading = this.transform.FindChild ("Loading").gameObject;
+		joinMenuLoading.transform.SetParent (joinMenu.transform);
+		joinMenuLoading.transform.localPosition = new Vector3 (0f, 0f, 0f);
+
+		joinMenuLoadingText = joinMenuLoading.transform.FindChild ("Text").gameObject;
+
+		joinMenuLoadingIcon = joinMenuLoading.transform.FindChild ("Icon").gameObject;
+
 	
 	}
 
@@ -281,10 +281,10 @@ public class RhombusScript : MonoBehaviour {
 			
 			NetworkManager.hostList = MasterServer.PollHostList();
 
-			NetworkManager.JoinServer (NetworkManager.hostList [0]);
+			//NetworkManager.JoinServer (NetworkManager.hostList [0]);
 
-			//flushMatches();
-			//addMatches();
+			flushMatches();
+			addMatches();
 
 			Debug.Log ("HostListReceived");
 		}
@@ -316,7 +316,6 @@ public class RhombusScript : MonoBehaviour {
 
 		for (int i = 0; i < NetworkManager.hostList.Length; i++) {
 
-			Debug.Log (i);
 			Match m;
 
 			if (toRecycleMatches.Count > 0) {
@@ -327,6 +326,25 @@ public class RhombusScript : MonoBehaviour {
 				m = new Match (this, ref NetworkManager.hostList[i], currentMatches.Count);
 			}
 				
+			currentMatches.Add (m);
+
+		}
+
+		// MOCKUP MATCHES
+		for (int i = 0; i < 10; i++) {
+
+			Match m;
+
+			if (toRecycleMatches.Count > 0) {
+				m = toRecycleMatches [0];
+				m.Recycle (ref NetworkManager.hostList [0], currentMatches.Count);
+				toRecycleMatches.RemoveAt (0);
+			} else {
+				m = new Match (this, ref NetworkManager.hostList[0], currentMatches.Count);
+			}
+
+			m.matchName = "Mockup_" + i;
+
 			currentMatches.Add (m);
 
 		}
@@ -404,9 +422,20 @@ public class RhombusScript : MonoBehaviour {
 
 	void updateJoin() {
 
+		if (!checkedMatches) {
+			NetworkManager.RefreshHostList ();
+			checkedMatches = true;
+		}
 
 		for (int i = 0; i < unresolvedPingMatches.Count; i++) {
 			unresolvedPingMatches[i].Check();
+		}
+
+		if (currentMatches.Count == 0) {
+			joinMenuLoading.SetActive (true);
+			joinMenuLoadingIcon.transform.Rotate (new Vector3 (0f, 120f, 0f) * Time.deltaTime);
+		} else {
+			joinMenuLoading.SetActive (false);
 		}
 
 	}

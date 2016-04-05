@@ -242,8 +242,7 @@ public class MenuBackBone : MonoBehaviour {
 				SoundSelection ();
 
 			} else if (action == "join") {
-
-				NetworkManager.RefreshHostList ();
+				
 				neuronOffset = new Vector3(-8f, 5.5f, 1f);
 				rhombus.backboneLink.root.transform.position = currentMenuNeuron.root.transform.position;
 				rhombus.Collapse ();
