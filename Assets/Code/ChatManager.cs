@@ -44,18 +44,31 @@ public class ChatManager {
 
 		for (int i = 0; i < listMessages.Count; i++) {
 
-			string auxColor = "FF7777";
+			if (listMessages [i].owner == "System") {
 
-			if (listMessages [i].owner == "You") {
-				auxColor = "77FF77";
-			}
-				
+				string auxColor = "D7D520";
+				aux += "<color=#"+auxColor+">"+listMessages[i].text+"</color>";
 
-			aux += "<color=#"+auxColor+">["+listMessages[i].owner+"]</color> : ";
-			aux += listMessages[i].text;
+				if (i < listMessages.Count -1) {
+					aux += "\n";
+				}
 
-			if (i < listMessages.Count -1) {
-				aux += "\n";
+			} else {
+
+				string auxColor = "FF7777";
+
+				if (listMessages [i].owner == "You") {
+					auxColor = "77FF77";
+				}
+
+
+				aux += "<color=#"+auxColor+">["+listMessages[i].owner+"]</color> : ";
+				aux += listMessages[i].text;
+
+				if (i < listMessages.Count -1) {
+					aux += "\n";
+				}
+
 			}
 
 		}

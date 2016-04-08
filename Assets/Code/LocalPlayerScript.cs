@@ -37,19 +37,13 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	private float notMoving = 0f;
 
-	public Skills skills;
+	public float impulseResource = 3f;
+	public float impulsing = 0f;
 
-	public float sprintCooldownCurrent = 0f;
-	public float sprintCooldownMax = 5f;
-	public float sprintActive = 0f;
-
-	public MeleeWeaponTrail sprintTrail;
+	//public MeleeWeaponTrail sprintTrail;
 
 	public GameObject crossHair;
-
-    public AudioSource audioSource1;
-
-    private List<AudioClip> stabbingClips = new List<AudioClip>();
+	public GameObject impulseText;
 
 	//public AnimationCurve attackCameraDistance;
 
@@ -93,22 +87,19 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar.name = "VisualAvatar";
 		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
 		materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
-		sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
+		//sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
 		crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
 		crossHair.transform.SetParent(GameObject.Find ("Canvas").transform);
 		crossHair.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0, 0);
 		crossHair.name = "CanvasCrossHair";
 
-		skills = new Skills (this);
+		impulseText = Instantiate (Resources.Load("Prefabs/ImpulseText") as GameObject);
+		impulseText.transform.SetParent(GameObject.Find ("Canvas").transform);
+		impulseText.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-64, 35);
+		impulseText.name = "ImpulseText";
 
 		lastPositionCursor = Input.mousePosition;
-
-		audioSource1 = this.gameObject.AddComponent<AudioSource>();
-
-		stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_001") as AudioClip);
-		stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_002") as AudioClip);
-		stabbingClips.Add(Resources.Load("Sound/Effects/Knife_Stab_003") as AudioClip);
 
 		GameObject sun = GameObject.Find ("Sun");
 		if (sun != null) {
@@ -132,14 +123,10 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (!gameEnded) {
-			handleAttack ();
-		}
-		handleSprintCooldown ();
+		handleAttack ();
 		handleCameraChanges ();
 		//adjustFirstPersonObjects ();
 		handleRegularInput();
-		skills.Update ();
 	
 	}
 
@@ -168,69 +155,42 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleAttack() {
 
-		if (attacking > 0f) {
 
-			receiveInput2 = false;
+		if (attackChargeCooldown > 0f) {
+			attackChargeCooldown -= Time.deltaTime;
+			if (attackChargeCooldown <= 0f) { attackChargeCooldown = 0f; }
+		}
 
-			attacking += Time.deltaTime*2f;
-			if (attacking >= attackingMax) { attacking = attackingMax; }
-
-			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
-			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 20f);
-
-			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*10f);
-			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 80f, Time.deltaTime * 5f);
-
-			if (attacking == attackingMax) { 
-				attacking = 0f;
-				if (nextCooldownFree) {
-					nextCooldownFree = false;
-					attackChargeCooldown = 0f;
-				}
+		if (attackChargeCooldown <= 0f) {
+			if (Input.GetMouseButtonDown (0)) {
+				attackCharging = true;
 			}
+		}
 
-		} else {
+		if (Input.GetMouseButtonDown (0) && attackCharge > 0.1f) {
+			dashAttack ();
+		}
 
-			receiveInput2 = true;
+		if (attackCharging) {
 
-			if (attackChargeCooldown > 0f) {
-				attackChargeCooldown -= Time.deltaTime;
-				if (attackChargeCooldown <= 0f) { attackChargeCooldown = 0f; }
-			}
+			attackCharge += Time.deltaTime;
 
-			if (attackChargeCooldown <= 0f) {
-				if (Input.GetMouseButtonDown (0)) {
-					attackCharging = true;
-				}
-			}
-
-			if (Input.GetMouseButtonDown (0) && attackCharge > 0.1f) {
+			if (attackCharge >= attackChargeMax) {
+				attackCharge = attackChargeMax;
 				dashAttack ();
-			}
-
-			if (attackCharging) {
-
-				attackCharge += Time.deltaTime;
-
-				if (attackCharge >= attackChargeMax) {
-					attackCharge = attackChargeMax;
-					dashAttack ();
-				}
-
-			}
-
-			if (attackChargeCooldown > 0f) {
-
-				armRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (new Color (1f, 1f, 1f), new Color (0f, 0f, 1f), attackChargeCooldown/attackChargeCooldownMax);
-
-			} else {
-
-				armRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (new Color (1f, 1f, 1f), new Color (1f, 0f, 0f), attackCharge);
-
 			}
 
 		}
 
+		if (attackChargeCooldown > 0f) {
+
+			armRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (new Color (1f, 1f, 1f), new Color (0f, 0f, 1f), attackChargeCooldown/attackChargeCooldownMax);
+
+		} else {
+
+			armRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (new Color (1f, 1f, 1f), new Color (1f, 0f, 0f), attackCharge);
+
+		}
 
 	}
 
@@ -244,31 +204,35 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	}
 
-	void handleSprintCooldown() {
-
-		if (sprintActive > 0f) {
-			sprintActive -= Time.deltaTime;
-			if (sprintActive < 0f) {
-				sprintActive = 0f;
-			}
-		} else if (sprintCooldownCurrent > 0f) {
-			sprintCooldownCurrent -= Time.deltaTime;
-			if (sprintCooldownCurrent < 0f) {
-				sprintCooldownCurrent = 0f;
-			}
-		}
-
-	}
-
 	void handleRegularInput() {
 
-		if (receiveInput && receiveInput2) {
+		impulseResource = Mathf.Min (3f, impulseResource + Time.deltaTime*(1f/4f));
+		impulseText.GetComponent<Text> ().text = impulseResource.ToString ("0.#");
 
-			if (Input.GetKeyDown(KeyCode.LeftShift) && sprintCooldownCurrent == 0f) {
-				sprintActive = 2.5f;
-				sprintCooldownCurrent = sprintCooldownMax;
+		if (impulsing > 0f) {
+
+			receiveInput2 = false;
+
+			impulsing -= Time.deltaTime;
+			if (impulsing <= 0f) { impulsing = 0f; }
+
+			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
+			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 20f);
+
+			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*10f);
+			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 80f, Time.deltaTime * 5f);
+
+		} else if (receiveInput) {
+
+			receiveInput2 = true;
+
+			if (Input.GetKeyDown(KeyCode.LeftShift) && impulseResource >= 1f && impulsing == 0f) {
+				impulseResource -= 1f;
+				impulsing = 0.25f;
 			}
 
+
+			/* HACK ESTO ES PARA VER COMO FUNCIONABA EL EMIT, SI NO SE USA EL SPRINT, QUITARLO
 			if (sprintActive > 0f) {
 				characterSpeed = turboSpeed;
 				if (!sprintTrail.Emit) { sprintTrail.Emit = true; }
@@ -277,8 +241,9 @@ public class LocalPlayerScript : MonoBehaviour {
 				characterSpeed = baseSpeed;
 				if (sprintTrail.Emit) { sprintTrail.Emit = false; }
 			}
+			*/
 
-			
+
 			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
 
 				this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(this.gameObject.GetComponent<Rigidbody>().velocity.x, 6f, this.gameObject.GetComponent<Rigidbody>().velocity.z);
@@ -459,6 +424,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	}
 
+	/* HACK ESTA CLASE PROBABLEMENTE SOBRA
 	public class Skills {
 
 		public LocalPlayerScript parent;
@@ -497,6 +463,6 @@ public class LocalPlayerScript : MonoBehaviour {
 		}
 
 	}
-
+	*/
 
 }

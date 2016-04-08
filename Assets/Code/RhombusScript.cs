@@ -29,7 +29,6 @@ public class RhombusScript : MonoBehaviour {
 	private float expandedAmount = 0f;
 
 	public bool locked = false;
-	public int menuSelected = 0;
 	private Neuron menuSelectedNeuron;
 
 	private GameObject typeText;
@@ -38,6 +37,7 @@ public class RhombusScript : MonoBehaviour {
 	private static float typeShow = 0.5f;
 
 	// CREATE MENU
+	public int createSelected = 0;
 	private GameObject createMenu;
 	private List<GameObject> createMenuOptions = new List<GameObject> ();
 	// MATCH NAME
@@ -63,12 +63,25 @@ public class RhombusScript : MonoBehaviour {
 
 
 	// JOIN MENU
+	public int joinSelected = 0;
+	private bool checkedMatches = false;
 	private GameObject joinMenu;
+	private List<GameObject> joinMenuOptions = new List<GameObject> ();
+	// LOADING
+	private GameObject joinMenuLoading;
+	private GameObject joinMenuLoadingText;
+	private GameObject joinMenuLoadingIcon;
+	// OPTIONS
+	private GameObject joinMenuSelect;
+	private GameObject joinMenuReload;
+	private GameObject joinMenuSearch;
+	// MATCHES
 	private List<Match> currentMatches = new List<Match> ();
 	private List<Match> toRecycleMatches = new List<Match> ();
 	private int selectedMatch = -1;
 	private List<PingMatch> unresolvedPingMatches = new List<PingMatch>();
-	//private List<>
+
+
 
 	// Use this for initialization
 	void Start () {
@@ -258,19 +271,41 @@ public class RhombusScript : MonoBehaviour {
 		joinMenu.name = "JoinMenu";
 		joinMenu.transform.SetParent (this.transform);
 		joinMenu.transform.localPosition = new Vector3 (0f, 0f, 0f);
+		// LOADING
+		joinMenuLoading = this.transform.FindChild ("Loading").gameObject;
+		joinMenuLoading.transform.SetParent (joinMenu.transform);
+		joinMenuLoading.transform.localPosition = new Vector3 (0f, 0f, 0f);
 
-		/*
-		for (int i = 0; i < 9; i++) {
-			GameObject g;
-			g = Instantiate (textSource);
-			g.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
-			g.GetComponent<TextMesh> ().fontSize = 140;
-			g.GetComponent<TextMesh> ().text = "Match_"+i;
-			g.name = "Match_"+i;
-			g.transform.SetParent (joinMenu.transform);
-			g.transform.localPosition = new Vector3 (-5f, 2f - i*(0.75f), -0.1f);
-		}
-		*/
+		joinMenuLoadingText = joinMenuLoading.transform.FindChild ("Text").gameObject;
+	
+		joinMenuLoadingIcon = joinMenuLoading.transform.FindChild ("Icon").gameObject;
+		// OPTIONS
+		joinMenuSelect = Instantiate (textSource);
+		joinMenuSelect.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
+		joinMenuSelect.GetComponent<TextMesh> ().fontSize = 140;
+		joinMenuSelect.GetComponent<TextMesh> ().text = "Select";
+		joinMenuSelect.name = "JoinSelect";
+		joinMenuSelect.transform.SetParent (joinMenu.transform);
+		joinMenuSelect.transform.localPosition = new Vector3 (-4f, 3.5f, -0.1f);
+		joinMenuOptions.Add (joinMenuSelect);
+
+		joinMenuReload = Instantiate (textSource);
+		joinMenuReload.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
+		joinMenuReload.GetComponent<TextMesh> ().fontSize = 140;
+		joinMenuReload.GetComponent<TextMesh> ().text = "Reload";
+		joinMenuReload.name = "JoinReload";
+		joinMenuReload.transform.SetParent (joinMenu.transform);
+		joinMenuReload.transform.localPosition = new Vector3 (0f, 3.5f, -0.1f);
+		joinMenuOptions.Add (joinMenuReload);
+
+		joinMenuSearch = Instantiate (textSource);
+		joinMenuSearch.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
+		joinMenuSearch.GetComponent<TextMesh> ().fontSize = 140;
+		joinMenuSearch.GetComponent<TextMesh> ().text = "Search";
+		joinMenuSearch.name = "JoinSearch";
+		joinMenuSearch.transform.SetParent (joinMenu.transform);
+		joinMenuSearch.transform.localPosition = new Vector3 (4f, 3.5f, -0.1f);
+		joinMenuOptions.Add (joinMenuSearch);
 	
 	}
 
@@ -281,10 +316,10 @@ public class RhombusScript : MonoBehaviour {
 			
 			NetworkManager.hostList = MasterServer.PollHostList();
 
-			NetworkManager.JoinServer (NetworkManager.hostList [0]);
+			//NetworkManager.JoinServer (NetworkManager.hostList [0]);
 
-			//flushMatches();
-			//addMatches();
+			flushMatches();
+			addMatches();
 
 			Debug.Log ("HostListReceived");
 		}
@@ -297,6 +332,7 @@ public class RhombusScript : MonoBehaviour {
 		// STORE OLD MATCHES TO RECYCLE
 		while (currentMatches.Count > 0) {
 
+			currentMatches [0].root.SetActive (false);
 			toRecycleMatches.Add (currentMatches [0]);
 			currentMatches.RemoveAt(0);
 
@@ -316,17 +352,39 @@ public class RhombusScript : MonoBehaviour {
 
 		for (int i = 0; i < NetworkManager.hostList.Length; i++) {
 
-			Debug.Log (i);
 			Match m;
 
 			if (toRecycleMatches.Count > 0) {
 				m = toRecycleMatches [0];
 				m.Recycle (ref NetworkManager.hostList [i], currentMatches.Count);
+				m.root.SetActive (true);
 				toRecycleMatches.RemoveAt (0);
 			} else {
 				m = new Match (this, ref NetworkManager.hostList[i], currentMatches.Count);
 			}
-				
+
+			m.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
+			currentMatches.Add (m);
+
+		}
+
+		// MOCKUP MATCHES
+		for (int i = 0; i < 10; i++) {
+
+			Match m;
+
+			if (toRecycleMatches.Count > 0) {
+				m = toRecycleMatches [0];
+				m.Recycle (ref NetworkManager.hostList [0], currentMatches.Count);
+				m.root.SetActive (true);
+				toRecycleMatches.RemoveAt (0);
+			} else {
+				m = new Match (this, ref NetworkManager.hostList[0], currentMatches.Count);
+			}
+
+			m.matchName = "Mockup_" + i;
+
+			m.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
 			currentMatches.Add (m);
 
 		}
@@ -404,10 +462,68 @@ public class RhombusScript : MonoBehaviour {
 
 	void updateJoin() {
 
+		if (!checkedMatches) {
+			flushMatches ();
+			NetworkManager.RefreshHostList ();
+			checkedMatches = true;
+		}
 
 		for (int i = 0; i < unresolvedPingMatches.Count; i++) {
 			unresolvedPingMatches[i].Check();
 		}
+
+		for (int i = 0; i < currentMatches.Count; i++) {
+			currentMatches [i].Update ();
+		}
+
+		if (currentMatches.Count == 0) {
+			joinMenuLoading.SetActive (true);
+			joinMenuLoadingIcon.transform.Rotate (new Vector3 (0f, 120f, 0f) * Time.deltaTime);
+		} else {
+			joinMenuLoading.SetActive (false);
+		}
+
+
+		if (active) {
+			
+			if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
+				MenuBackBone.SoundMoveSelected ();
+				joinSelected--;
+				if (joinSelected < 0) { joinSelected = joinMenuOptions.Count - 1; }
+			} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow)) {
+				MenuBackBone.SoundMoveSelected ();
+				joinSelected++;
+				if (joinSelected > (joinMenuOptions.Count - 1)) { joinSelected = 0; }
+			}
+
+			if (Input.GetKeyDown (KeyCode.Return)) {
+
+				if (joinMenuOptions [joinSelected] == joinMenuSelect) {
+
+				} else if (joinMenuOptions [joinSelected] == joinMenuReload) {
+					checkedMatches = false;
+				} else if (joinMenuOptions [joinSelected] == joinMenuSearch) {
+
+				}
+
+			}
+
+		}
+
+		for (int i = 0; i < joinMenuOptions.Count; i++) {
+
+			Color targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor;
+
+			if (i == joinSelected) {
+				targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionSelectedColor;
+			}
+
+			joinMenuOptions [i].GetComponent<TextMesh> ().color = Color.Lerp (joinMenuOptions [i].GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
+
+		}
+
+		Vector3 targetPosition = joinMenuOptions [joinSelected].transform.position + new Vector3 (-joinMenuOptions [joinSelected].GetComponent<MeshRenderer> ().bounds.size.x / 2f - 0.5f, 0f, 0f);
+		menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
 
 	}
 
@@ -417,13 +533,13 @@ public class RhombusScript : MonoBehaviour {
 
 		if (locked) {
 
-			if (createMenuOptions [menuSelected] == createMenuNameTitle) {
+			if (createMenuOptions [createSelected] == createMenuNameTitle) {
 
 				handleInputString (ref createMenuNameTextString);
 				createMenuNameText.GetComponent<TextMesh> ().text = createMenuNameTextString;
 				handleTypeIntermitency (createMenuNameText);
 
-			} else if (createMenuOptions [menuSelected] == createMenuMapTitle) {
+			} else if (createMenuOptions [createSelected] == createMenuMapTitle) {
 
 				if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
 					MenuBackBone.SoundMoveSelected ();
@@ -439,7 +555,7 @@ public class RhombusScript : MonoBehaviour {
 
 				targetArrowColor = new Color (1f, 1f, 1f, 1f);
 
-			} else if (createMenuOptions [menuSelected] == createMenuPasswordTitle) {
+			} else if (createMenuOptions [createSelected] == createMenuPasswordTitle) {
 
 				handleInputString (ref createMenuPasswordTextString);
 				createMenuPasswordText.GetComponent<TextMesh> ().text = createMenuPasswordTextString;
@@ -453,14 +569,16 @@ public class RhombusScript : MonoBehaviour {
 
 		} else {
 
-			if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
-				MenuBackBone.SoundMoveSelected ();
-				menuSelected--;
-				if (menuSelected < 0) { menuSelected = createMenuOptions.Count - 1; }
-			} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
-				MenuBackBone.SoundMoveSelected ();
-				menuSelected++;
-				if (menuSelected > createMenuOptions.Count-1) { menuSelected = 0; }
+			if (active) {
+				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					createSelected--;
+					if (createSelected < 0) { createSelected = createMenuOptions.Count - 1; }
+				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					createSelected++;
+					if (createSelected > createMenuOptions.Count-1) { createSelected = 0; }
+				}
 			}
 
 			typeText.SetActive (false);
@@ -478,23 +596,23 @@ public class RhombusScript : MonoBehaviour {
 			if (locked) {
 				locked = false;
 			} else {
-				if (createMenuOptions[menuSelected] == createMenuNameTitle) {
+				if (createMenuOptions[createSelected] == createMenuNameTitle) {
 					locked = true;
 				}
-				else if (createMenuOptions[menuSelected] == createMenuMapTitle) {
+				else if (createMenuOptions[createSelected] == createMenuMapTitle) {
 					locked = true;
 				}
-				else if (createMenuOptions[menuSelected] == createMenuPasswordTitle) {
+				else if (createMenuOptions[createSelected] == createMenuPasswordTitle) {
 					locked = true;
 				}
-				else if (createMenuOptions[menuSelected] == createMenuGoTitle) {
+				else if (createMenuOptions[createSelected] == createMenuGoTitle) {
 					if (createMenuNameTextString.Length != 0) {
 						// Start match
 						NetworkManager.StartServer (createMenuNameTextString);
 						Application.LoadLevel ("Game");
 					} else {
 						locked = true;
-						menuSelected = 0;
+						createSelected = 0;
 					}
 				}
 			}
@@ -514,7 +632,7 @@ public class RhombusScript : MonoBehaviour {
 
 			Color targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor;
 
-			if (i == menuSelected) {
+			if (i == createSelected) {
 				targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionSelectedColor;
 			}
 
@@ -522,7 +640,7 @@ public class RhombusScript : MonoBehaviour {
 
 		}
 
-		Vector3 targetPosition = createMenuOptions [menuSelected].transform.position + new Vector3 (-createMenuOptions [menuSelected].GetComponent<MeshRenderer> ().bounds.size.x / 2f - 0.5f, 0f, 0f);
+		Vector3 targetPosition = createMenuOptions [createSelected].transform.position + new Vector3 (-createMenuOptions [createSelected].GetComponent<MeshRenderer> ().bounds.size.x / 2f - 0.5f, 0f, 0f);
 		menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
 
 		createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color = Color.Lerp (createMenuMapArrowLeft.GetComponent<MeshRenderer> ().material.color, targetArrowColor, Time.deltaTime * 5f);
@@ -535,8 +653,16 @@ public class RhombusScript : MonoBehaviour {
 		createMenu.SetActive (false);
 		joinMenu.SetActive (false);
 
-		if (newMode == "create") { createMenu.SetActive (true); } 
-		else if (newMode == "join") { joinMenu.SetActive (true); }
+		if (newMode == "create") { 
+			createMenu.SetActive (true);
+			menuSelectedNeuron.root.transform.SetParent (createMenu.transform);
+			menuSelectedNeuron.root.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+		} 
+		else if (newMode == "join") { 
+			joinMenu.SetActive (true);
+			menuSelectedNeuron.root.transform.SetParent (joinMenu.transform);
+			menuSelectedNeuron.root.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+		}
 
 		mode = newMode;
 
@@ -731,10 +857,20 @@ public class RhombusScript : MonoBehaviour {
 
 		}
 
-		public void UpdatePingTime(int auxPingTime) {
-			
-			pingTime = auxPingTime;
-			root.GetComponent<TextMesh>().text = matchName + "  <color=#00ff00>" + players +"/20" + "</color>" + "  <color=#ff9999>"+pingTime+ "ms" + "</color>";
+		public void Update() {
+
+			int alpha = (int)(root.GetComponent<TextMesh> ().color.a * 255);
+			string alphaString = alpha.ToString ("X2");
+
+			if (pingTime == -1) {
+
+				root.GetComponent<TextMesh>().text = matchName + "  <color=#00ff00" + alphaString + ">" + players +"/20" + "</color>";
+
+			} else {
+				
+				root.GetComponent<TextMesh>().text = matchName + "  <color=#00ff00" + alphaString + ">" + players +"/20" + "</color>" + "  <color=#ff9999" + alphaString + ">" +pingTime+ "ms" + "</color>";
+
+			}
 
 		}
 
@@ -756,7 +892,7 @@ public class RhombusScript : MonoBehaviour {
 		public void Check() {
 
 			if (ping.isDone) {
-				match.UpdatePingTime (ping.time);
+				match.pingTime = ping.time;
 				match.owner.unresolvedPingMatches.Remove(this);
 			}
 
