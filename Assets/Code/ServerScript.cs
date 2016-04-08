@@ -44,25 +44,29 @@ public class ServerScript : MonoBehaviour {
 
 		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
 
-			if (gameScript.clientScript.listPlayers[i].attacking > 0f) {
+			if (!gameScript.clientScript.localPlayer.gameEnded) {
+				// ONLY CHECK KILLINGS IF GAME HAS NOT ENDED
+				if (gameScript.clientScript.listPlayers[i].attacking > 0f) {
 
-				List<GameObject> currentTriggering = gameScript.clientScript.listPlayers[i].visualAvatar.GetComponent<PlayerMarker> ().ownAttacker.listTriggering;
+					List<GameObject> currentTriggering = gameScript.clientScript.listPlayers[i].visualAvatar.GetComponent<PlayerMarker> ().ownAttacker.listTriggering;
 
-				for (int j = 0; j < currentTriggering.Count; j++) {
+					for (int j = 0; j < currentTriggering.Count; j++) {
 
-					ClientScript.Player currentPlayer = currentTriggering[j].GetComponent<PlayerMarker>().player;
+						ClientScript.Player currentPlayer = currentTriggering[j].GetComponent<PlayerMarker>().player;
 
-					if (currentPlayer.immune == 0f) {
+						if (currentPlayer.immune == 0f) {
 
-						gameScript.clientScript.listPlayers[i].kills++;
-						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, gameScript.clientScript.listPlayers[i].playerCode, currentPlayer.playerCode);
-						respawn (currentPlayer.playerCode);
-						currentPlayer.immune = 5f;
-						sendRankingData ();
+							gameScript.clientScript.listPlayers[i].kills++;
+							GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, gameScript.clientScript.listPlayers[i].playerCode, currentPlayer.playerCode);
+							respawn (currentPlayer.playerCode);
+							currentPlayer.immune = 5f;
+							sendRankingData ();
+
+						}
 
 					}
-
 				}
+
 			}
 
 			// THIS CHECKS IF SOMEONE IS FALLING INTO THE ETERNAL VOID OF THE BUGSPHERE

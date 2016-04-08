@@ -251,7 +251,9 @@ public class ClientScript : MonoBehaviour {
 			if (localPlayer != null && GetComponent<NetworkView> () != null) {
 
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
-				bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
+				//bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
+				/* HACK SI AL FINAL NO SE USA EL SPRINT, QUITAR ESA INFO, QUE NO SE MANDE HACK */
+				bool sprintActive = false;
 				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, myPlayer.hackingPlayerCode, myPlayer.amountCurrentHacking, myPlayer.lastTargetCode, localPlayer.GetComponent<LocalPlayerScript> ().attacking);
 
 			}
