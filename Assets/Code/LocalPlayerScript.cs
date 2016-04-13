@@ -382,7 +382,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	void SmartCrossfade(Animator animator, string animation) {
 
 		if (lastAnimationOrder != animation && !animator.GetCurrentAnimatorStateInfo(0).IsName(animation)) {
-			animator.CrossFade(animation, GlobalData.crossfadeAnimation);
+			animator.CrossFadeInFixedTime(animation, GlobalData.crossfadeAnimation);
+			//animator.CrossFade(animation, GlobalData.crossfadeAnimation);
 			lastAnimationOrder = animation;
 		}
 
