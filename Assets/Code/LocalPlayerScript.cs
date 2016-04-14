@@ -46,6 +46,7 @@ public class LocalPlayerScript : MonoBehaviour {
     public GameObject crosshairHackDot;
     public GameObject crosshairHackTriclip;
     public List<GameObject> crosshairHackTriangles = new List<GameObject>();
+	public GameObject crosshairHackTimer;
 
     public AnimationCurve crosshairHackTriclipCooldownCurve;
     public AnimationCurve crosshairHackTriclipReadyCurve;
@@ -102,10 +103,12 @@ public class LocalPlayerScript : MonoBehaviour {
 		crosshairHack.transform.SetParent(GameObject.Find ("Canvas").transform);
 		crosshairHack.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0, 0);
 		crosshairHack.name = "CrosshairHack";
+		crosshairHack.GetComponent<RectTransform> ().localScale = new Vector3 (1f, 1f, 1f);
         crosshairHack.SetActive(true);
 
         crosshairHackDot = crosshairHack.transform.FindChild("Dot").gameObject;
         crosshairHackTriclip = crosshairHack.transform.FindChild("Triclip").gameObject;
+		crosshairHackTriclipOriginalScale = crosshairHackTriclip.GetComponent<RectTransform>().localScale;
         GameObject sourceTriangle = crosshairHack.transform.FindChild("Triangle").gameObject;
         int num_triangles = 3;
         for (int i = 0; i < num_triangles; i++)
@@ -118,16 +121,18 @@ public class LocalPlayerScript : MonoBehaviour {
             Vector2 upVector2 = new Vector2(newTriangle.GetComponent<RectTransform>().up.x, newTriangle.GetComponent<RectTransform>().up.y);
             newTriangle.GetComponent<RectTransform>().anchoredPosition = upVector2*20f;
             newTriangle.name = "Triangle_" + (i + 1);
+			newTriangle.GetComponent<RectTransform> ().localScale = sourceTriangle.GetComponent<RectTransform>().localScale;
             crosshairHackTriangles.Add(newTriangle);
         }
         Destroy(sourceTriangle);
-
-        crosshairHackTriclipOriginalScale = crosshairHackTriclip.GetComponent<RectTransform>().localScale;
+		crosshairHackTimer = crosshairHack.transform.FindChild("Timer").gameObject;
+        
 
 		impulseText = Instantiate (Resources.Load("Prefabs/ImpulseText") as GameObject);
 		impulseText.transform.SetParent(GameObject.Find ("Canvas").transform);
 		impulseText.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-64, 35);
 		impulseText.name = "ImpulseText";
+		impulseText.GetComponent<RectTransform> ().localScale = new Vector3 (1f, 1f, 1f);
 
 		lastPositionCursor = Input.mousePosition;
 
