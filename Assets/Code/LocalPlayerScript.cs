@@ -42,21 +42,30 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	//public MeleeWeaponTrail sprintTrail;
 
-	public GameObject crossHair;
+	public GameObject crosshairHack;
+    public GameObject crosshairHackDot;
+    public GameObject crosshairHackTriclip;
+    public List<GameObject> crosshairHackTriangles = new List<GameObject>();
+
+    public AnimationCurve crosshairHackTriclipCooldownCurve;
+    public AnimationCurve crosshairHackTriclipReadyCurve;
+    public AnimationCurve crosshairHackTriangleCurve;
+
 	public GameObject impulseText;
 
 	//public AnimationCurve attackCameraDistance;
 
 	public bool nextCooldownFree = false;
-	private static float attackChargeCooldownMax = 1.5f;
+	private static float attackChargeCooldownMax = 0.5f;
 	public float attackChargeCooldown = 0f;
-	private bool attackCharging = false;
-	private static float attackChargeMax = 0.1f;
-	private float attackCharge = 0f;
-	public float attacking = 0f;
-	private float attackingMax = 0.5f;
-	private Vector3 attackOldPosition;
-	private Vector3 attackTargetPosition;
+
+    private Vector3 attackOldPosition;
+    private Vector3 attackTargetPosition;
+
+    private float crosshairHackTriclipOldZ = 0f;
+    private float crosshairHackTriclipTargetZ = 0f;
+    private float crosshairHackTriclipSizeAux = 1f;
+    private Vector3 crosshairHackTriclipOriginalScale;
 
 	private GameObject firstPersonObjects;
 	private GameObject armRight;
@@ -89,10 +98,31 @@ public class LocalPlayerScript : MonoBehaviour {
 		materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
 		//sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
-		crossHair = Instantiate (Resources.Load("Prefabs/CanvasCrossHair") as GameObject);
-		crossHair.transform.SetParent(GameObject.Find ("Canvas").transform);
-		crossHair.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0, 0);
-		crossHair.name = "CanvasCrossHair";
+		crosshairHack = Instantiate (Resources.Load("Prefabs/CrosshairHack") as GameObject);
+		crosshairHack.transform.SetParent(GameObject.Find ("Canvas").transform);
+		crosshairHack.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0, 0);
+		crosshairHack.name = "CrosshairHack";
+        crosshairHack.SetActive(true);
+
+        crosshairHackDot = crosshairHack.transform.FindChild("Dot").gameObject;
+        crosshairHackTriclip = crosshairHack.transform.FindChild("Triclip").gameObject;
+        GameObject sourceTriangle = crosshairHack.transform.FindChild("Triangle").gameObject;
+        int num_triangles = 3;
+        for (int i = 0; i < num_triangles; i++)
+        {
+            GameObject newTriangle = Instantiate(sourceTriangle);
+            newTriangle.transform.SetParent(crosshairHack.transform);
+            newTriangle.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            float aux = (float)i / (float)num_triangles;
+            newTriangle.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, aux * 360f);
+            Vector2 upVector2 = new Vector2(newTriangle.GetComponent<RectTransform>().up.x, newTriangle.GetComponent<RectTransform>().up.y);
+            newTriangle.GetComponent<RectTransform>().anchoredPosition = upVector2*20f;
+            newTriangle.name = "Triangle_" + (i + 1);
+            crosshairHackTriangles.Add(newTriangle);
+        }
+        Destroy(sourceTriangle);
+
+        crosshairHackTriclipOriginalScale = crosshairHackTriclip.GetComponent<RectTransform>().localScale;
 
 		impulseText = Instantiate (Resources.Load("Prefabs/ImpulseText") as GameObject);
 		impulseText.transform.SetParent(GameObject.Find ("Canvas").transform);
@@ -157,50 +187,64 @@ public class LocalPlayerScript : MonoBehaviour {
 
 
 		if (attackChargeCooldown > 0f) {
+
 			attackChargeCooldown -= Time.deltaTime;
-			if (attackChargeCooldown <= 0f) { attackChargeCooldown = 0f; }
-		}
 
-		if (attackChargeCooldown <= 0f) {
+			if (attackChargeCooldown <= 0f) { 
+                attackChargeCooldown = 0f;
+                crosshairHackTriclipSizeAux = 0f;
+            }
+
+            float aux = 1 - (attackChargeCooldown / attackChargeCooldownMax);
+            crosshairHackTriclip.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, Mathf.LerpAngle(crosshairHackTriclipOldZ, crosshairHackTriclipTargetZ, aux));
+
+            if (crosshairHackTriclipSizeAux < 1f)
+            {
+                crosshairHackTriclipSizeAux += Time.deltaTime * 5f;
+                if (crosshairHackTriclipSizeAux >= 1f) { crosshairHackTriclipSizeAux = 1f; }
+                crosshairHackTriclip.GetComponent<RectTransform>().localScale = crosshairHackTriclipOriginalScale * crosshairHackTriclipCooldownCurve.Evaluate(crosshairHackTriclipSizeAux);
+            }
+
+        }
+		else if (attackChargeCooldown <= 0f) {
+
+            if (crosshairHackTriclipSizeAux < 1f)
+            {
+                crosshairHackTriclipSizeAux += Time.deltaTime * 5f;
+                if (crosshairHackTriclipSizeAux >= 1f) { crosshairHackTriclipSizeAux = 1f; }
+                crosshairHackTriclip.GetComponent<RectTransform>().localScale = crosshairHackTriclipOriginalScale * crosshairHackTriclipReadyCurve.Evaluate(crosshairHackTriclipSizeAux);
+            }
+
 			if (Input.GetMouseButtonDown (0)) {
-				attackCharging = true;
-			}
-		}
-
-		if (Input.GetMouseButtonDown (0) && attackCharge > 0.1f) {
-			dashAttack ();
-		}
-
-		if (attackCharging) {
-
-			attackCharge += Time.deltaTime;
-
-			if (attackCharge >= attackChargeMax) {
-				attackCharge = attackChargeMax;
-				dashAttack ();
+                dashAttack();
+                crosshairHackTriclipSizeAux = 0f;
 			}
 
 		}
 
-		if (attackChargeCooldown > 0f) {
-
-			armRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (new Color (1f, 1f, 1f), new Color (0f, 0f, 1f), attackChargeCooldown/attackChargeCooldownMax);
-
-		} else {
-
-			armRight.GetComponent<MeshRenderer> ().material.color = Color.Lerp (new Color (1f, 1f, 1f), new Color (1f, 0f, 0f), attackCharge);
-
-		}
+        adjustCrossHairHackTriangles();
 
 	}
 
-	void dashAttack() {
+    void adjustCrossHairHackTriangles()
+    {
 
-		attackingMax = (attackCharge/attackChargeMax) * (0.5f);
-		attackCharge = 0f;
+        for (int i = 0; i < crosshairHackTriangles.Count; i++)
+        {
+            Vector2 upVector2 = new Vector2(crosshairHackTriangles[i].GetComponent<RectTransform>().up.x, crosshairHackTriangles[i].GetComponent<RectTransform>().up.y);
+            float multiplier = crosshairHackTriangleCurve.Evaluate(1f - attackChargeCooldown / attackChargeCooldownMax);
+            Vector2 targetAnchor = upVector2 * 20f * multiplier;
+            crosshairHackTriangles[i].GetComponent<RectTransform>().anchoredPosition = targetAnchor;
+        }
+
+    }
+
+    void dashAttack()
+    {
+
+        crosshairHackTriclipTargetZ = crosshairHackTriclipOldZ - 120f;
+        if (crosshairHackTriclipTargetZ < 0f) { crosshairHackTriclipTargetZ += 360f; }
 		attackChargeCooldown = attackChargeCooldownMax;
-		attackCharging = false;
-		attacking += Time.deltaTime;
 
 	}
 
@@ -291,9 +335,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			this.gameObject.GetComponent<Rigidbody>().velocity = new Vector3(0f, aux, 0f);
 
-			if (attacking == 0f) {
-				auxFieldOfView = Mathf.Max (0f, auxFieldOfView - Time.deltaTime*5f);
-			}
 
 		} else {
 
@@ -312,10 +353,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);
 
-			if (attacking == 0f) {
-				auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*5f);
-			}
-
 			if (IsGrounded ()) {
 				footStepCooldown -= Time.deltaTime *(characterSpeed/baseSpeed);
 				if (footStepCooldown <= 0f) {
@@ -324,10 +361,6 @@ public class LocalPlayerScript : MonoBehaviour {
 				}
 			}
 
-		}
-
-		if (attacking == 0f) {
-			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 75f, Time.deltaTime * 5f);
 		}
 
 		personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (70f, maxFieldOfView, auxFieldOfView);
@@ -383,7 +416,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (lastAnimationOrder != animation && !animator.GetCurrentAnimatorStateInfo(0).IsName(animation)) {
 			animator.CrossFadeInFixedTime(animation, GlobalData.crossfadeAnimation);
-			//animator.CrossFade(animation, GlobalData.crossfadeAnimation);
 			lastAnimationOrder = animation;
 		}
 
