@@ -46,7 +46,8 @@ public class ServerScript : MonoBehaviour {
 
 			if (!gameScript.clientScript.localPlayer.gameEnded) {
 				// ONLY CHECK KILLINGS IF GAME HAS NOT ENDED
-				if (gameScript.clientScript.listPlayers[i].attacking > 0f) {
+				if (false) {
+                    // CONDITION FOR BEING ATTACKING ETC
 
 					List<GameObject> currentTriggering = gameScript.clientScript.listPlayers[i].visualAvatar.GetComponent<PlayerMarker> ().ownAttacker.listTriggering;
 

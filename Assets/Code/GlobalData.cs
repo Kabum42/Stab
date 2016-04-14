@@ -5,6 +5,7 @@ public static class GlobalData {
 
     public static bool started = false;
 	public static float crossfadeAnimation = 0.15f;
+	//public static float crossfadeAnimation = 0.05f;
 
     // Use this for initialization
     public static void Start () {

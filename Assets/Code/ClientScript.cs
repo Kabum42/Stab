@@ -70,8 +70,6 @@ public class ClientScript : MonoBehaviour {
 
 		currentRankingCooldown += Time.deltaTime;
 
-		PlayerByCode (myCode).attacking = localPlayer.attacking;
-
 		if (EventSystem.current.currentSelectedGameObject == chatManager.chatInputField) {
 			chatManager.lastChatPannelInteraction = 0f;
 		} else if (chatManager.lastChatPannelInteraction < chatManager.chatPannelInteractionThreshold) {
@@ -88,9 +86,10 @@ public class ClientScript : MonoBehaviour {
 		synchronizeOtherPlayers ();
 		updateHacking ();
 
+		hackingMockUp ();
+
 		if (remainingSeconds <= 0f) {
 			localPlayer.gameEnded = true;
-			localPlayer.attacking = 0f;
 
 			if (winnerCode == "-1") {
 				if (Network.isServer) { 
@@ -114,14 +113,25 @@ public class ClientScript : MonoBehaviour {
 	
 	}
 
+	void hackingMockUp() {
+
+		if (localPlayer.crosshairHackTimer.GetComponent<Image>().material.GetFloat("_Cutoff") < 1f) {
+			float aux = Mathf.Min (1f, localPlayer.crosshairHackTimer.GetComponent<Image> ().material.GetFloat ("_Cutoff") + Time.deltaTime*(0.2f));
+			localPlayer.crosshairHackTimer.GetComponent<Image> ().material.SetFloat ("_Cutoff", aux);
+		} else if (Input.GetMouseButtonDown (0)) {
+			localPlayer.crosshairHackTimer.GetComponent<Image> ().material.SetFloat ("_Cutoff", 0f);
+		}
+
+	}
+
 	void updateCanvas() {
 
 		if (myPlayer.hackingPlayerCode == "-1") {
-			localPlayer.crossHair.GetComponent<Image>().color = new Color(1f, 1f, 1f);
+			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 1f, 1f);
 			textTargeted.SetActive(false);
 		}
 		else {
-			localPlayer.crossHair.GetComponent<Image>().color = new Color(1f, 0f, 0f);
+			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 			textTargeted.SetActive(true);
 			textTargeted.GetComponent<Text>().text = "<Player "+myPlayer.hackingPlayerCode+">";
 		}
@@ -254,7 +264,7 @@ public class ClientScript : MonoBehaviour {
 				//bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
 				/* HACK SI AL FINAL NO SE USA EL SPRINT, QUITAR ESA INFO, QUE NO SE MANDE HACK */
 				bool sprintActive = false;
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, myPlayer.hackingPlayerCode, myPlayer.amountCurrentHacking, myPlayer.lastTargetCode, localPlayer.GetComponent<LocalPlayerScript> ().attacking);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, myPlayer.hackingPlayerCode, myPlayer.amountCurrentHacking, myPlayer.lastTargetCode);
 
 			}
 
@@ -277,7 +287,6 @@ public class ClientScript : MonoBehaviour {
 
 				listPlayers [i].visualAvatar.transform.position = Vector3.Lerp (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
 				listPlayers [i].visualAvatar.transform.eulerAngles = Vector3.Lerp (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
-				listPlayers [i].attacking = Mathf.Max (0f, listPlayers [i].attacking - Time.deltaTime);
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 
 				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].hackingMyPlayer), Time.fixedDeltaTime * 5f);
@@ -468,7 +477,7 @@ public class ClientScript : MonoBehaviour {
 
 	// CLIENT RPCs
 	[RPC]
-	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, Vector3 cameraForward, string currentAnimation, bool sprintActive, string hackingPlayerCode, float amountCurrentHacking, string lastTargetCode, float attacking)
+	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, Vector3 cameraForward, string currentAnimation, bool sprintActive, string hackingPlayerCode, float amountCurrentHacking, string lastTargetCode)
 	{
 		bool foundPlayer = false;
 
@@ -483,7 +492,6 @@ public class ClientScript : MonoBehaviour {
 				listPlayers[i].hackingPlayerCode = hackingPlayerCode;
 				listPlayers [i].amountCurrentHacking = amountCurrentHacking;
 				listPlayers [i].lastTargetCode = lastTargetCode;
-				listPlayers[i].attacking = attacking;
 				foundPlayer = true;
 				break;
 			}
@@ -613,7 +621,6 @@ public class ClientScript : MonoBehaviour {
 		public string currentMode = "regular";
 		public bool sprintActive = false;
 		public MeleeWeaponTrail sprintTrail;
-		public float attacking = 0f;
 		public float immune = 0f;
 		public int kills = 0;
 		public int ping = 0;
@@ -661,7 +668,7 @@ public class ClientScript : MonoBehaviour {
 			Animator animator = visualAvatar.GetComponent<Animator> ();
 
 			if (lastAnimationOrder != animation && !animator.GetCurrentAnimatorStateInfo(0).IsName(animation)) {
-				animator.CrossFade(animation, GlobalData.crossfadeAnimation);
+                animator.CrossFadeInFixedTime(animation, GlobalData.crossfadeAnimation);
 				lastAnimationOrder = animation;
 			}
 
