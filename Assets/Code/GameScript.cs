@@ -16,7 +16,7 @@ public class GameScript : MonoBehaviour {
 			serverScript = gameObject.AddComponent<ServerScript> ();
 			serverScript.gameScript = this; 
 		} else {
-			Destroy (clientScript.map.transform.FindChild ("Scenario/RespawnPoints").gameObject);
+            Destroy(clientScript.map.transform.FindChild("RespawnPoints").gameObject);
 		}
 
 	}

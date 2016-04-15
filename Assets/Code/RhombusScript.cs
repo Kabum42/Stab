@@ -316,7 +316,7 @@ public class RhombusScript : MonoBehaviour {
 			
 			NetworkManager.hostList = MasterServer.PollHostList();
 
-			//NetworkManager.JoinServer (NetworkManager.hostList [0]);
+			NetworkManager.JoinServer (NetworkManager.hostList [0]);
 
 			flushMatches();
 			addMatches();
