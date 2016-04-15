@@ -86,8 +86,6 @@ public class ClientScript : MonoBehaviour {
 		synchronizeOtherPlayers ();
 		updateHacking ();
 
-		hackingMockUp ();
-
 		if (remainingSeconds <= 0f) {
 			localPlayer.gameEnded = true;
 
@@ -111,17 +109,6 @@ public class ClientScript : MonoBehaviour {
 			Network.Disconnect ();
 		}
 	
-	}
-
-	void hackingMockUp() {
-
-		if (localPlayer.crosshairHackTimer.GetComponent<Image>().material.GetFloat("_Cutoff") < 1f) {
-			float aux = Mathf.Min (1f, localPlayer.crosshairHackTimer.GetComponent<Image> ().material.GetFloat ("_Cutoff") + Time.deltaTime*(0.2f));
-			localPlayer.crosshairHackTimer.GetComponent<Image> ().material.SetFloat ("_Cutoff", aux);
-		} else if (Input.GetMouseButtonDown (0)) {
-			localPlayer.crosshairHackTimer.GetComponent<Image> ().material.SetFloat ("_Cutoff", 0f);
-		}
-
 	}
 
 	void updateCanvas() {
