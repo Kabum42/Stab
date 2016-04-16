@@ -76,12 +76,12 @@ public class RhombusScript : MonoBehaviour {
 	private GameObject joinMenuReload;
 	private GameObject joinMenuSearch;
 	// MATCHES
-	private List<Match> currentMatches = new List<Match> ();
-	private List<Match> toRecycleMatches = new List<Match> ();
-	private int selectedMatch = -1;
-	private List<PingMatch> unresolvedPingMatches = new List<PingMatch>();
+	private LogicalMatch[] currentLogicalMatches = new LogicalMatch[0];
+	private List<LogicalMatch> toRecycleLogicalMatches = new List<LogicalMatch> ();
+	private int currentLogicalMatchSelected = 0;
 
-
+	private List<PhysicalMatch> currentPhysicalMatches = new List<PhysicalMatch>();
+	private List<PhysicalMatch> toRecyclePhysicalMatches = new List<PhysicalMatch>();
 
 	// Use this for initialization
 	void Start () {
@@ -316,7 +316,7 @@ public class RhombusScript : MonoBehaviour {
 			
 			NetworkManager.hostList = MasterServer.PollHostList();
 
-			NetworkManager.JoinServer (NetworkManager.hostList [0]);
+			//NetworkManager.JoinServer (NetworkManager.hostList [0]);
 
 			flushMatches();
 			addMatches();
@@ -326,68 +326,68 @@ public class RhombusScript : MonoBehaviour {
 	}
 
 	private void flushMatches() {
+		
+		if (currentLogicalMatches.Length > 0) {
+			// STORE OLD MATCHES TO RECYCLE
+			for (int i = 0; i < currentLogicalMatches.Length; i++) {
+				/*
+				if (currentLogicalMatches [i].physicalMatch != null) { 
+					currentLogicalMatches [i].physicalMatch.root.SetActive (false);
+					toRecyclePhysicalMatches.Add (currentLogicalMatches[0].physicalMatch);
+					currentPhysicalMatches.Remove(currentLogicalMatches[0].physicalMatch);
+				}
+				*/
 
-		selectedMatch = -1;
+				toRecycleLogicalMatches.Add (currentLogicalMatches [i]);
 
-		// STORE OLD MATCHES TO RECYCLE
-		while (currentMatches.Count > 0) {
+			}
 
-			currentMatches [0].root.SetActive (false);
-			toRecycleMatches.Add (currentMatches [0]);
-			currentMatches.RemoveAt(0);
-
+			currentLogicalMatches = new LogicalMatch[0];
 		}
 
-		// REMOVE ALL PINGMATCHES, THESE ARE NOT RELIABLE
-		while (unresolvedPingMatches.Count > 0) {
-
-			unresolvedPingMatches[0] = null;
-			unresolvedPingMatches.RemoveAt(0);
-
-		}
+		currentLogicalMatchSelected = 0;
 
 	}
 
 	private void addMatches() {
 
-		for (int i = 0; i < NetworkManager.hostList.Length; i++) {
+		int mockUps = 1000;
+		currentLogicalMatches = new LogicalMatch[NetworkManager.hostList.Length + mockUps];
 
-			Match m;
+		for (int i = 0; i < currentLogicalMatches.Length; i++) {
 
-			if (toRecycleMatches.Count > 0) {
-				m = toRecycleMatches [0];
-				m.Recycle (ref NetworkManager.hostList [i], currentMatches.Count);
-				m.root.SetActive (true);
-				toRecycleMatches.RemoveAt (0);
+			if (i < NetworkManager.hostList.Length) {
+				currentLogicalMatches [i] = GetLogicalMatch (this, ref NetworkManager.hostList [i], i);
 			} else {
-				m = new Match (this, ref NetworkManager.hostList[i], currentMatches.Count);
+				// IT'S A MOCKUP
+				currentLogicalMatches[i] = GetLogicalMatch (this, ref NetworkManager.hostList[0], 0);
 			}
 
-			m.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
-			currentMatches.Add (m);
+			//Debug.Log ("ADDED " + i);
 
 		}
 
-		// MOCKUP MATCHES
-		for (int i = 0; i < 10; i++) {
+	}
 
-			Match m;
+	LogicalMatch GetLogicalMatch(RhombusScript owner, ref HostData h, int auxHostListPosition) {
 
-			if (toRecycleMatches.Count > 0) {
-				m = toRecycleMatches [0];
-				m.Recycle (ref NetworkManager.hostList [0], currentMatches.Count);
-				m.root.SetActive (true);
-				toRecycleMatches.RemoveAt (0);
-			} else {
-				m = new Match (this, ref NetworkManager.hostList[0], currentMatches.Count);
-			}
+		LogicalMatch m;
 
-			m.matchName = "Mockup_" + i;
+		if (toRecycleLogicalMatches.Count > 0) {
+			
+			m = toRecycleLogicalMatches [0];
+			m.Recycle (ref h, auxHostListPosition);
+			toRecycleLogicalMatches.RemoveAt (0);
 
-			m.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
-			currentMatches.Add (m);
+		} else {
+			
+			m = new LogicalMatch (this, ref h, auxHostListPosition);
 
 		}
+
+		//m.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
+
+		return m;
 
 	}
 	
@@ -468,15 +468,12 @@ public class RhombusScript : MonoBehaviour {
 			checkedMatches = true;
 		}
 
-		for (int i = 0; i < unresolvedPingMatches.Count; i++) {
-			unresolvedPingMatches[i].Check();
+		// ASSIGN PHYSICAL MATCHES
+		for (int i = 0; i < currentLogicalMatches.Length; i++) {
+			currentLogicalMatches [i].Update ();
 		}
 
-		for (int i = 0; i < currentMatches.Count; i++) {
-			currentMatches [i].Update ();
-		}
-
-		if (currentMatches.Count == 0) {
+		if (currentLogicalMatches.Length == 0 && checkedMatches) {
 			joinMenuLoading.SetActive (true);
 			joinMenuLoadingIcon.transform.Rotate (new Vector3 (0f, 120f, 0f) * Time.deltaTime);
 		} else {
@@ -485,26 +482,53 @@ public class RhombusScript : MonoBehaviour {
 
 
 		if (active) {
-			
-			if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
-				MenuBackBone.SoundMoveSelected ();
-				joinSelected--;
-				if (joinSelected < 0) { joinSelected = joinMenuOptions.Count - 1; }
-			} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow)) {
-				MenuBackBone.SoundMoveSelected ();
-				joinSelected++;
-				if (joinSelected > (joinMenuOptions.Count - 1)) { joinSelected = 0; }
-			}
 
-			if (Input.GetKeyDown (KeyCode.Return)) {
+			if (locked) {
 
-				if (joinMenuOptions [joinSelected] == joinMenuSelect) {
+				if (Input.GetKeyDown (KeyCode.Escape)) {
+					locked = false;
+				}
 
-				} else if (joinMenuOptions [joinSelected] == joinMenuReload) {
-					checkedMatches = false;
-				} else if (joinMenuOptions [joinSelected] == joinMenuSearch) {
+				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					currentLogicalMatchSelected--;
+					if (currentLogicalMatchSelected < 0) { currentLogicalMatchSelected = currentLogicalMatches.Length - 1; }
+				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					currentLogicalMatchSelected++;
+					if (currentLogicalMatchSelected > currentLogicalMatches.Length-1) { currentLogicalMatchSelected = 0; }
+				}
+
+				if (Input.GetKeyDown (KeyCode.Return)) {
+					NetworkManager.JoinServer (NetworkManager.hostList[currentLogicalMatches[currentLogicalMatchSelected].hostListPosition]);
+				}
+
+				joinMenuSelect.GetComponent<TextMesh> ().text = currentLogicalMatchSelected + "";
+
+			} else {
+
+				if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					joinSelected--;
+					if (joinSelected < 0) { joinSelected = joinMenuOptions.Count - 1; }
+				} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow)) {
+					MenuBackBone.SoundMoveSelected ();
+					joinSelected++;
+					if (joinSelected > (joinMenuOptions.Count - 1)) { joinSelected = 0; }
+				}
+
+				if (Input.GetKeyDown (KeyCode.Return)) {
+
+					if (joinMenuOptions [joinSelected] == joinMenuSelect) {
+						locked = true;
+					} else if (joinMenuOptions [joinSelected] == joinMenuReload) {
+						checkedMatches = false;
+					} else if (joinMenuOptions [joinSelected] == joinMenuSearch) {
+
+					}
 
 				}
+
 
 			}
 
@@ -514,7 +538,7 @@ public class RhombusScript : MonoBehaviour {
 
 			Color targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionDeselectedColor;
 
-			if (i == joinSelected) {
+			if (i == joinSelected && !locked) {
 				targetColor = this.transform.parent.GetComponent<MenuBackBone> ().optionSelectedColor;
 			}
 
@@ -822,38 +846,72 @@ public class RhombusScript : MonoBehaviour {
 
     }
 
-	private class Match {
+	private class LogicalMatch {
 
 		public RhombusScript owner;
-		public GameObject root;
+		public PhysicalMatch physicalMatch = null;
 		public string matchName;
-		public int position;
 		public int players;
 		public int pingTime = -1;
+		private Ping ping;
+		public int hostListPosition = -1;
 
-		public Match(RhombusScript auxOwner, ref HostData hData, int auxPosition) {
+		public LogicalMatch(RhombusScript auxOwner, ref HostData hData, int auxHostListPosition) {
 
 			owner = auxOwner;
-			root = Instantiate (owner.textSource);
 
-			Recycle(ref hData, auxPosition);
+			Recycle(ref hData, auxHostListPosition);
 
 		}
 
-		public void Recycle(ref HostData hData, int auxPosition) {
+		public void Recycle(ref HostData hData, int auxHostListPosition) {
 
 			matchName = hData.gameName;
 			players = hData.connectedPlayers;
-			position = auxPosition;
+			pingTime = -1;
+			hostListPosition = auxHostListPosition;
+
+			ping = new Ping(hData.ip[0]);
+
+		}
+
+		public void Update() {
+
+			if (pingTime == -1 && ping.isDone) {
+				pingTime = ping.time;
+			}
+
+			if (physicalMatch != null) {
+				physicalMatch.Update ();
+			}
+
+		}
+
+
+	}
+
+	private class PhysicalMatch {
+
+		public RhombusScript owner;
+		public GameObject root;
+		public LogicalMatch logicalMatch = null;
+
+		public PhysicalMatch(RhombusScript auxOwner) {
+
+			root = Instantiate (owner.textSource);
+
+		}
+
+		public void Recycle(LogicalMatch auxLogicalMatch) {
+
+			logicalMatch = auxLogicalMatch;
 
 			root.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
 			root.GetComponent<TextMesh> ().fontSize = 140;
-			root.GetComponent<TextMesh>().text = matchName + "  <color=#00ff00>" + players +"/20" + "</color>";
-			root.name = "Match_"+auxPosition;
+			root.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00>" + logicalMatch.players +"/20" + "</color>";
+			root.name = "Match_Text";
 			root.gameObject.transform.SetParent(owner.joinMenu.transform);
-			root.transform.localPosition = new Vector3 (-5f, 2f - auxPosition*(0.75f), -0.1f);
-
-			owner.unresolvedPingMatches.Add(new PingMatch(this, hData.ip[0]));
+			//root.transform.localPosition = new Vector3 (-5f, 2f - auxPosition*(0.75f), -0.1f);
 
 		}
 
@@ -862,38 +920,14 @@ public class RhombusScript : MonoBehaviour {
 			int alpha = (int)(root.GetComponent<TextMesh> ().color.a * 255);
 			string alphaString = alpha.ToString ("X2");
 
-			if (pingTime == -1) {
+			if (logicalMatch.pingTime == -1) {
 
-				root.GetComponent<TextMesh>().text = matchName + "  <color=#00ff00" + alphaString + ">" + players +"/20" + "</color>";
+				root.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>";
 
 			} else {
-				
-				root.GetComponent<TextMesh>().text = matchName + "  <color=#00ff00" + alphaString + ">" + players +"/20" + "</color>" + "  <color=#ff9999" + alphaString + ">" +pingTime+ "ms" + "</color>";
 
-			}
+				root.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>" + "  <color=#ff9999" + alphaString + ">" +logicalMatch.pingTime+ "ms" + "</color>";
 
-		}
-
-
-	}
-
-	private class PingMatch {
-
-		public Match match;
-		public Ping ping;
-
-		public PingMatch(Match auxMatch, string auxIpAdress) {
-
-			match = auxMatch;
-			ping = new Ping(auxIpAdress);
-
-		}
-
-		public void Check() {
-
-			if (ping.isDone) {
-				match.pingTime = ping.time;
-				match.owner.unresolvedPingMatches.Remove(this);
 			}
 
 		}
