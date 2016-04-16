@@ -318,7 +318,6 @@ public class RhombusScript : MonoBehaviour {
 
 			//NetworkManager.JoinServer (NetworkManager.hostList [0]);
 
-			flushMatches();
 			addMatches();
 
 			Debug.Log ("HostListReceived");
@@ -357,10 +356,10 @@ public class RhombusScript : MonoBehaviour {
 		for (int i = 0; i < currentLogicalMatches.Length; i++) {
 
 			if (i < NetworkManager.hostList.Length) {
-				currentLogicalMatches [i] = GetLogicalMatch (this, ref NetworkManager.hostList [i], i);
+				currentLogicalMatches [i] = GetLogicalMatch (ref NetworkManager.hostList [i], i);
 			} else {
 				// IT'S A MOCKUP
-				currentLogicalMatches[i] = GetLogicalMatch (this, ref NetworkManager.hostList[0], 0);
+				currentLogicalMatches[i] = GetLogicalMatch (ref NetworkManager.hostList[0], 0);
 			}
 
 			//Debug.Log ("ADDED " + i);
@@ -369,25 +368,47 @@ public class RhombusScript : MonoBehaviour {
 
 	}
 
-	LogicalMatch GetLogicalMatch(RhombusScript owner, ref HostData h, int auxHostListPosition) {
+	LogicalMatch GetLogicalMatch(ref HostData h, int auxHostListPosition) {
 
-		LogicalMatch m;
+		LogicalMatch lMatch;
 
 		if (toRecycleLogicalMatches.Count > 0) {
 			
-			m = toRecycleLogicalMatches [0];
-			m.Recycle (ref h, auxHostListPosition);
+			lMatch = toRecycleLogicalMatches [0];
+			lMatch.Recycle (ref h, auxHostListPosition);
 			toRecycleLogicalMatches.RemoveAt (0);
 
 		} else {
 			
-			m = new LogicalMatch (this, ref h, auxHostListPosition);
+			lMatch = new LogicalMatch (this, ref h, auxHostListPosition);
 
 		}
 
-		//m.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
+		return lMatch;
 
-		return m;
+	}
+
+	PhysicalMatch GetPhysicalMatch(LogicalMatch lMatch, int auxPosition) {
+
+		PhysicalMatch pMatch;
+
+		if (toRecyclePhysicalMatches.Count > 0) {
+
+			pMatch = toRecyclePhysicalMatches [0];
+			pMatch.Recycle (lMatch, auxPosition);
+			toRecyclePhysicalMatches.RemoveAt (0);
+
+		} else {
+
+			pMatch = new PhysicalMatch (this, lMatch, auxPosition);
+
+		}
+
+		pMatch.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
+		pMatch.root.transform.localScale = textSource.transform.localScale;
+		pMatch.root.SetActive (true);
+
+		return pMatch;
 
 	}
 	
@@ -468,10 +489,71 @@ public class RhombusScript : MonoBehaviour {
 			checkedMatches = true;
 		}
 
+		int max_distance_from_central_match = 3;
+
 		// ASSIGN PHYSICAL MATCHES
+		int central_match = currentLogicalMatchSelected;
+		if (central_match < max_distance_from_central_match) { central_match = max_distance_from_central_match; }
+
 		for (int i = 0; i < currentLogicalMatches.Length; i++) {
+			
 			currentLogicalMatches [i].Update ();
+
+			if (Mathf.Abs(i - central_match) <= max_distance_from_central_match && currentLogicalMatches [i].physicalMatch == null) {
+				
+				PhysicalMatch pMatch = GetPhysicalMatch (currentLogicalMatches [i], i);
+				currentLogicalMatches [i].physicalMatch = pMatch;
+				currentPhysicalMatches.Add (pMatch);
+
+			}
+
 		}
+
+		// HANDLE PHYSICAL MATCHES
+		List<PhysicalMatch> toErase = new List<PhysicalMatch>();
+
+		for (int i = 0; i < currentPhysicalMatches.Count; i++) {
+
+			int auxPosition = currentPhysicalMatches [i].logicalMatchPosition;
+
+			if (Mathf.Abs (auxPosition - central_match) > max_distance_from_central_match) {
+				// MUST DELETE
+				currentPhysicalMatches [i].root.transform.localScale = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localScale, new Vector3(0f, 0f, 0f), Time.deltaTime*10f);
+				if (Mathf.Abs (currentPhysicalMatches [i].root.transform.localScale.x) < 0.000001f) {
+					toErase.Add (currentPhysicalMatches [i]);
+				}
+			} else {
+				// IT'S FINE
+				currentPhysicalMatches [i].root.transform.localScale = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localScale, textSource.transform.localScale, Time.deltaTime*10f);
+			}
+
+			Color targetColor = new Color(1f, 1f, 1f, 0.25f);
+
+			if (currentPhysicalMatches [i].logicalMatchPosition == currentLogicalMatchSelected && locked) {
+				targetColor = new Color(1f, 1f, 1f, 1f);
+			}
+
+			currentPhysicalMatches [i].root.GetComponent<TextMesh> ().color = Color.Lerp (currentPhysicalMatches [i].root.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
+
+			currentPhysicalMatches [i].UpdateText ();
+
+			currentPhysicalMatches [i].root.transform.localPosition = new Vector3 (-5f, 1.25f - auxPosition*(0.75f), -0.1f);
+
+		}
+
+		while (toErase.Count > 0) {
+
+			toErase [0].logicalMatch.physicalMatch = null;
+			toErase [0].logicalMatch = null;
+			toErase [0].root.SetActive (false);
+
+			toRecyclePhysicalMatches.Add (toErase[0]);
+			currentPhysicalMatches.Remove (toErase [0]);
+			toErase.RemoveAt (0);
+
+		}
+
+
 
 		if (currentLogicalMatches.Length == 0 && checkedMatches) {
 			joinMenuLoading.SetActive (true);
@@ -503,6 +585,11 @@ public class RhombusScript : MonoBehaviour {
 					NetworkManager.JoinServer (NetworkManager.hostList[currentLogicalMatches[currentLogicalMatchSelected].hostListPosition]);
 				}
 
+				if (currentLogicalMatches [currentLogicalMatchSelected].physicalMatch != null) {
+					Vector3 targetPosition = currentLogicalMatches [currentLogicalMatchSelected].physicalMatch.root.transform.position + new Vector3 (-0.5f, 0f, 0f);
+					menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
+				}
+
 				joinMenuSelect.GetComponent<TextMesh> ().text = currentLogicalMatchSelected + "";
 
 			} else {
@@ -529,6 +616,8 @@ public class RhombusScript : MonoBehaviour {
 
 				}
 
+				Vector3 targetPosition = joinMenuOptions [joinSelected].transform.position + new Vector3 (-joinMenuOptions [joinSelected].GetComponent<MeshRenderer> ().bounds.size.x / 2f - 0.5f, 0f, 0f);
+				menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
 
 			}
 
@@ -545,9 +634,6 @@ public class RhombusScript : MonoBehaviour {
 			joinMenuOptions [i].GetComponent<TextMesh> ().color = Color.Lerp (joinMenuOptions [i].GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
 
 		}
-
-		Vector3 targetPosition = joinMenuOptions [joinSelected].transform.position + new Vector3 (-joinMenuOptions [joinSelected].GetComponent<MeshRenderer> ().bounds.size.x / 2f - 0.5f, 0f, 0f);
-		menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
 
 	}
 
@@ -881,10 +967,6 @@ public class RhombusScript : MonoBehaviour {
 				pingTime = ping.time;
 			}
 
-			if (physicalMatch != null) {
-				physicalMatch.Update ();
-			}
-
 		}
 
 
@@ -895,27 +977,30 @@ public class RhombusScript : MonoBehaviour {
 		public RhombusScript owner;
 		public GameObject root;
 		public LogicalMatch logicalMatch = null;
+		public int logicalMatchPosition = -1;
 
-		public PhysicalMatch(RhombusScript auxOwner) {
+		public PhysicalMatch(RhombusScript auxOwner, LogicalMatch auxLogicalMatch, int auxPosition) {
+
+			owner = auxOwner;
 
 			root = Instantiate (owner.textSource);
-
-		}
-
-		public void Recycle(LogicalMatch auxLogicalMatch) {
-
-			logicalMatch = auxLogicalMatch;
-
 			root.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
 			root.GetComponent<TextMesh> ().fontSize = 140;
-			root.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00>" + logicalMatch.players +"/20" + "</color>";
-			root.name = "Match_Text";
 			root.gameObject.transform.SetParent(owner.joinMenu.transform);
-			//root.transform.localPosition = new Vector3 (-5f, 2f - auxPosition*(0.75f), -0.1f);
+
+			Recycle(auxLogicalMatch, auxPosition);
 
 		}
 
-		public void Update() {
+		public void Recycle(LogicalMatch auxLogicalMatch, int auxPosition) {
+
+			logicalMatch = auxLogicalMatch;
+			logicalMatchPosition = auxPosition;
+			root.name = "Match_"+logicalMatch.hostListPosition;
+
+		}
+
+		public void UpdateText() {
 
 			int alpha = (int)(root.GetComponent<TextMesh> ().color.a * 255);
 			string alphaString = alpha.ToString ("X2");
