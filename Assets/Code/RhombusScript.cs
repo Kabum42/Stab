@@ -329,13 +329,20 @@ public class RhombusScript : MonoBehaviour {
 		if (currentLogicalMatches.Length > 0) {
 			// STORE OLD MATCHES TO RECYCLE
 			for (int i = 0; i < currentLogicalMatches.Length; i++) {
-				/*
+				
 				if (currentLogicalMatches [i].physicalMatch != null) { 
-					currentLogicalMatches [i].physicalMatch.root.SetActive (false);
-					toRecyclePhysicalMatches.Add (currentLogicalMatches[0].physicalMatch);
-					currentPhysicalMatches.Remove(currentLogicalMatches[0].physicalMatch);
+
+					PhysicalMatch pMatch = currentLogicalMatches [i].physicalMatch;
+
+					pMatch.logicalMatch = null;
+					pMatch.root.SetActive (false);
+					toRecyclePhysicalMatches.Add (pMatch);
+					currentPhysicalMatches.Remove(pMatch);
+
+					currentLogicalMatches [i].physicalMatch = null;
+
 				}
-				*/
+
 
 				toRecycleLogicalMatches.Add (currentLogicalMatches [i]);
 
@@ -360,6 +367,7 @@ public class RhombusScript : MonoBehaviour {
 			} else {
 				// IT'S A MOCKUP
 				currentLogicalMatches[i] = GetLogicalMatch (ref NetworkManager.hostList[0], 0);
+				currentLogicalMatches [i].matchName = currentLogicalMatches [i].matchName + "_mockUp_" + (i - NetworkManager.hostList.Length);
 			}
 
 			//Debug.Log ("ADDED " + i);
@@ -405,7 +413,7 @@ public class RhombusScript : MonoBehaviour {
 		}
 
 		pMatch.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
-		pMatch.root.transform.localScale = textSource.transform.localScale;
+		pMatch.root.transform.localScale = new Vector3(0f, 0f, 0f);
 		pMatch.root.SetActive (true);
 
 		return pMatch;
@@ -494,6 +502,7 @@ public class RhombusScript : MonoBehaviour {
 		// ASSIGN PHYSICAL MATCHES
 		int central_match = currentLogicalMatchSelected;
 		if (central_match < max_distance_from_central_match) { central_match = max_distance_from_central_match; }
+		//else if (central_match 
 
 		for (int i = 0; i < currentLogicalMatches.Length; i++) {
 			
@@ -505,6 +514,10 @@ public class RhombusScript : MonoBehaviour {
 				currentLogicalMatches [i].physicalMatch = pMatch;
 				currentPhysicalMatches.Add (pMatch);
 
+				int auxPosition = pMatch.logicalMatchPosition - central_match;
+				Vector3 targetPosition = new Vector3 (-5f, -0.75f - auxPosition * (0.75f), -0.1f);
+				pMatch.root.transform.localPosition = targetPosition;
+
 			}
 
 		}
@@ -514,9 +527,9 @@ public class RhombusScript : MonoBehaviour {
 
 		for (int i = 0; i < currentPhysicalMatches.Count; i++) {
 
-			int auxPosition = currentPhysicalMatches [i].logicalMatchPosition;
+			int auxPosition = currentPhysicalMatches [i].logicalMatchPosition - central_match;
 
-			if (Mathf.Abs (auxPosition - central_match) > max_distance_from_central_match) {
+			if (Mathf.Abs (currentPhysicalMatches [i].logicalMatchPosition - central_match) > max_distance_from_central_match) {
 				// MUST DELETE
 				currentPhysicalMatches [i].root.transform.localScale = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localScale, new Vector3(0f, 0f, 0f), Time.deltaTime*10f);
 				if (Mathf.Abs (currentPhysicalMatches [i].root.transform.localScale.x) < 0.000001f) {
@@ -537,7 +550,8 @@ public class RhombusScript : MonoBehaviour {
 
 			currentPhysicalMatches [i].UpdateText ();
 
-			currentPhysicalMatches [i].root.transform.localPosition = new Vector3 (-5f, 1.25f - auxPosition*(0.75f), -0.1f);
+			Vector3 targetPosition = new Vector3 (-5f, -0.75f - auxPosition * (0.75f), -0.1f);
+			currentPhysicalMatches [i].root.transform.localPosition = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localPosition, targetPosition, Time.deltaTime*10f);
 
 		}
 
@@ -590,8 +604,6 @@ public class RhombusScript : MonoBehaviour {
 					menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
 				}
 
-				joinMenuSelect.GetComponent<TextMesh> ().text = currentLogicalMatchSelected + "";
-
 			} else {
 
 				if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
@@ -606,7 +618,7 @@ public class RhombusScript : MonoBehaviour {
 
 				if (Input.GetKeyDown (KeyCode.Return)) {
 
-					if (joinMenuOptions [joinSelected] == joinMenuSelect) {
+					if (joinMenuOptions [joinSelected] == joinMenuSelect && currentLogicalMatches.Length > 0) {
 						locked = true;
 					} else if (joinMenuOptions [joinSelected] == joinMenuReload) {
 						checkedMatches = false;
