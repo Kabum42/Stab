@@ -64,7 +64,7 @@ public class RhombusScript : MonoBehaviour {
 
 	// JOIN MENU
 	public int joinSelected = 0;
-	private bool checkedMatches = false;
+	private int checkedMatches = 0;
 	private GameObject joinMenu;
 	private List<GameObject> joinMenuOptions = new List<GameObject> ();
 	// LOADING
@@ -318,9 +318,14 @@ public class RhombusScript : MonoBehaviour {
 
 			//NetworkManager.JoinServer (NetworkManager.hostList [0]);
 
-			addMatches();
+			if (NetworkManager.hostList.Length > 0) {
+				addMatches();
+			}
+
+			checkedMatches = 2;
 
 			Debug.Log ("HostListReceived");
+
 		}
 	}
 
@@ -491,10 +496,10 @@ public class RhombusScript : MonoBehaviour {
 
 	void updateJoin() {
 
-		if (!checkedMatches) {
+		if (checkedMatches == 0) {
 			flushMatches ();
 			NetworkManager.RefreshHostList ();
-			checkedMatches = true;
+			checkedMatches = 1;
 		}
 
 		int max_distance_from_central_match = 4;
@@ -573,7 +578,7 @@ public class RhombusScript : MonoBehaviour {
 
 
 
-		if (currentLogicalMatches.Length == 0 && checkedMatches) {
+		if (currentLogicalMatches.Length == 0 && checkedMatches == 1) {
 			joinMenuLoading.SetActive (true);
 			joinMenuLoadingIcon.transform.Rotate (new Vector3 (0f, 120f, 0f) * Time.deltaTime);
 		} else {
@@ -625,7 +630,7 @@ public class RhombusScript : MonoBehaviour {
 					if (joinMenuOptions [joinSelected] == joinMenuSelect && currentLogicalMatches.Length > 0) {
 						locked = true;
 					} else if (joinMenuOptions [joinSelected] == joinMenuReload) {
-						checkedMatches = false;
+						checkedMatches = 0;
 					} else if (joinMenuOptions [joinSelected] == joinMenuSearch) {
 
 					}
