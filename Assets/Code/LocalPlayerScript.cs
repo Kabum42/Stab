@@ -47,10 +47,16 @@ public class LocalPlayerScript : MonoBehaviour {
     public GameObject crosshairHackTriclip;
     public List<GameObject> crosshairHackTriangles = new List<GameObject>();
 	public GameObject crosshairHackTimer;
+    public GameObject crosshairHackBig;
+    public List<GameObject> crosshairHackCharges = new List<GameObject>();
+    public List<GameObject> crosshairHackChargesFull = new List<GameObject>();
 
-    public AnimationCurve crosshairHackTriclipCooldownCurve;
-    public AnimationCurve crosshairHackTriclipReadyCurve;
+    private int nextCharge = 1;
+    public float chargeResource = 3f;
+
+    public AnimationCurve crosshairHackTriclipSizeCurve;
     public AnimationCurve crosshairHackTriangleCurve;
+    public AnimationCurve crosshairHackTriangleSizeCurve;
 
 	public GameObject impulseText;
 
@@ -65,11 +71,15 @@ public class LocalPlayerScript : MonoBehaviour {
 
     private float crosshairHackTriclipOldZ = 0f;
     private float crosshairHackTriclipTargetZ = 0f;
-    private float crosshairHackTriclipSizeAux = 1f;
     private Vector3 crosshairHackTriclipOriginalScale;
+    private Vector3 crosshairHackTriangleOriginalScale;
+
+    private float crosshairHackBigTargetZ = 0f;
 
 	private GameObject firstPersonObjects;
 	private GameObject armRight;
+
+    private GameObject alertHacked;
 
 	private float auxFieldOfView = 0f;
 	private float maxFieldOfView = 75f;
@@ -124,9 +134,35 @@ public class LocalPlayerScript : MonoBehaviour {
 			newTriangle.GetComponent<RectTransform> ().localScale = sourceTriangle.GetComponent<RectTransform>().localScale;
             crosshairHackTriangles.Add(newTriangle);
         }
+        crosshairHackTriangleOriginalScale = sourceTriangle.GetComponent<RectTransform>().localScale;
         Destroy(sourceTriangle);
 		crosshairHackTimer = crosshairHack.transform.FindChild("Timer").gameObject;
-        
+        crosshairHackBig = crosshairHack.transform.FindChild("Big").gameObject;
+        GameObject sourceCharge = crosshairHack.transform.FindChild("Charge").gameObject;
+        int num_charges = 3;
+        for (int i = 0; i < num_charges; i++)
+        {
+            GameObject newCharge = Instantiate(sourceCharge);
+            newCharge.transform.SetParent(crosshairHackBig.transform);
+            newCharge.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            float aux = (float)i / (float)num_charges;
+            newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
+            Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
+            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 900f;
+            newCharge.name = "Charge_" + (i + 1);
+            newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
+            crosshairHackCharges.Add(newCharge);
+            crosshairHackChargesFull.Add(newCharge.transform.FindChild("Full").gameObject);
+        }
+        Destroy(sourceCharge);
+
+        alertHacked = Instantiate(Resources.Load("Prefabs/Alert") as GameObject);
+        alertHacked.transform.SetParent(GameObject.Find("Canvas").transform);
+        alertHacked.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+        alertHacked.name = "Alert";
+        alertHacked.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
+        alertHacked.SetActive(true);
+        alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f);
 
 		impulseText = Instantiate (Resources.Load("Prefabs/ImpulseText") as GameObject);
 		impulseText.transform.SetParent(GameObject.Find ("Canvas").transform);
@@ -162,6 +198,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		handleCameraChanges ();
 		//adjustFirstPersonObjects ();
 		handleRegularInput();
+
+        hackingMockUp();
+        interceptMockUp();
+        alertMockUp();
 	
 	}
 
@@ -170,6 +210,86 @@ public class LocalPlayerScript : MonoBehaviour {
 		handleMovementInput ();
 
 	}
+
+    void alertMockUp()
+    {
+
+        float cutoff = alertHacked.GetComponent<Image>().material.GetFloat("_Cutoff");
+
+        if (Input.GetKeyDown(KeyCode.Return) && cutoff == 1f)
+        {
+            cutoff -= Time.deltaTime;
+            alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", cutoff);
+        }
+
+        float min = 0.1f;
+
+        if (cutoff < 1f && cutoff > min) {
+            cutoff -= Time.deltaTime*2f;
+            if (cutoff <= min) { cutoff = 1f; }
+            alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", cutoff);
+        }
+
+    }
+
+    void interceptMockUp()
+    {
+
+        if (chargeResource < 3f)
+        {
+            chargeResource += Time.deltaTime*(1f/2f);
+            if (chargeResource >= 3f) { chargeResource = 3f; }
+        }
+
+        // TODAS VACIAS
+        for (int i = 0; i < crosshairHackCharges.Count; i++)
+        {
+            crosshairHackChargesFull[i].SetActive(false);
+        }
+
+        float auxCharge = chargeResource;
+        int auxNext = nextCharge;
+
+        // SE LLENAN LAS QUE TOCAN
+        while (auxCharge >= 1f)
+        {
+            crosshairHackChargesFull[auxNext].SetActive(true);
+            auxCharge -= 1f;
+            auxNext++;
+            if (auxNext >= crosshairHackCharges.Count) { auxNext = 0; }
+        }
+
+        // CLICK DERECHO
+        if (Input.GetMouseButtonDown(1) && chargeResource >= 1f)
+        {
+            chargeResource -= 1f;
+            nextCharge++;
+            if (nextCharge >= crosshairHackCharges.Count) { nextCharge = 0; }
+            crosshairHackBigTargetZ -= 120f;
+            if (crosshairHackBigTargetZ < 0f)
+            {
+                crosshairHackBigTargetZ += 360f;
+            }
+        }
+
+        crosshairHackBig.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, Mathf.LerpAngle(crosshairHackBig.GetComponent<RectTransform>().eulerAngles.z, crosshairHackBigTargetZ, Time.deltaTime*5f));
+
+    }
+
+    void hackingMockUp()
+    {
+
+        if (crosshairHackTimer.GetComponent<Image>().material.GetFloat("_Cutoff") < 1f)
+        {
+            float aux = Mathf.Min(1f, crosshairHackTimer.GetComponent<Image>().material.GetFloat("_Cutoff") + Time.deltaTime * (0.2f));
+            crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", aux);
+        }
+        else if (Input.GetMouseButtonDown(0))
+        {
+            crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", 0f);
+        }
+
+    }
 
 	void adjustFirstPersonObjects() {
 
@@ -190,42 +310,27 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleAttack() {
 
-
 		if (attackChargeCooldown > 0f) {
 
 			attackChargeCooldown -= Time.deltaTime;
 
 			if (attackChargeCooldown <= 0f) { 
                 attackChargeCooldown = 0f;
-                crosshairHackTriclipSizeAux = 0f;
             }
 
             float aux = 1 - (attackChargeCooldown / attackChargeCooldownMax);
             crosshairHackTriclip.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, Mathf.LerpAngle(crosshairHackTriclipOldZ, crosshairHackTriclipTargetZ, aux));
 
-            if (crosshairHackTriclipSizeAux < 1f)
-            {
-                crosshairHackTriclipSizeAux += Time.deltaTime * 5f;
-                if (crosshairHackTriclipSizeAux >= 1f) { crosshairHackTriclipSizeAux = 1f; }
-                crosshairHackTriclip.GetComponent<RectTransform>().localScale = crosshairHackTriclipOriginalScale * crosshairHackTriclipCooldownCurve.Evaluate(crosshairHackTriclipSizeAux);
-            }
-
         }
 		else if (attackChargeCooldown <= 0f) {
 
-            if (crosshairHackTriclipSizeAux < 1f)
-            {
-                crosshairHackTriclipSizeAux += Time.deltaTime * 5f;
-                if (crosshairHackTriclipSizeAux >= 1f) { crosshairHackTriclipSizeAux = 1f; }
-                crosshairHackTriclip.GetComponent<RectTransform>().localScale = crosshairHackTriclipOriginalScale * crosshairHackTriclipReadyCurve.Evaluate(crosshairHackTriclipSizeAux);
-            }
-
 			if (Input.GetMouseButtonDown (0)) {
                 dashAttack();
-                crosshairHackTriclipSizeAux = 0f;
 			}
 
 		}
+
+        crosshairHackTriclip.GetComponent<RectTransform>().localScale = crosshairHackTriclipOriginalScale * crosshairHackTriclipSizeCurve.Evaluate(1f - attackChargeCooldown / attackChargeCooldownMax);
 
         adjustCrossHairHackTriangles();
 
@@ -238,8 +343,10 @@ public class LocalPlayerScript : MonoBehaviour {
         {
             Vector2 upVector2 = new Vector2(crosshairHackTriangles[i].GetComponent<RectTransform>().up.x, crosshairHackTriangles[i].GetComponent<RectTransform>().up.y);
             float multiplier = crosshairHackTriangleCurve.Evaluate(1f - attackChargeCooldown / attackChargeCooldownMax);
-            Vector2 targetAnchor = upVector2 * 20f * multiplier;
+            Vector2 targetAnchor = upVector2 * 15f * multiplier;
             crosshairHackTriangles[i].GetComponent<RectTransform>().anchoredPosition = targetAnchor;
+
+            crosshairHackTriangles[i].GetComponent<RectTransform>().localScale = crosshairHackTriangleOriginalScale * crosshairHackTriangleSizeCurve.Evaluate(1f - attackChargeCooldown / attackChargeCooldownMax);
         }
 
     }
