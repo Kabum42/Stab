@@ -79,6 +79,7 @@ public class RhombusScript : MonoBehaviour {
 	private LogicalMatch[] currentLogicalMatches = new LogicalMatch[0];
 	private List<LogicalMatch> toRecycleLogicalMatches = new List<LogicalMatch> ();
 	private int currentLogicalMatchSelected = 0;
+	private LinkedList<PingMatch> unresolvedPingMatches = new LinkedList<PingMatch> ();
 
 	private List<PhysicalMatch> currentPhysicalMatches = new List<PhysicalMatch>();
 	private List<PhysicalMatch> toRecyclePhysicalMatches = new List<PhysicalMatch>();
@@ -501,22 +502,37 @@ public class RhombusScript : MonoBehaviour {
 			NetworkManager.RefreshHostList ();
 			checkedMatches = 1;
 		}
+			
+		// PINGMATCHES CON LINKED LIST
+		for(LinkedListNode<PingMatch> pingMatch = unresolvedPingMatches.First; pingMatch != null; pingMatch = pingMatch.Next)
+		{
+			if (pingMatch.Value.Update()) {
+				// YA SE HA RECIBIDO EL PINGTIME, HAY QUE ELIMINARLO
+				unresolvedPingMatches.Remove (pingMatch);
+				pingMatch.Value = null;
+			}
+		}
 
+		// RELATIVE POSITIONS
 		int max_distance_from_central_match = 4;
-
-		// ASSIGN PHYSICAL MATCHES
 		int central_match = currentLogicalMatchSelected;
+
 		if (central_match < max_distance_from_central_match) {
 			central_match = max_distance_from_central_match;
 		} else if (central_match > currentLogicalMatches.Length - (max_distance_from_central_match + 1)) { 
 			central_match = currentLogicalMatches.Length - (max_distance_from_central_match + 1);
 		}
 
-		for (int i = 0; i < currentLogicalMatches.Length; i++) {
-			
-			currentLogicalMatches [i].Update ();
+		int first_element = central_match - max_distance_from_central_match;
+		int last_element = central_match + max_distance_from_central_match;
+		if (last_element > currentLogicalMatches.Length - 1)  {
+			last_element = currentLogicalMatches.Length - 1;
+		}
 
-			if (Mathf.Abs(i - central_match) <= max_distance_from_central_match && currentLogicalMatches [i].physicalMatch == null) {
+		// CHECK RELATIVE POSITIONS IN NEED OF PHYSICAL MATCHES
+		for (int i = first_element; i <= last_element; i++) {
+
+			if (currentLogicalMatches [i].physicalMatch == null) {
 				
 				PhysicalMatch pMatch = GetPhysicalMatch (currentLogicalMatches [i], i);
 				currentLogicalMatches [i].physicalMatch = pMatch;
@@ -960,7 +976,6 @@ public class RhombusScript : MonoBehaviour {
 		public string matchName;
 		public int players;
 		public int pingTime = -1;
-		private Ping ping;
 		public int hostListPosition = -1;
 
 		public LogicalMatch(RhombusScript auxOwner, ref HostData hData, int auxHostListPosition) {
@@ -978,18 +993,34 @@ public class RhombusScript : MonoBehaviour {
 			pingTime = -1;
 			hostListPosition = auxHostListPosition;
 
+			owner.unresolvedPingMatches.AddLast(new PingMatch (this, ref hData));
+
+		}
+
+	}
+
+	private class PingMatch {
+
+		public LogicalMatch logicalMatch;
+		private Ping ping;
+
+		public PingMatch (LogicalMatch auxLogicalMatch, ref HostData hData) {
+
+			logicalMatch = auxLogicalMatch;
 			ping = new Ping(hData.ip[0]);
 
 		}
 
-		public void Update() {
+		public bool Update() {
 
-			if (pingTime == -1 && ping.isDone) {
-				pingTime = ping.time;
+			if (logicalMatch.pingTime == -1 && ping.isDone) {
+				logicalMatch.pingTime = ping.time;
+				return true;
 			}
 
-		}
+			return false;
 
+		}
 
 	}
 
