@@ -9,6 +9,7 @@ public class RhombusScript : MonoBehaviour {
 	public GameObject textSource;
 	public GameObject textBackgroundSource;
 	public GameObject arrowSource;
+	public GameObject physicalMatchSource;
 
     public GameObject boneNW;
     public GameObject boneNE;
@@ -418,7 +419,7 @@ public class RhombusScript : MonoBehaviour {
 
 		}
 
-		pMatch.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
+		pMatch.text.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
 		pMatch.root.transform.localScale = new Vector3(0f, 0f, 0f);
 		pMatch.root.SetActive (true);
 
@@ -555,7 +556,7 @@ public class RhombusScript : MonoBehaviour {
 
 			if (Mathf.Abs (currentPhysicalMatches [i].logicalMatchPosition - central_match) > max_distance_from_central_match) {
 				// MUST DELETE
-				currentPhysicalMatches [i].root.transform.localScale = currentPhysicalMatches [i].root.transform.localScale -new Vector3(1f, 1f, 1f)*Time.deltaTime/2f;
+				currentPhysicalMatches [i].root.transform.localScale = currentPhysicalMatches [i].root.transform.localScale -new Vector3(1f, 1f, 1f)*Time.deltaTime/3f;
 				if (currentPhysicalMatches [i].root.transform.localScale.x <= 0f) {
 					currentPhysicalMatches [i].root.transform.localScale = new Vector3 (0f, 0f, 0f);
 					toErase.Add (currentPhysicalMatches [i]);
@@ -571,7 +572,7 @@ public class RhombusScript : MonoBehaviour {
 				targetColor = new Color(1f, 1f, 1f, 1f);
 			}
 
-			currentPhysicalMatches [i].root.GetComponent<TextMesh> ().color = Color.Lerp (currentPhysicalMatches [i].root.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
+			currentPhysicalMatches [i].text.GetComponent<TextMesh> ().color = Color.Lerp (currentPhysicalMatches [i].text.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
 
 			currentPhysicalMatches [i].UpdateText ();
 
@@ -1014,7 +1015,8 @@ public class RhombusScript : MonoBehaviour {
 		public bool Update() {
 
 			if (logicalMatch.pingTime == -1 && ping.isDone) {
-				logicalMatch.pingTime = ping.time;
+				//logicalMatch.pingTime = ping.time;
+				logicalMatch.pingTime = Random.Range(1, 500);
 				return true;
 			}
 
@@ -1028,6 +1030,8 @@ public class RhombusScript : MonoBehaviour {
 
 		public RhombusScript owner;
 		public GameObject root;
+		public GameObject text;
+		public GameObject connection;
 		public LogicalMatch logicalMatch = null;
 		public int logicalMatchPosition = -1;
 
@@ -1035,9 +1039,12 @@ public class RhombusScript : MonoBehaviour {
 
 			owner = auxOwner;
 
-			root = Instantiate (owner.textSource);
-			root.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
-			root.GetComponent<TextMesh> ().fontSize = 140;
+			root = Instantiate (owner.physicalMatchSource);
+			text = root.transform.FindChild("Text").gameObject;
+			text.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
+			text.GetComponent<TextMesh> ().fontSize = 140;
+			connection = root.transform.FindChild("Connection").gameObject;
+			connection.transform.localPosition = new Vector3(250f, 0f, connection.transform.localPosition.z);
 			root.gameObject.transform.SetParent(owner.joinMenu.transform);
 
 			Recycle(auxLogicalMatch, auxPosition);
@@ -1054,17 +1061,19 @@ public class RhombusScript : MonoBehaviour {
 
 		public void UpdateText() {
 
-			int alpha = (int)(root.GetComponent<TextMesh> ().color.a * 255);
+			int alpha = (int)(text.GetComponent<TextMesh> ().color.a * 255);
 			string alphaString = alpha.ToString ("X2");
 
-			if (logicalMatch.pingTime == -1) {
+			text.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>";
 
-				root.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>";
+			int step = 40;
+			int quality = 0;
+			if (logicalMatch.pingTime > -1 && logicalMatch.pingTime <= step * 10f) {
+				quality = 10 - (logicalMatch.pingTime / step);
+			}
 
-			} else {
-
-				root.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>" + "  <color=#ff9999" + alphaString + ">" +logicalMatch.pingTime+ "ms" + "</color>";
-
+			if (connection.GetComponent<ConnectionContainer> ().pingQuality != quality) {
+				connection.GetComponent<ConnectionContainer> ().setQuality (quality);
 			}
 
 		}
