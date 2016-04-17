@@ -37,6 +37,9 @@ public class RhombusScript : MonoBehaviour {
 	private static float typeBlank = 0.5f;
 	private static float typeShow = 0.5f;
 
+	private string lastKey = "none";
+	private float lastKeyCooldown = 0.2f;
+
 	// CREATE MENU
 	public int createSelected = 0;
 	private GameObject createMenu;
@@ -80,6 +83,7 @@ public class RhombusScript : MonoBehaviour {
 	private LogicalMatch[] currentLogicalMatches = new LogicalMatch[0];
 	private List<LogicalMatch> toRecycleLogicalMatches = new List<LogicalMatch> ();
 	private int currentLogicalMatchSelected = 0;
+	private LinkedList<PingMatch> unqueuedPingMatches = new LinkedList<PingMatch> ();
 	private LinkedList<PingMatch> unresolvedPingMatches = new LinkedList<PingMatch> ();
 
 	private List<PhysicalMatch> currentPhysicalMatches = new List<PhysicalMatch>();
@@ -514,6 +518,14 @@ public class RhombusScript : MonoBehaviour {
 			}
 		}
 
+		int min_matches = 1;
+		while (unresolvedPingMatches.Count < min_matches && unqueuedPingMatches.Count > 0) {
+			PingMatch pingMatch = unqueuedPingMatches.First.Value;
+			unqueuedPingMatches.RemoveFirst ();
+			pingMatch.DoPing ();
+			unresolvedPingMatches.AddLast (pingMatch);
+		}
+
 		// RELATIVE POSITIONS
 		int max_distance_from_central_match = 4;
 		int central_match = currentLogicalMatchSelected;
@@ -576,6 +588,12 @@ public class RhombusScript : MonoBehaviour {
 
 			currentPhysicalMatches [i].UpdateText ();
 
+			if (currentPhysicalMatches [i].logicalMatch.pingTime == -1) {
+				currentPhysicalMatches [i].connection.gameObject.SetActive (false);
+			} else {
+				currentPhysicalMatches [i].connection.gameObject.SetActive (true);
+			}
+
 			Vector3 targetPosition = new Vector3 (-5f, -0.75f - auxPosition * (0.75f), -0.1f);
 			currentPhysicalMatches [i].root.transform.localPosition = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localPosition, targetPosition, Time.deltaTime*10f);
 
@@ -619,6 +637,34 @@ public class RhombusScript : MonoBehaviour {
 					MenuBackBone.SoundMoveSelected ();
 					currentLogicalMatchSelected++;
 					if (currentLogicalMatchSelected > currentLogicalMatches.Length-1) { currentLogicalMatchSelected = 0; }
+				}
+
+				if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
+					if (lastKey != "up") {
+						lastKeyCooldown = 0.5f;
+					}
+					lastKey = "up";
+					lastKeyCooldown -= Time.deltaTime;
+					if (lastKeyCooldown <= 0f) {
+						lastKeyCooldown = 0.1f;
+						MenuBackBone.SoundMoveSelected ();
+						currentLogicalMatchSelected--;
+						if (currentLogicalMatchSelected < 0) { currentLogicalMatchSelected = currentLogicalMatches.Length - 1; }
+					}
+				} else if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow)) {
+					if (lastKey != "down") {
+						lastKeyCooldown = 0.5f;
+					}
+					lastKey = "down";
+					lastKeyCooldown -= Time.deltaTime;
+					if (lastKeyCooldown <= 0f) {
+						lastKeyCooldown = 0.1f;
+						MenuBackBone.SoundMoveSelected ();
+						currentLogicalMatchSelected++;
+						if (currentLogicalMatchSelected > currentLogicalMatches.Length-1) { currentLogicalMatchSelected = 0; }
+					}
+				} else {
+					lastKey = "none";
 				}
 
 				if (Input.GetKeyDown (KeyCode.Return)) {
@@ -994,7 +1040,7 @@ public class RhombusScript : MonoBehaviour {
 			pingTime = -1;
 			hostListPosition = auxHostListPosition;
 
-			owner.unresolvedPingMatches.AddLast(new PingMatch (this, ref hData));
+			owner.unqueuedPingMatches.AddLast (new PingMatch (this, ref hData));
 
 		}
 
@@ -1003,12 +1049,19 @@ public class RhombusScript : MonoBehaviour {
 	private class PingMatch {
 
 		public LogicalMatch logicalMatch;
+		private string ip;
 		private Ping ping;
 
 		public PingMatch (LogicalMatch auxLogicalMatch, ref HostData hData) {
 
 			logicalMatch = auxLogicalMatch;
-			ping = new Ping(hData.ip[0]);
+			ip = hData.ip[0];
+
+		}
+
+		public void DoPing() {
+
+			ping = new Ping(ip);
 
 		}
 
@@ -1031,7 +1084,7 @@ public class RhombusScript : MonoBehaviour {
 		public RhombusScript owner;
 		public GameObject root;
 		public GameObject text;
-		public GameObject connection;
+		public ConnectionContainer connection;
 		public LogicalMatch logicalMatch = null;
 		public int logicalMatchPosition = -1;
 
@@ -1043,8 +1096,8 @@ public class RhombusScript : MonoBehaviour {
 			text = root.transform.FindChild("Text").gameObject;
 			text.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
 			text.GetComponent<TextMesh> ().fontSize = 140;
-			connection = root.transform.FindChild("Connection").gameObject;
-			connection.transform.localPosition = new Vector3(250f, 0f, connection.transform.localPosition.z);
+			connection = root.transform.FindChild("Connection").gameObject.GetComponent<ConnectionContainer>();
+			connection.gameObject.transform.localPosition = new Vector3(250f, 0f, connection.gameObject.transform.localPosition.z);
 			root.gameObject.transform.SetParent(owner.joinMenu.transform);
 
 			Recycle(auxLogicalMatch, auxPosition);
@@ -1072,8 +1125,8 @@ public class RhombusScript : MonoBehaviour {
 				quality = 10 - (logicalMatch.pingTime / step);
 			}
 
-			if (connection.GetComponent<ConnectionContainer> ().pingQuality != quality) {
-				connection.GetComponent<ConnectionContainer> ().setQuality (quality);
+			if (connection.pingQuality != quality) {
+				connection.setQuality (quality);
 			}
 
 		}
