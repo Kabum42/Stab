@@ -497,12 +497,15 @@ public class RhombusScript : MonoBehaviour {
 			checkedMatches = true;
 		}
 
-		int max_distance_from_central_match = 3;
+		int max_distance_from_central_match = 4;
 
 		// ASSIGN PHYSICAL MATCHES
 		int central_match = currentLogicalMatchSelected;
-		if (central_match < max_distance_from_central_match) { central_match = max_distance_from_central_match; }
-		//else if (central_match 
+		if (central_match < max_distance_from_central_match) {
+			central_match = max_distance_from_central_match;
+		} else if (central_match > currentLogicalMatches.Length - (max_distance_from_central_match + 1)) { 
+			central_match = currentLogicalMatches.Length - (max_distance_from_central_match + 1);
+		}
 
 		for (int i = 0; i < currentLogicalMatches.Length; i++) {
 			
@@ -531,8 +534,9 @@ public class RhombusScript : MonoBehaviour {
 
 			if (Mathf.Abs (currentPhysicalMatches [i].logicalMatchPosition - central_match) > max_distance_from_central_match) {
 				// MUST DELETE
-				currentPhysicalMatches [i].root.transform.localScale = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localScale, new Vector3(0f, 0f, 0f), Time.deltaTime*10f);
-				if (Mathf.Abs (currentPhysicalMatches [i].root.transform.localScale.x) < 0.000001f) {
+				currentPhysicalMatches [i].root.transform.localScale = currentPhysicalMatches [i].root.transform.localScale -new Vector3(1f, 1f, 1f)*Time.deltaTime/2f;
+				if (currentPhysicalMatches [i].root.transform.localScale.x <= 0f) {
+					currentPhysicalMatches [i].root.transform.localScale = new Vector3 (0f, 0f, 0f);
 					toErase.Add (currentPhysicalMatches [i]);
 				}
 			} else {
