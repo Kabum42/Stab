@@ -26,11 +26,14 @@ public class ConnectionContainer : MonoBehaviour {
 
 	public void setQuality(int newQuality) {
 
+		// 0 IS BEST, 10 IS WORST
 		pingQuality = Mathf.Clamp (newQuality, 0, 10);
 
-		connectionMaterial.color = qualityColor.Evaluate (pingQuality / 10f);
+		int auxQuality = 10 - pingQuality;
 
-		connectionUnitSource.transform.localScale = new Vector3 (pingQuality, 1f, 1f);
+		connectionMaterial.color = qualityColor.Evaluate (auxQuality / 10f);
+
+		connectionUnitSource.transform.localScale = new Vector3 (auxQuality, 1f, 1f);
 		connectionUnitSource.transform.localPosition = new Vector3 (0f, 0f, -0.0001f);
 
 	}

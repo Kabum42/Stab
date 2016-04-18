@@ -363,11 +363,14 @@ public class RhombusScript : MonoBehaviour {
 
 		currentLogicalMatchSelectedPosition = 0;
 
+		unqueuedPingMatches.Clear ();
+		unresolvedPingMatches.Clear ();
+
 	}
 
 	private void addMatches() {
 
-		int mockUps = 100;
+		int mockUps = 1000;
 
 		for (int i = 0; i < NetworkManager.hostList.Length + mockUps; i++) {
 
@@ -544,8 +547,10 @@ public class RhombusScript : MonoBehaviour {
 
 		// CHECK RELATIVE POSITIONS IN NEED OF PHYSICAL MATCHES
 		int counter = 0;
+		Debug.Log ("START SORTING");
 		foreach(KeyValuePair<double, LogicalMatch> kvp in lMatchManager.lMatchesDictionary)
 		{
+			
 			if (counter >= first_element && counter <= last_element && kvp.Value.physicalMatch == null) {
 
 				PhysicalMatch pMatch = GetPhysicalMatch (kvp.Value);
@@ -567,7 +572,6 @@ public class RhombusScript : MonoBehaviour {
 
 			if (counter == currentLogicalMatchSelectedPosition) {
 				currentLogicalMatchSelected = kvp.Value;
-				Debug.Log(kvp.Value.matchName);
 			}
 
 			counter++;
@@ -1091,9 +1095,9 @@ public class RhombusScript : MonoBehaviour {
 				logicalMatch.pingTime = Random.Range(1, 500);
 
 				int step = 40;
-				int quality = 0;
+				int quality = 10;
 				if (logicalMatch.pingTime > -1 && logicalMatch.pingTime <= step * 10f) {
-					quality = 10 - (logicalMatch.pingTime / step);
+					quality = logicalMatch.pingTime / step;
 				}
 				logicalMatch.pingQuality = quality;
 
@@ -1159,6 +1163,8 @@ public class RhombusScript : MonoBehaviour {
 		private double saltStep = 0.0000000001f;
 		private double lastSalt = 0f;
 
+		private double test = 0;
+
 		public int Count {
 			get{ return lMatchesDictionary.Count; }
 		}
@@ -1208,11 +1214,10 @@ public class RhombusScript : MonoBehaviour {
 
 		private double GenerateKey(LogicalMatch lMatch) {
 
-			double quality = 10 - (double)lMatch.pingQuality;
-			double players = (999f - (double)lMatch.players) / 1000f;
-			double key = quality + players + lastSalt;
-
 			lastSalt += saltStep;
+			double quality = (double)lMatch.pingQuality;
+			//double players = (999f - (double)lMatch.players) / 1000f;
+			double key = quality /*+ players*/ + lastSalt;
 
 			return key;
 
