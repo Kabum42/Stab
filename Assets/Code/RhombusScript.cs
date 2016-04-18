@@ -380,6 +380,7 @@ public class RhombusScript : MonoBehaviour {
 				// IT'S A MOCKUP
 				LogicalMatch lMatch = GetLogicalMatch (ref NetworkManager.hostList[0], 0);
 				lMatch.matchName = lMatch.matchName + "_mockUp_" + (i - NetworkManager.hostList.Length);
+				lMatch.players = Random.Range (1, 20);
 				lMatchManager.Add (lMatch);
 			}
 
@@ -547,7 +548,6 @@ public class RhombusScript : MonoBehaviour {
 
 		// CHECK RELATIVE POSITIONS IN NEED OF PHYSICAL MATCHES
 		int counter = 0;
-		Debug.Log ("START SORTING");
 		foreach(KeyValuePair<double, LogicalMatch> kvp in lMatchManager.lMatchesDictionary)
 		{
 			
@@ -1216,8 +1216,8 @@ public class RhombusScript : MonoBehaviour {
 
 			lastSalt += saltStep;
 			double quality = (double)lMatch.pingQuality;
-			//double players = (999f - (double)lMatch.players) / 1000f;
-			double key = quality /*+ players*/ + lastSalt;
+			double players = (999f - (double)lMatch.players) / 1000f;
+			double key = quality + players + lastSalt;
 
 			return key;
 
