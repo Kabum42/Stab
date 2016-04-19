@@ -87,6 +87,8 @@ public class RhombusScript : MonoBehaviour {
 	private int currentLogicalMatchSelectedPosition = 0;
 	private LogicalMatch currentLogicalMatchSelected;
 	private LinkedList<PingMatch> unresolvedPingMatches = new LinkedList<PingMatch> ();
+    // HACK
+    // COULD BE A toRecyclePingMatches, THEN THEY WOULDN'T BE CREATED SO OFTEN
 
 	private List<PhysicalMatch> currentPhysicalMatches = new List<PhysicalMatch>();
 	private List<PhysicalMatch> toRecyclePhysicalMatches = new List<PhysicalMatch>();
@@ -369,6 +371,11 @@ public class RhombusScript : MonoBehaviour {
 		}
 
 		currentLogicalMatchSelectedPosition = 0;
+
+        for (LinkedListNode<PingMatch> pingMatch = unresolvedPingMatches.First; pingMatch != null; pingMatch = pingMatch.Next)
+        {
+            pingMatch.Value.Cancel();
+        }
 
 		unresolvedPingMatches.Clear ();
 
@@ -833,7 +840,7 @@ public class RhombusScript : MonoBehaviour {
 				else if (createMenuOptions[createSelected] == createMenuGoTitle) {
 					if (createMenuNameTextString.Length != 0) {
 						// Start match
-						NetworkManager.StartServer (createMenuNameTextString);
+						NetworkManager.StartServer (createMenuNameTextString, 10);
 						Application.LoadLevel ("Game");
 					} else {
 						locked = true;
@@ -1101,6 +1108,13 @@ public class RhombusScript : MonoBehaviour {
 			ping = new Ping(ip);
 
 		}
+
+        public void Cancel()
+        {
+
+            ping.DestroyPing();
+
+        }
 
 		public bool Update() {
 
