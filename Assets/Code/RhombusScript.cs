@@ -75,6 +75,8 @@ public class RhombusScript : MonoBehaviour {
 	private GameObject joinMenuLoading;
 	private GameObject joinMenuLoadingText;
 	private GameObject joinMenuLoadingIcon;
+
+    private GameObject joinMenuPingTimer;
 	// OPTIONS
 	private GameObject joinMenuSelect;
 	private GameObject joinMenuReload;
@@ -285,6 +287,12 @@ public class RhombusScript : MonoBehaviour {
 		joinMenuLoadingText = joinMenuLoading.transform.FindChild ("Text").gameObject;
 	
 		joinMenuLoadingIcon = joinMenuLoading.transform.FindChild ("Icon").gameObject;
+
+        joinMenuPingTimer = this.transform.FindChild("PingTimer").gameObject;
+        joinMenuPingTimer.transform.SetParent(joinMenu.transform);
+        joinMenuPingTimer.transform.localPosition = new Vector3(0f, -3.6f, -0.1f);
+        joinMenuPingTimer.SetActive(false);
+
 		// OPTIONS
 		joinMenuSelect = Instantiate (textSource);
 		joinMenuSelect.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
@@ -378,13 +386,14 @@ public class RhombusScript : MonoBehaviour {
 				// IT'S A MOCKUP
 				LogicalMatch lMatch = GetLogicalMatch (ref NetworkManager.hostList[0], 0);
 				lMatch.matchName = lMatch.matchName + "_mockUp_" + (i - NetworkManager.hostList.Length);
-				lMatch.players = Random.Range (1, 20);
+                lMatch.players = Random.Range(1, lMatch.maxPlayers);
 				lMatchManager.Add (lMatch);
 			}
 
-			//Debug.Log ("ADDED " + i);
-
 		}
+
+        joinMenuPingTimer.GetComponent<Renderer>().material.SetFloat("_Cutoff", 1f);
+        joinMenuPingTimer.SetActive(true);
 
 	}
 
@@ -424,7 +433,7 @@ public class RhombusScript : MonoBehaviour {
 
 		}
 
-		pMatch.text.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
+		pMatch.textMatch.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
 		pMatch.root.transform.localScale = new Vector3(0f, 0f, 0f);
 		pMatch.root.SetActive (true);
 
@@ -520,6 +529,17 @@ public class RhombusScript : MonoBehaviour {
 			}
 		}
 
+        if (joinMenuPingTimer.activeInHierarchy)
+        {
+            float cutoff = (float)unresolvedPingMatches.Count/(float)lMatchManager.lMatchesDictionary.Count;
+            joinMenuPingTimer.GetComponent<Renderer>().material.SetFloat("_Cutoff", cutoff);
+
+            if (unresolvedPingMatches.Count == 0)
+            {
+                joinMenuPingTimer.SetActive(false);
+            }
+        }
+
 		// RELATIVE POSITIONS
 		int max_distance_from_central_match = 4;
 		int central_match = currentLogicalMatchSelectedPosition;
@@ -594,7 +614,7 @@ public class RhombusScript : MonoBehaviour {
 				targetColor = new Color(1f, 1f, 1f, 1f);
 			}
 
-			currentPhysicalMatches [i].text.GetComponent<TextMesh> ().color = Color.Lerp (currentPhysicalMatches [i].text.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
+			currentPhysicalMatches [i].textMatch.GetComponent<TextMesh> ().color = Color.Lerp (currentPhysicalMatches [i].textMatch.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
 
 			currentPhysicalMatches [i].UpdateText ();
 
@@ -604,7 +624,7 @@ public class RhombusScript : MonoBehaviour {
 				currentPhysicalMatches [i].connection.gameObject.SetActive (true);
 			}
 
-			Vector3 targetPosition = new Vector3 (-5f, -0.75f - auxPosition * (0.75f), -0.1f);
+			Vector3 targetPosition = new Vector3 (-5f, -0.75f - auxPosition * (0.5f), -0.1f);
 			currentPhysicalMatches [i].root.transform.localPosition = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localPosition, targetPosition, Time.deltaTime*10f);
 
 		}
@@ -1033,6 +1053,7 @@ public class RhombusScript : MonoBehaviour {
 		public PhysicalMatch physicalMatch = null;
 		public string matchName;
 		public int players;
+        public int maxPlayers;
 		public int pingTime = -1;
 		public int pingQuality = 10 + 1;
 		public int hostListPosition = -1;
@@ -1050,6 +1071,7 @@ public class RhombusScript : MonoBehaviour {
 
 			matchName = hData.gameName;
 			players = hData.connectedPlayers;
+            maxPlayers = hData.playerLimit;
 			pingTime = -1;
 			hostListPosition = auxHostListPosition;
 
@@ -1106,8 +1128,9 @@ public class RhombusScript : MonoBehaviour {
 
 		public RhombusScript owner;
 		public GameObject root;
-		public GameObject text;
+		public GameObject textMatch;
 		public ConnectionContainer connection;
+        public GameObject textPlayers;
 		public LogicalMatch logicalMatch = null;
 		public int logicalMatchPosition = -1;
 
@@ -1116,11 +1139,9 @@ public class RhombusScript : MonoBehaviour {
 			owner = auxOwner;
 
 			root = Instantiate (owner.physicalMatchSource);
-			text = root.transform.FindChild("Text").gameObject;
-			text.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
-			text.GetComponent<TextMesh> ().fontSize = 140;
+			textMatch = root.transform.FindChild("TextMatch").gameObject;
 			connection = root.transform.FindChild("Connection").gameObject.GetComponent<ConnectionContainer>();
-			connection.gameObject.transform.localPosition = new Vector3(250f, 0f, connection.gameObject.transform.localPosition.z);
+            textPlayers = root.transform.FindChild("TextPlayers").gameObject;
 			root.gameObject.transform.SetParent(owner.joinMenu.transform);
 
 			Recycle(auxLogicalMatch);
@@ -1136,10 +1157,12 @@ public class RhombusScript : MonoBehaviour {
 
 		public void UpdateText() {
 
-			int alpha = (int)(text.GetComponent<TextMesh> ().color.a * 255);
+			int alpha = (int)(textMatch.GetComponent<TextMesh> ().color.a * 255);
 			string alphaString = alpha.ToString ("X2");
 
-			text.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>";
+			//textMatch.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>";
+            textMatch.GetComponent<TextMesh>().text = logicalMatch.matchName;
+            textPlayers.GetComponent<TextMesh>().text = logicalMatch.players + "/" + logicalMatch.maxPlayers;
 
 			if (connection.pingQuality != logicalMatch.pingQuality) {
 				connection.setQuality (logicalMatch.pingQuality);
