@@ -84,7 +84,6 @@ public class RhombusScript : MonoBehaviour {
 	private List<LogicalMatch> toRecycleLogicalMatches = new List<LogicalMatch> ();
 	private int currentLogicalMatchSelectedPosition = 0;
 	private LogicalMatch currentLogicalMatchSelected;
-	private LinkedList<PingMatch> unqueuedPingMatches = new LinkedList<PingMatch> ();
 	private LinkedList<PingMatch> unresolvedPingMatches = new LinkedList<PingMatch> ();
 
 	private List<PhysicalMatch> currentPhysicalMatches = new List<PhysicalMatch>();
@@ -363,7 +362,6 @@ public class RhombusScript : MonoBehaviour {
 
 		currentLogicalMatchSelectedPosition = 0;
 
-		unqueuedPingMatches.Clear ();
 		unresolvedPingMatches.Clear ();
 
 	}
@@ -520,14 +518,6 @@ public class RhombusScript : MonoBehaviour {
 				unresolvedPingMatches.Remove (pingMatch);
 				pingMatch.Value = null;
 			}
-		}
-
-		int min_matches = 1;
-		while (unresolvedPingMatches.Count < min_matches && unqueuedPingMatches.Count > 0) {
-			PingMatch pingMatch = unqueuedPingMatches.First.Value;
-			unqueuedPingMatches.RemoveFirst ();
-			pingMatch.DoPing ();
-			unresolvedPingMatches.AddLast (pingMatch);
 		}
 
 		// RELATIVE POSITIONS
@@ -1063,7 +1053,9 @@ public class RhombusScript : MonoBehaviour {
 			pingTime = -1;
 			hostListPosition = auxHostListPosition;
 
-			owner.unqueuedPingMatches.AddLast (new PingMatch (this, ref hData));
+            PingMatch pingMatch = new PingMatch(this, ref hData);
+            pingMatch.DoPing();
+            owner.unresolvedPingMatches.AddLast(pingMatch);
 
 		}
 
