@@ -9,6 +9,7 @@ public class RhombusScript : MonoBehaviour {
 	public GameObject textSource;
 	public GameObject textBackgroundSource;
 	public GameObject arrowSource;
+	public GameObject physicalMatchSource;
 
     public GameObject boneNW;
     public GameObject boneNE;
@@ -35,6 +36,9 @@ public class RhombusScript : MonoBehaviour {
 	private float typeAux = 0f;
 	private static float typeBlank = 0.5f;
 	private static float typeShow = 0.5f;
+
+	private string lastKey = "none";
+	private float lastKeyCooldown = 0.2f;
 
 	// CREATE MENU
 	public int createSelected = 0;
@@ -71,14 +75,17 @@ public class RhombusScript : MonoBehaviour {
 	private GameObject joinMenuLoading;
 	private GameObject joinMenuLoadingText;
 	private GameObject joinMenuLoadingIcon;
+
+    private GameObject joinMenuPingTimer;
 	// OPTIONS
 	private GameObject joinMenuSelect;
 	private GameObject joinMenuReload;
 	private GameObject joinMenuSearch;
 	// MATCHES
-	private LogicalMatch[] currentLogicalMatches = new LogicalMatch[0];
+	private LogicalMatchManager lMatchManager = new LogicalMatchManager();
 	private List<LogicalMatch> toRecycleLogicalMatches = new List<LogicalMatch> ();
-	private int currentLogicalMatchSelected = 0;
+	private int currentLogicalMatchSelectedPosition = 0;
+	private LogicalMatch currentLogicalMatchSelected;
 	private LinkedList<PingMatch> unresolvedPingMatches = new LinkedList<PingMatch> ();
 
 	private List<PhysicalMatch> currentPhysicalMatches = new List<PhysicalMatch>();
@@ -280,6 +287,12 @@ public class RhombusScript : MonoBehaviour {
 		joinMenuLoadingText = joinMenuLoading.transform.FindChild ("Text").gameObject;
 	
 		joinMenuLoadingIcon = joinMenuLoading.transform.FindChild ("Icon").gameObject;
+
+        joinMenuPingTimer = this.transform.FindChild("PingTimer").gameObject;
+        joinMenuPingTimer.transform.SetParent(joinMenu.transform);
+        joinMenuPingTimer.transform.localPosition = new Vector3(0f, -3.6f, -0.1f);
+        joinMenuPingTimer.SetActive(false);
+
 		// OPTIONS
 		joinMenuSelect = Instantiate (textSource);
 		joinMenuSelect.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleCenter;
@@ -332,53 +345,55 @@ public class RhombusScript : MonoBehaviour {
 
 	private void flushMatches() {
 		
-		if (currentLogicalMatches.Length > 0) {
+		if (lMatchManager.Count > 0) {
 			// STORE OLD MATCHES TO RECYCLE
-			for (int i = 0; i < currentLogicalMatches.Length; i++) {
-				
-				if (currentLogicalMatches [i].physicalMatch != null) { 
+			foreach(KeyValuePair<double, LogicalMatch> kvp in lMatchManager.lMatchesDictionary)
+			{
+				if (kvp.Value.physicalMatch != null) {
 
-					PhysicalMatch pMatch = currentLogicalMatches [i].physicalMatch;
+					PhysicalMatch pMatch = kvp.Value.physicalMatch;
 
 					pMatch.logicalMatch = null;
 					pMatch.root.SetActive (false);
 					toRecyclePhysicalMatches.Add (pMatch);
 					currentPhysicalMatches.Remove(pMatch);
 
-					currentLogicalMatches [i].physicalMatch = null;
+					kvp.Value.physicalMatch = null;
 
 				}
 
-
-				toRecycleLogicalMatches.Add (currentLogicalMatches [i]);
-
+				toRecycleLogicalMatches.Add (kvp.Value);
 			}
 
-			currentLogicalMatches = new LogicalMatch[0];
+			lMatchManager.Clear ();
 		}
 
-		currentLogicalMatchSelected = 0;
+		currentLogicalMatchSelectedPosition = 0;
+
+		unresolvedPingMatches.Clear ();
 
 	}
 
 	private void addMatches() {
 
 		int mockUps = 1000;
-		currentLogicalMatches = new LogicalMatch[NetworkManager.hostList.Length + mockUps];
 
-		for (int i = 0; i < currentLogicalMatches.Length; i++) {
+		for (int i = 0; i < NetworkManager.hostList.Length + mockUps; i++) {
 
 			if (i < NetworkManager.hostList.Length) {
-				currentLogicalMatches [i] = GetLogicalMatch (ref NetworkManager.hostList [i], i);
+				lMatchManager.Add (GetLogicalMatch (ref NetworkManager.hostList [i], i));
 			} else {
 				// IT'S A MOCKUP
-				currentLogicalMatches[i] = GetLogicalMatch (ref NetworkManager.hostList[0], 0);
-				currentLogicalMatches [i].matchName = currentLogicalMatches [i].matchName + "_mockUp_" + (i - NetworkManager.hostList.Length);
+				LogicalMatch lMatch = GetLogicalMatch (ref NetworkManager.hostList[0], 0);
+				lMatch.matchName = lMatch.matchName + "_mockUp_" + (i - NetworkManager.hostList.Length);
+                lMatch.players = Random.Range(1, lMatch.maxPlayers);
+				lMatchManager.Add (lMatch);
 			}
 
-			//Debug.Log ("ADDED " + i);
-
 		}
+
+        joinMenuPingTimer.GetComponent<Renderer>().material.SetFloat("_Cutoff", 1f);
+        joinMenuPingTimer.SetActive(true);
 
 	}
 
@@ -402,23 +417,23 @@ public class RhombusScript : MonoBehaviour {
 
 	}
 
-	PhysicalMatch GetPhysicalMatch(LogicalMatch lMatch, int auxPosition) {
+	PhysicalMatch GetPhysicalMatch(LogicalMatch lMatch) {
 
 		PhysicalMatch pMatch;
 
 		if (toRecyclePhysicalMatches.Count > 0) {
 
 			pMatch = toRecyclePhysicalMatches [0];
-			pMatch.Recycle (lMatch, auxPosition);
+			pMatch.Recycle (lMatch);
 			toRecyclePhysicalMatches.RemoveAt (0);
 
 		} else {
 
-			pMatch = new PhysicalMatch (this, lMatch, auxPosition);
+			pMatch = new PhysicalMatch (this, lMatch);
 
 		}
 
-		pMatch.root.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
+		pMatch.textMatch.GetComponent<TextMesh> ().color = new Color(1f, 1f, 1f, 0.25f);
 		pMatch.root.transform.localScale = new Vector3(0f, 0f, 0f);
 		pMatch.root.SetActive (true);
 
@@ -508,34 +523,49 @@ public class RhombusScript : MonoBehaviour {
 		{
 			if (pingMatch.Value.Update()) {
 				// YA SE HA RECIBIDO EL PINGTIME, HAY QUE ELIMINARLO
+				lMatchManager.UpdateKey(pingMatch.Value.logicalMatch.managerKey);
 				unresolvedPingMatches.Remove (pingMatch);
 				pingMatch.Value = null;
 			}
 		}
 
+        if (joinMenuPingTimer.activeInHierarchy)
+        {
+            float cutoff = (float)unresolvedPingMatches.Count/(float)lMatchManager.lMatchesDictionary.Count;
+            joinMenuPingTimer.GetComponent<Renderer>().material.SetFloat("_Cutoff", cutoff);
+
+            if (unresolvedPingMatches.Count == 0)
+            {
+                joinMenuPingTimer.SetActive(false);
+            }
+        }
+
 		// RELATIVE POSITIONS
 		int max_distance_from_central_match = 4;
-		int central_match = currentLogicalMatchSelected;
+		int central_match = currentLogicalMatchSelectedPosition;
 
 		if (central_match < max_distance_from_central_match) {
 			central_match = max_distance_from_central_match;
-		} else if (central_match > currentLogicalMatches.Length - (max_distance_from_central_match + 1)) { 
-			central_match = currentLogicalMatches.Length - (max_distance_from_central_match + 1);
+		} else if (central_match > lMatchManager.Count - (max_distance_from_central_match + 1)) { 
+			central_match = lMatchManager.Count - (max_distance_from_central_match + 1);
 		}
 
 		int first_element = central_match - max_distance_from_central_match;
 		int last_element = central_match + max_distance_from_central_match;
-		if (last_element > currentLogicalMatches.Length - 1)  {
-			last_element = currentLogicalMatches.Length - 1;
+		if (last_element > lMatchManager.Count - 1)  {
+			last_element = lMatchManager.Count - 1;
 		}
 
 		// CHECK RELATIVE POSITIONS IN NEED OF PHYSICAL MATCHES
-		for (int i = first_element; i <= last_element; i++) {
+		int counter = 0;
+		foreach(KeyValuePair<double, LogicalMatch> kvp in lMatchManager.lMatchesDictionary)
+		{
+			
+			if (counter >= first_element && counter <= last_element && kvp.Value.physicalMatch == null) {
 
-			if (currentLogicalMatches [i].physicalMatch == null) {
-				
-				PhysicalMatch pMatch = GetPhysicalMatch (currentLogicalMatches [i], i);
-				currentLogicalMatches [i].physicalMatch = pMatch;
+				PhysicalMatch pMatch = GetPhysicalMatch (kvp.Value);
+				pMatch.logicalMatchPosition = counter;
+				kvp.Value.physicalMatch = pMatch;
 				currentPhysicalMatches.Add (pMatch);
 
 				int auxPosition = pMatch.logicalMatchPosition - central_match;
@@ -544,7 +574,20 @@ public class RhombusScript : MonoBehaviour {
 
 			}
 
+			if (kvp.Value.physicalMatch != null) {
+
+				kvp.Value.physicalMatch.logicalMatchPosition = counter;
+
+			}
+
+			if (counter == currentLogicalMatchSelectedPosition) {
+				currentLogicalMatchSelected = kvp.Value;
+			}
+
+			counter++;
 		}
+
+
 
 		// HANDLE PHYSICAL MATCHES
 		List<PhysicalMatch> toErase = new List<PhysicalMatch>();
@@ -555,7 +598,7 @@ public class RhombusScript : MonoBehaviour {
 
 			if (Mathf.Abs (currentPhysicalMatches [i].logicalMatchPosition - central_match) > max_distance_from_central_match) {
 				// MUST DELETE
-				currentPhysicalMatches [i].root.transform.localScale = currentPhysicalMatches [i].root.transform.localScale -new Vector3(1f, 1f, 1f)*Time.deltaTime/2f;
+				currentPhysicalMatches [i].root.transform.localScale = currentPhysicalMatches [i].root.transform.localScale -new Vector3(1f, 1f, 1f)*Time.deltaTime/3f;
 				if (currentPhysicalMatches [i].root.transform.localScale.x <= 0f) {
 					currentPhysicalMatches [i].root.transform.localScale = new Vector3 (0f, 0f, 0f);
 					toErase.Add (currentPhysicalMatches [i]);
@@ -567,18 +610,25 @@ public class RhombusScript : MonoBehaviour {
 
 			Color targetColor = new Color(1f, 1f, 1f, 0.25f);
 
-			if (currentPhysicalMatches [i].logicalMatchPosition == currentLogicalMatchSelected && locked) {
+			if (currentPhysicalMatches [i].logicalMatchPosition == currentLogicalMatchSelectedPosition && locked) {
 				targetColor = new Color(1f, 1f, 1f, 1f);
 			}
 
-			currentPhysicalMatches [i].root.GetComponent<TextMesh> ().color = Color.Lerp (currentPhysicalMatches [i].root.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
+			currentPhysicalMatches [i].textMatch.GetComponent<TextMesh> ().color = Color.Lerp (currentPhysicalMatches [i].textMatch.GetComponent<TextMesh> ().color, targetColor, Time.deltaTime * 5f);
 
 			currentPhysicalMatches [i].UpdateText ();
 
-			Vector3 targetPosition = new Vector3 (-5f, -0.75f - auxPosition * (0.75f), -0.1f);
+			if (currentPhysicalMatches [i].logicalMatch.pingTime == -1) {
+				currentPhysicalMatches [i].connection.gameObject.SetActive (false);
+			} else {
+				currentPhysicalMatches [i].connection.gameObject.SetActive (true);
+			}
+
+			Vector3 targetPosition = new Vector3 (-5f, -0.75f - auxPosition * (0.5f), -0.1f);
 			currentPhysicalMatches [i].root.transform.localPosition = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localPosition, targetPosition, Time.deltaTime*10f);
 
 		}
+
 
 		while (toErase.Count > 0) {
 
@@ -594,7 +644,7 @@ public class RhombusScript : MonoBehaviour {
 
 
 
-		if (currentLogicalMatches.Length == 0 && checkedMatches == 1) {
+		if (lMatchManager.Count == 0 && checkedMatches == 1) {
 			joinMenuLoading.SetActive (true);
 			joinMenuLoadingIcon.transform.Rotate (new Vector3 (0f, 120f, 0f) * Time.deltaTime);
 		} else {
@@ -612,20 +662,48 @@ public class RhombusScript : MonoBehaviour {
 
 				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
 					MenuBackBone.SoundMoveSelected ();
-					currentLogicalMatchSelected--;
-					if (currentLogicalMatchSelected < 0) { currentLogicalMatchSelected = currentLogicalMatches.Length - 1; }
+					currentLogicalMatchSelectedPosition--;
+					if (currentLogicalMatchSelectedPosition < 0) { currentLogicalMatchSelectedPosition = lMatchManager.Count - 1; }
 				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
 					MenuBackBone.SoundMoveSelected ();
-					currentLogicalMatchSelected++;
-					if (currentLogicalMatchSelected > currentLogicalMatches.Length-1) { currentLogicalMatchSelected = 0; }
+					currentLogicalMatchSelectedPosition++;
+					if (currentLogicalMatchSelectedPosition > lMatchManager.Count - 1) { currentLogicalMatchSelectedPosition = 0; }
+				}
+
+				if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
+					if (lastKey != "up") {
+						lastKeyCooldown = 0.5f;
+					}
+					lastKey = "up";
+					lastKeyCooldown -= Time.deltaTime;
+					if (lastKeyCooldown <= 0f) {
+						lastKeyCooldown = 0.1f;
+						MenuBackBone.SoundMoveSelected ();
+						currentLogicalMatchSelectedPosition--;
+						if (currentLogicalMatchSelectedPosition < 0) { currentLogicalMatchSelectedPosition = lMatchManager.Count - 1; }
+					}
+				} else if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow)) {
+					if (lastKey != "down") {
+						lastKeyCooldown = 0.5f;
+					}
+					lastKey = "down";
+					lastKeyCooldown -= Time.deltaTime;
+					if (lastKeyCooldown <= 0f) {
+						lastKeyCooldown = 0.1f;
+						MenuBackBone.SoundMoveSelected ();
+						currentLogicalMatchSelectedPosition++;
+						if (currentLogicalMatchSelectedPosition > lMatchManager.Count - 1) { currentLogicalMatchSelectedPosition = 0; }
+					}
+				} else {
+					lastKey = "none";
 				}
 
 				if (Input.GetKeyDown (KeyCode.Return)) {
-					NetworkManager.JoinServer (NetworkManager.hostList[currentLogicalMatches[currentLogicalMatchSelected].hostListPosition]);
+					NetworkManager.JoinServer (NetworkManager.hostList[currentLogicalMatchSelected.hostListPosition]);
 				}
 
-				if (currentLogicalMatches [currentLogicalMatchSelected].physicalMatch != null) {
-					Vector3 targetPosition = currentLogicalMatches [currentLogicalMatchSelected].physicalMatch.root.transform.position + new Vector3 (-0.5f, 0f, 0f);
+				if (currentLogicalMatchSelected.physicalMatch != null) {
+					Vector3 targetPosition = currentLogicalMatchSelected.physicalMatch.root.transform.position + new Vector3 (-0.5f, 0f, 0f);
 					menuSelectedNeuron.root.transform.position = Vector3.Lerp (menuSelectedNeuron.root.transform.position, targetPosition, Time.deltaTime * 15f);
 				}
 
@@ -643,7 +721,7 @@ public class RhombusScript : MonoBehaviour {
 
 				if (Input.GetKeyDown (KeyCode.Return)) {
 
-					if (joinMenuOptions [joinSelected] == joinMenuSelect && currentLogicalMatches.Length > 0) {
+					if (joinMenuOptions [joinSelected] == joinMenuSelect && lMatchManager.Count > 0) {
 						locked = true;
 					} else if (joinMenuOptions [joinSelected] == joinMenuReload) {
 						checkedMatches = 0;
@@ -975,8 +1053,11 @@ public class RhombusScript : MonoBehaviour {
 		public PhysicalMatch physicalMatch = null;
 		public string matchName;
 		public int players;
+        public int maxPlayers;
 		public int pingTime = -1;
+		public int pingQuality = 10 + 1;
 		public int hostListPosition = -1;
+		public double managerKey = -1;
 
 		public LogicalMatch(RhombusScript auxOwner, ref HostData hData, int auxHostListPosition) {
 
@@ -990,10 +1071,13 @@ public class RhombusScript : MonoBehaviour {
 
 			matchName = hData.gameName;
 			players = hData.connectedPlayers;
+            maxPlayers = hData.playerLimit;
 			pingTime = -1;
 			hostListPosition = auxHostListPosition;
 
-			owner.unresolvedPingMatches.AddLast(new PingMatch (this, ref hData));
+            PingMatch pingMatch = new PingMatch(this, ref hData);
+            pingMatch.DoPing();
+            owner.unresolvedPingMatches.AddLast(pingMatch);
 
 		}
 
@@ -1002,19 +1086,35 @@ public class RhombusScript : MonoBehaviour {
 	private class PingMatch {
 
 		public LogicalMatch logicalMatch;
+		private string ip;
 		private Ping ping;
 
 		public PingMatch (LogicalMatch auxLogicalMatch, ref HostData hData) {
 
 			logicalMatch = auxLogicalMatch;
-			ping = new Ping(hData.ip[0]);
+			ip = hData.ip[0];
+
+		}
+
+		public void DoPing() {
+
+			ping = new Ping(ip);
 
 		}
 
 		public bool Update() {
 
 			if (logicalMatch.pingTime == -1 && ping.isDone) {
-				logicalMatch.pingTime = ping.time;
+				//logicalMatch.pingTime = ping.time;
+				logicalMatch.pingTime = Random.Range(1, 500);
+
+				int step = 40;
+				int quality = 10;
+				if (logicalMatch.pingTime > -1 && logicalMatch.pingTime <= step * 10f) {
+					quality = logicalMatch.pingTime / step;
+				}
+				logicalMatch.pingQuality = quality;
+
 				return true;
 			}
 
@@ -1028,44 +1128,113 @@ public class RhombusScript : MonoBehaviour {
 
 		public RhombusScript owner;
 		public GameObject root;
+		public GameObject textMatch;
+		public ConnectionContainer connection;
+        public GameObject textPlayers;
 		public LogicalMatch logicalMatch = null;
 		public int logicalMatchPosition = -1;
 
-		public PhysicalMatch(RhombusScript auxOwner, LogicalMatch auxLogicalMatch, int auxPosition) {
+		public PhysicalMatch(RhombusScript auxOwner, LogicalMatch auxLogicalMatch) {
 
 			owner = auxOwner;
 
-			root = Instantiate (owner.textSource);
-			root.GetComponent<TextMesh> ().anchor = TextAnchor.MiddleLeft;
-			root.GetComponent<TextMesh> ().fontSize = 140;
+			root = Instantiate (owner.physicalMatchSource);
+			textMatch = root.transform.FindChild("TextMatch").gameObject;
+			connection = root.transform.FindChild("Connection").gameObject.GetComponent<ConnectionContainer>();
+            textPlayers = root.transform.FindChild("TextPlayers").gameObject;
 			root.gameObject.transform.SetParent(owner.joinMenu.transform);
 
-			Recycle(auxLogicalMatch, auxPosition);
+			Recycle(auxLogicalMatch);
 
 		}
 
-		public void Recycle(LogicalMatch auxLogicalMatch, int auxPosition) {
+		public void Recycle(LogicalMatch auxLogicalMatch) {
 
 			logicalMatch = auxLogicalMatch;
-			logicalMatchPosition = auxPosition;
 			root.name = "Match_"+logicalMatch.hostListPosition;
 
 		}
 
 		public void UpdateText() {
 
-			int alpha = (int)(root.GetComponent<TextMesh> ().color.a * 255);
+			int alpha = (int)(textMatch.GetComponent<TextMesh> ().color.a * 255);
 			string alphaString = alpha.ToString ("X2");
 
-			if (logicalMatch.pingTime == -1) {
+			//textMatch.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>";
+            textMatch.GetComponent<TextMesh>().text = logicalMatch.matchName;
+            textPlayers.GetComponent<TextMesh>().text = logicalMatch.players + "/" + logicalMatch.maxPlayers;
 
-				root.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>";
-
-			} else {
-
-				root.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>" + "  <color=#ff9999" + alphaString + ">" +logicalMatch.pingTime+ "ms" + "</color>";
-
+			if (connection.pingQuality != logicalMatch.pingQuality) {
+				connection.setQuality (logicalMatch.pingQuality);
 			}
+
+		}
+
+	}
+
+	private class LogicalMatchManager {
+
+		public SortedDictionary<double, LogicalMatch> lMatchesDictionary = new SortedDictionary<double, LogicalMatch>();
+		private double saltStep = 0.0000000001f;
+		private double lastSalt = 0f;
+
+		private double test = 0;
+
+		public int Count {
+			get{ return lMatchesDictionary.Count; }
+		}
+
+		public LogicalMatchManager() {
+
+		}
+
+		public void Add(LogicalMatch lMatch) {
+
+			double key = GenerateKey (lMatch);
+
+			lMatchesDictionary.Add (key, lMatch);
+
+			lMatch.managerKey = key;
+
+		}
+
+		public void UpdateKey(double key) {
+
+			LogicalMatch lMatch = GetFromKey(key);
+			lMatchesDictionary.Remove (key);
+
+			double newKey = GenerateKey (lMatch);
+
+			lMatchesDictionary.Add (newKey, lMatch);
+
+			lMatch.managerKey = newKey;
+
+		}
+
+		public LogicalMatch GetFromKey(double key) {
+
+			// LOG (N)
+			LogicalMatch lMatch = null;
+			lMatchesDictionary.TryGetValue(key, out lMatch);
+			return lMatch;
+
+		}
+
+		public void Clear() {
+
+			lMatchesDictionary.Clear ();
+			lastSalt = 0f;
+
+		}
+
+		private double GenerateKey(LogicalMatch lMatch) {
+
+			lastSalt += saltStep;
+			double quality = (double)lMatch.pingQuality;
+			double players = (999f - (double)lMatch.players) / 1000f;
+			double key = quality + players + lastSalt;
+
+			return key;
 
 		}
 
