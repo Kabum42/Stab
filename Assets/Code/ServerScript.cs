@@ -8,6 +8,10 @@ public class ServerScript : MonoBehaviour {
 	[HideInInspector] public List<RespawnLocation> listRespawnLocations = new List<RespawnLocation> ();
 	private float oldestTimeUsed;
 
+	public float currentRankingCooldown = 0f;
+	public float currentHackDataCooldown = 0f;
+	public static int hackDataUpdatesPerSecond = 15;
+
 	// Use this for initialization
 	void Start () {
 	
@@ -20,7 +24,7 @@ public class ServerScript : MonoBehaviour {
 	void Update () {
 
 			checkForKillings ();
-			checkIfSendRankingData(); 
+			checkIfSendDataToClients(); 
 
 	}
 
@@ -119,19 +123,26 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	void checkIfSendRankingData() {
+	void checkIfSendDataToClients() {
 
-		if (gameScript.clientScript.currentRankingCooldown >= 1f) {
-				sendRankingData ();
-			} else {
-				gameScript.clientScript.currentRankingCooldown += Time.deltaTime;
-			}
+		if (currentRankingCooldown >= 1f) {
+			sendRankingData ();
+		} else {
+			currentRankingCooldown += Time.deltaTime;
+		}
+
+
+		if (currentHackDataCooldown >= 1f / (float)hackDataUpdatesPerSecond) {
+			sendHackData ();
+		} else {
+			currentHackDataCooldown += Time.deltaTime;
+		}
 
 	}
 
 	public void sendRankingData() {
 
-		gameScript.clientScript.currentRankingCooldown = 0f;
+		currentRankingCooldown = 0f;
 
 		gameScript.clientScript.listPlayers.Sort (CompareListByKills);
 
@@ -140,6 +151,43 @@ public class ServerScript : MonoBehaviour {
 			if (gameScript.clientScript.listPlayers[i].ping < 0) { gameScript.clientScript.listPlayers[i].ping = 0; }
 			GetComponent<NetworkView>().RPC("updateRankingRPC", RPCMode.Others, gameScript.clientScript.listPlayers[i].playerCode, gameScript.clientScript.listPlayers[i].kills, gameScript.clientScript.listPlayers[i].ping);
 		}
+
+	}
+
+	void sendHackData() {
+
+		currentHackDataCooldown = 0f;
+
+		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
+			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, gameScript.clientScript.listPlayers[i].playerCode, gameScript.clientScript.listPlayers[i].hackingPlayerCode, gameScript.clientScript.listPlayers[i].justHacked);
+			gameScript.clientScript.listPlayers [i].justHacked = false;
+		}
+
+	}
+
+
+	public void hackAttack (string playerCode) {
+		
+		ClientScript.Player attackerPlayer = gameScript.clientScript.PlayerByCode (playerCode);
+		ClientScript.Player victimPlayer = gameScript.clientScript.firstLookingPlayer(attackerPlayer);
+
+		if (victimPlayer != null) {
+			// THERE'S A VICTIM
+			if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && false /* DISTANCE CHECK */) {
+				// IF THE DISTANCE IS SMALL AND WAS ALREADY HACKED, DIES
+			} else {
+				// IF THE DISTANCE IS BIG OR ISN'T HACKED, THEN IT'S HACKED
+				attackerPlayer.hackingPlayerCode = victimPlayer.playerCode;
+				attackerPlayer.hackingTimer = ClientScript.hackingTimerMax;
+				attackerPlayer.justHacked = true;
+			}
+		}
+
+	}
+
+	public void interceptAttack (string playerCode) {
+
+
 
 	}
 

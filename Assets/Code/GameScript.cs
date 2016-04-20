@@ -10,7 +10,7 @@ public class GameScript : MonoBehaviour {
 	void Start () {
 
 		clientScript = gameObject.AddComponent<ClientScript> ();
-		clientScript.gameScript = this;
+		clientScript.setGameScript (this);
 
 		if (Network.isServer) { 
 			serverScript = gameObject.AddComponent<ServerScript> ();
@@ -20,23 +20,5 @@ public class GameScript : MonoBehaviour {
 		}
 
 	}
-
-
-
-	/*
-    public void requestAttack(Vector3 lookingAt)
-    {
-        if (Network.isServer)
-        {
-            requestedAttack(Network.player.ToString(), lookingAt);
-        }
-        else
-        {
-            GetComponent<NetworkView>().RPC("requestedAttackRPC", RPCMode.Server, Network.player.ToString(), lookingAt);
-        }
-    }
-	*/
-
-
 
 }
