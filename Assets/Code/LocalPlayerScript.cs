@@ -430,10 +430,19 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 		}
 
+		bool falling = false;
+		if (!IsGrounded ()) {
+			falling = true;
+			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Fall");
+		}
+
 
 		if (movement.x == 0 && movement.y == 0) {
 			// NO INPUT
-			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle");
+			if (!falling) {
+				SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle");
+			}
+
 
 			float aux = this.gameObject.GetComponent<Rigidbody>().velocity.y;
 
@@ -454,13 +463,15 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			movement.Normalize();
 
-			if (Mathf.Abs (movement.x) >= Mathf.Abs(movement.y)) {
-				if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_L"); }
-				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_R"); }
-			}
-			else {
-				if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_F"); }
-				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_B"); }
+			if (!falling) {
+				if (Mathf.Abs (movement.x) >= Mathf.Abs(movement.y)) {
+					if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_L"); }
+					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_R"); }
+				}
+				else {
+					if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_F"); }
+					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_B"); }
+				}
 			}
 
 			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);
@@ -569,45 +580,16 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	}
 
-	/* HACK ESTA CLASE PROBABLEMENTE SOBRA
-	public class Skills {
-
-		public LocalPlayerScript parent;
-
-		public GameObject root;
-
-		public GameObject sprintBase;
-		public GameObject sprintCooldown;
-		public Material sprintCooldownMaterial;
-
-		private float minCutoff = 0.09f;
-		private float maxCutoff = 0.90f;
-
-		public Skills(LocalPlayerScript auxParent) {
-
-			parent = auxParent;
-
-			root = Instantiate (Resources.Load("Prefabs/CanvasSkills") as GameObject);
-			root.GetComponent<RectTransform>().SetParent(GameObject.Find("Canvas").transform);
-			root.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 0f);
-			root.transform.localScale = new Vector3(1f, 1f, 1f);
 
 
-			sprintBase = root.transform.FindChild("SprintBase").gameObject;
-			sprintCooldown = root.transform.FindChild("SprintCooldown").gameObject;
-			sprintCooldownMaterial = sprintCooldown.GetComponent<Image>().material;
+	void LateUpdate() {
 
-		}
+		GameObject head = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
 
-		public void Update() {
+		float target = -personalCamera.transform.eulerAngles.x;
 
-			float currentSprintCutoff = minCutoff + (maxCutoff - minCutoff)*(1f - parent.sprintCooldownCurrent/parent.sprintCooldownMax);
-
-			sprintCooldownMaterial.SetFloat("_Cutoff", currentSprintCutoff);
-
-		}
+		head.transform.eulerAngles = new Vector3 (head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
 
 	}
-	*/
 
 }

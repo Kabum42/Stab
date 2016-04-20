@@ -8,14 +8,16 @@ public static class NetworkManager {
     public static HostData[] hostList;
 	public static string noPassword = "#NoPassword";
 
-    public static void StartServer(string roomName)
+    public static void StartServer(string roomName, int players)
     {
-		StartServer (roomName, noPassword);
+		StartServer (roomName, noPassword, players);
     }
 
-	public static void StartServer(string roomName, string password)
+	public static void StartServer(string roomName, string password, int players)
 	{
-		Network.InitializeServer(4, 25000, !Network.HavePublicAddress());
+        // IT's PLAYERS - 1 BECAUSE THE ONE MAKING THE SERVER DOESN'T COUNT
+        int connections = players - 1;
+		Network.InitializeServer(connections, 25000, !Network.HavePublicAddress());
 		MasterServer.RegisterHost(typeName, roomName, password);
 	}
 
