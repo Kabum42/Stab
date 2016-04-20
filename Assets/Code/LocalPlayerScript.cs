@@ -430,10 +430,19 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 		}
 
+		bool falling = false;
+		if (!IsGrounded ()) {
+			falling = true;
+			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Fall");
+		}
+
 
 		if (movement.x == 0 && movement.y == 0) {
 			// NO INPUT
-			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle");
+			if (!falling) {
+				SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle");
+			}
+
 
 			float aux = this.gameObject.GetComponent<Rigidbody>().velocity.y;
 
@@ -454,13 +463,15 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			movement.Normalize();
 
-			if (Mathf.Abs (movement.x) >= Mathf.Abs(movement.y)) {
-				if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_L"); }
-				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_R"); }
-			}
-			else {
-				if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_F"); }
-				else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_B"); }
+			if (!falling) {
+				if (Mathf.Abs (movement.x) >= Mathf.Abs(movement.y)) {
+					if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_L"); }
+					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_R"); }
+				}
+				else {
+					if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_F"); }
+					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_B"); }
+				}
 			}
 
 			this.gameObject.GetComponent<Rigidbody>().MovePosition(this.gameObject.GetComponent<Rigidbody>().position + (this.gameObject.transform.forward*movement.y -this.gameObject.transform.right*movement.x)*characterSpeed*Time.fixedDeltaTime);

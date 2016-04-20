@@ -345,6 +345,12 @@ public class RhombusScript : MonoBehaviour {
 		}
 	}
 
+	void OnConnectedToServer() {
+		
+		Application.LoadLevel ("Game");
+
+	}
+
 	private void flushMatches() {
 		
 		if (lMatchManager.Count > 0) {
@@ -605,14 +611,14 @@ public class RhombusScript : MonoBehaviour {
 
 			if (Mathf.Abs (currentPhysicalMatches [i].logicalMatchPosition - central_match) > max_distance_from_central_match) {
 				// MUST DELETE
-				currentPhysicalMatches [i].root.transform.localScale = currentPhysicalMatches [i].root.transform.localScale -new Vector3(1f, 1f, 1f)*Time.deltaTime/3f;
+				currentPhysicalMatches [i].root.transform.localScale = currentPhysicalMatches [i].root.transform.localScale - currentPhysicalMatches [i].root.transform.localScale.normalized*Time.deltaTime*20f;
 				if (currentPhysicalMatches [i].root.transform.localScale.x <= 0f) {
 					currentPhysicalMatches [i].root.transform.localScale = new Vector3 (0f, 0f, 0f);
 					toErase.Add (currentPhysicalMatches [i]);
 				}
 			} else {
 				// IT'S FINE
-				currentPhysicalMatches [i].root.transform.localScale = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localScale, textSource.transform.localScale, Time.deltaTime*10f);
+				currentPhysicalMatches [i].root.transform.localScale = Vector3.Lerp(currentPhysicalMatches [i].root.transform.localScale, Vector3.one, Time.deltaTime*10f);
 			}
 
 			Color targetColor = new Color(1f, 1f, 1f, 0.25f);
@@ -1145,6 +1151,7 @@ public class RhombusScript : MonoBehaviour {
 		public GameObject textMatch;
 		public ConnectionContainer connection;
         public GameObject textPlayers;
+		public GameObject textMap;
 		public LogicalMatch logicalMatch = null;
 		public int logicalMatchPosition = -1;
 
@@ -1156,6 +1163,7 @@ public class RhombusScript : MonoBehaviour {
 			textMatch = root.transform.FindChild("TextMatch").gameObject;
 			connection = root.transform.FindChild("Connection").gameObject.GetComponent<ConnectionContainer>();
             textPlayers = root.transform.FindChild("TextPlayers").gameObject;
+			textMap = root.transform.FindChild("TextMap").gameObject;
 			root.gameObject.transform.SetParent(owner.joinMenu.transform);
 
 			Recycle(auxLogicalMatch);
@@ -1177,6 +1185,9 @@ public class RhombusScript : MonoBehaviour {
 			//textMatch.GetComponent<TextMesh>().text = logicalMatch.matchName + "  <color=#00ff00" + alphaString + ">" + logicalMatch.players +"/20" + "</color>";
             textMatch.GetComponent<TextMesh>().text = logicalMatch.matchName;
             textPlayers.GetComponent<TextMesh>().text = logicalMatch.players + "/" + logicalMatch.maxPlayers;
+
+			textPlayers.GetComponent<TextMesh> ().color = textMatch.GetComponent<TextMesh> ().color;
+			textMap.GetComponent<TextMesh> ().color = textMatch.GetComponent<TextMesh> ().color;
 
 			if (connection.pingQuality != logicalMatch.pingQuality) {
 				connection.setQuality (logicalMatch.pingQuality);
