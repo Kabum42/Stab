@@ -23,8 +23,8 @@ public class ServerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-			checkForKillings ();
-			checkIfSendDataToClients(); 
+		checkForSuicides ();
+		checkIfSendDataToClients(); 
 
 	}
 
@@ -44,38 +44,12 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	void checkForKillings() {
+	void checkForSuicides() {
 
 		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
 
-			if (!gameScript.clientScript.localPlayer.gameEnded) {
-				// ONLY CHECK KILLINGS IF GAME HAS NOT ENDED
-				if (false) {
-                    // CONDITION FOR BEING ATTACKING ETC
-
-					List<GameObject> currentTriggering = gameScript.clientScript.listPlayers[i].visualAvatar.GetComponent<PlayerMarker> ().ownAttacker.listTriggering;
-
-					for (int j = 0; j < currentTriggering.Count; j++) {
-
-						ClientScript.Player currentPlayer = currentTriggering[j].GetComponent<PlayerMarker>().player;
-
-						if (currentPlayer.immune == 0f) {
-
-							gameScript.clientScript.listPlayers[i].kills++;
-							GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, gameScript.clientScript.listPlayers[i].playerCode, currentPlayer.playerCode);
-							respawn (currentPlayer.playerCode);
-							currentPlayer.immune = 5f;
-							sendRankingData ();
-
-						}
-
-					}
-				}
-
-			}
-
 			// THIS CHECKS IF SOMEONE IS FALLING INTO THE ETERNAL VOID OF THE BUGSPHERE
-			if (gameScript.clientScript.listPlayers [i].visualAvatar.transform.position.y < -100f) {
+			if (gameScript.clientScript.listPlayers [i].targetPosition.y < -100f) {
 				respawn (gameScript.clientScript.listPlayers [i].playerCode);
 			}
 
@@ -167,20 +141,36 @@ public class ServerScript : MonoBehaviour {
 
 
 	public void hackAttack (string playerCode) {
-		
-		ClientScript.Player attackerPlayer = gameScript.clientScript.PlayerByCode (playerCode);
-		ClientScript.Player victimPlayer = gameScript.clientScript.firstLookingPlayer(attackerPlayer);
 
-		if (victimPlayer != null) {
-			// THERE'S A VICTIM
-			if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && false /* DISTANCE CHECK */) {
-				// IF THE DISTANCE IS SMALL AND WAS ALREADY HACKED, DIES
-			} else {
-				// IF THE DISTANCE IS BIG OR ISN'T HACKED, THEN IT'S HACKED
-				attackerPlayer.hackingPlayerCode = victimPlayer.playerCode;
-				attackerPlayer.hackingTimer = ClientScript.hackingTimerMax;
-				attackerPlayer.justHacked = true;
+		if (!gameScript.clientScript.localPlayer.gameEnded) {
+
+			ClientScript.Player attackerPlayer = gameScript.clientScript.PlayerByCode (playerCode);
+			ClientScript.Player victimPlayer = gameScript.clientScript.firstLookingPlayer(attackerPlayer);
+
+			if (victimPlayer != null) {
+				// THERE'S A VICTIM
+				float distance = Vector3.Distance(attackerPlayer.targetPosition, victimPlayer.targetPosition);
+
+				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && distance <= 2f) {
+					// IF THE DISTANCE IS SMALL AND WAS ALREADY HACKED, DIES
+					if (victimPlayer.immune <= 0f) {
+
+						attackerPlayer.kills++;
+						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All,attackerPlayer.playerCode, victimPlayer.playerCode);
+						respawn (victimPlayer.playerCode);
+						victimPlayer.immune = 5f;
+						sendRankingData ();
+
+					}
+
+				} else {
+					// IF THE DISTANCE IS BIG OR ISN'T HACKED, THEN IT'S HACKED
+					attackerPlayer.hackingPlayerCode = victimPlayer.playerCode;
+					attackerPlayer.hackingTimer = ClientScript.hackingTimerMax;
+					attackerPlayer.justHacked = true;
+				}
 			}
+
 		}
 
 	}
