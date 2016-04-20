@@ -111,6 +111,22 @@ public class ClientScript : MonoBehaviour {
 	
 	}
 
+	void LateUpdate() {
+
+		for (int i = 0; i < listPlayers.Count; i++) {
+			if (listPlayers [i] != myPlayer) {
+
+				GameObject head = listPlayers [i].visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
+
+				float target = -listPlayers [i].currentCameraEulerX;
+
+				head.transform.eulerAngles = new Vector3 (head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
+
+			}
+		}
+
+	}
+
 	void updateCanvas() {
 
 		if (myPlayer.hackingPlayerCode == "-1") {
@@ -251,7 +267,7 @@ public class ClientScript : MonoBehaviour {
 				//bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
 				/* HACK SI AL FINAL NO SE USA EL SPRINT, QUITAR ESA INFO, QUE NO SE MANDE HACK */
 				bool sprintActive = false;
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, myPlayer.hackingPlayerCode, myPlayer.amountCurrentHacking, myPlayer.lastTargetCode);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, myPlayer.hackingPlayerCode, myPlayer.amountCurrentHacking, myPlayer.lastTargetCode);
 
 			}
 
@@ -273,8 +289,9 @@ public class ClientScript : MonoBehaviour {
 			if (listPlayers [i].playerCode != myCode) {
 
 				listPlayers [i].visualAvatar.transform.position = Vector3.Lerp (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
-				listPlayers [i].visualAvatar.transform.eulerAngles = Vector3.Lerp (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
+				listPlayers [i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
+				listPlayers [i].currentCameraEulerX = Mathf.LerpAngle (listPlayers [i].currentCameraEulerX, listPlayers [i].targetCameraEulerX, Time.deltaTime * 10f);
 
 				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].hackingMyPlayer), Time.fixedDeltaTime * 5f);
 				listPlayers [i].visualMaterial.SetColor ("_Color", c);
@@ -464,7 +481,7 @@ public class ClientScript : MonoBehaviour {
 
 	// CLIENT RPCs
 	[RPC]
-	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, Vector3 cameraForward, string currentAnimation, bool sprintActive, string hackingPlayerCode, float amountCurrentHacking, string lastTargetCode)
+	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, Vector3 cameraForward, float cameraEulerX, string currentAnimation, bool sprintActive, string hackingPlayerCode, float amountCurrentHacking, string lastTargetCode)
 	{
 		bool foundPlayer = false;
 
@@ -474,6 +491,7 @@ public class ClientScript : MonoBehaviour {
 				listPlayers[i].targetPosition = position;
 				listPlayers[i].targetRotation = rotation;
 				listPlayers[i].cameraForward = cameraForward;
+				listPlayers[i].targetCameraEulerX = cameraEulerX;
 				listPlayers[i].SmartCrossfade(currentAnimation);
 				listPlayers[i].sprintActive = sprintActive;
 				listPlayers[i].hackingPlayerCode = hackingPlayerCode;
@@ -620,6 +638,8 @@ public class ClientScript : MonoBehaviour {
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
 		public Vector3 cameraForward;
+		public float targetCameraEulerX;
+		public float currentCameraEulerX;
 
 		public Player(string auxPlayerCode) {
 
