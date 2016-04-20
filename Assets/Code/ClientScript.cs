@@ -24,7 +24,7 @@ public class ClientScript : MonoBehaviour {
 	public GameObject map;
 
 	public LocalPlayerScript localPlayer;
-	public string myCode;
+	public int myCode;
 	private Player myPlayer;
 	public List<Player> listPlayers = new List<Player>();
 
@@ -32,7 +32,7 @@ public class ClientScript : MonoBehaviour {
 	private static float hackingSpeed = 1f/(0.25f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
 	private static float fastSpeed = 1f/(0.05f);
 
-	private string winnerCode = "-1";
+	private int winnerCode = -1;
 
 	public static float hackingTimerMax = 3f;
 
@@ -58,7 +58,7 @@ public class ClientScript : MonoBehaviour {
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
 
 		// TE UNES COMO PLAYER
-		myCode = Network.player.ToString ();
+		myCode = Int32.Parse(Network.player.ToString ());
 		myPlayer = new Player(myCode, localPlayer.visualAvatar);
 		listPlayers.Add(myPlayer);
 
@@ -86,7 +86,7 @@ public class ClientScript : MonoBehaviour {
 		if (remainingSeconds <= 0f) {
 			localPlayer.gameEnded = true;
 
-			if (winnerCode == "-1") {
+			if (winnerCode == -1) {
 				if (Network.isServer) { 
 					listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.playerCode).ToList();
 					GetComponent<NetworkView> ().RPC ("winnerRPC", RPCMode.All, listPlayers[0].playerCode);
@@ -165,9 +165,9 @@ public class ClientScript : MonoBehaviour {
 
 			}
 
-			if (listPlayers [i].hackingTimer <= 0f || listPlayers [i].hackingPlayerCode == "-1") {
+			if (listPlayers [i].hackingTimer <= 0f || listPlayers [i].hackingPlayerCode == -1) {
 				
-				listPlayers[i].hackingPlayerCode = "-1";
+				listPlayers[i].hackingPlayerCode = -1;
 				listPlayers [i].hackingTimer = 0f;
 
 				if (listPlayers [i] == myPlayer) {
@@ -226,8 +226,7 @@ public class ClientScript : MonoBehaviour {
 				//bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
 				/* HACK SI AL FINAL NO SE USA EL SPRINT, QUITAR ESA INFO, QUE NO SE MANDE HACK */
 				bool sprintActive = false;
-				//GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, myPlayer.hackingPlayerCode, myPlayer.amountCurrentHacking, myPlayer.lastTargetCode);
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive);
 
 			}
 
@@ -240,7 +239,7 @@ public class ClientScript : MonoBehaviour {
 
 		myPlayer.cameraForward = localPlayer.personalCamera.transform.forward;
 		myPlayer.targetPosition = myPlayer.visualAvatar.transform.position;
-		myPlayer.targetRotation = myPlayer.visualAvatar.transform.eulerAngles;
+		myPlayer.targetAvatarEulerY = myPlayer.visualAvatar.transform.eulerAngles.y;
 
 	}
 
@@ -251,7 +250,7 @@ public class ClientScript : MonoBehaviour {
 			if (listPlayers [i].playerCode != myCode) {
 
 				listPlayers [i].visualAvatar.transform.position = Vector3.Lerp (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
-				listPlayers [i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (listPlayers [i].visualAvatar.transform.eulerAngles, listPlayers [i].targetRotation, Time.deltaTime * 10f);
+				listPlayers [i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (listPlayers [i].visualAvatar.transform.eulerAngles, new Vector3(0f, listPlayers [i].targetAvatarEulerY, 0f), Time.deltaTime * 10f);
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 				listPlayers [i].currentCameraEulerX = Mathf.LerpAngle (listPlayers [i].currentCameraEulerX, listPlayers [i].targetCameraEulerX, Time.deltaTime * 10f);
 
@@ -416,14 +415,14 @@ public class ClientScript : MonoBehaviour {
 	}
 	*/
 
-	public NetworkPlayer NetworkPlayerByCode(string playerCode) {
+	public NetworkPlayer NetworkPlayerByCode(int playerCode) {
 
-		if (Network.player.ToString () == playerCode) {
+		if (myCode == playerCode) {
 			return Network.player;
 		}
 
 		for (int i = 0; i < Network.connections.Length; i++) {
-			if (Network.connections[i].ToString() == playerCode) {
+			if (Int32.Parse(Network.connections[i].ToString()) == playerCode) {
 				return Network.connections[i];
 			}
 		}
@@ -432,7 +431,7 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
-	public Player PlayerByCode(string playerCode) {
+	public Player PlayerByCode(int playerCode) {
 
 		for (int i = 0; i < listPlayers.Count; i++) {
 			if (listPlayers[i].playerCode == playerCode) {
@@ -459,7 +458,7 @@ public class ClientScript : MonoBehaviour {
 
 	// CLIENT RPCs
 	[RPC]
-	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, Vector3 cameraForward, float cameraEulerX, string currentAnimation, bool sprintActive)
+	void updatePlayerRPC(int playerCode, Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation, bool sprintActive)
 	{
 		bool foundPlayer = false;
 
@@ -467,7 +466,7 @@ public class ClientScript : MonoBehaviour {
 
 			if (listPlayers[i].playerCode == playerCode) {
 				listPlayers[i].targetPosition = position;
-				listPlayers[i].targetRotation = rotation;
+				listPlayers[i].targetAvatarEulerY = avatarEulerY;
 				listPlayers[i].cameraForward = cameraForward;
 				listPlayers[i].targetCameraEulerX = cameraEulerX;
 				listPlayers[i].SmartCrossfade(currentAnimation);
@@ -483,9 +482,9 @@ public class ClientScript : MonoBehaviour {
 			Player aux = new Player(playerCode);
 			listPlayers.Add(aux);
 			aux.visualAvatar.transform.position = position;
-			aux.visualAvatar.transform.eulerAngles = rotation;
+			aux.visualAvatar.transform.eulerAngles = new Vector3(0f, avatarEulerY, 0f);
 			aux.targetPosition = position;
-			aux.targetRotation = rotation;
+			aux.targetAvatarEulerY = avatarEulerY;
 			aux.SmartCrossfade(currentAnimation);
 
 			if (Network.isServer) {
@@ -507,10 +506,10 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void addChatMessageRPC(string playerCode, string text)
+	void addChatMessageRPC(int playerCode, string text)
 	{
 		string owner = "Player " + playerCode;
-		if (playerCode == Network.player.ToString()) { owner = "You"; }
+		if (playerCode == myCode) { owner = "You"; }
 
 		ChatMessage message = new ChatMessage (owner, text);
 		chatManager.Add (message);
@@ -520,7 +519,7 @@ public class ClientScript : MonoBehaviour {
 
 	// SERVER RPCs
 	[RPC]
-	void sendRemainingSecondsRPC(string playerCode, float auxRemainingSeconds)
+	void sendRemainingSecondsRPC(int playerCode, float auxRemainingSeconds)
 	{
 		if (playerCode == myCode) {
 			remainingSeconds = auxRemainingSeconds;
@@ -528,7 +527,7 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void removePlayerRPC(string playerCode) {
+	void removePlayerRPC(int playerCode) {
 
 		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
 
@@ -549,7 +548,7 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updateRankingRPC(string playerCode, int kills, int ping)
+	void updateRankingRPC(int playerCode, int kills, int ping)
 	{
 		Player player = PlayerByCode (playerCode);
 		player.kills = kills;
@@ -557,17 +556,17 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void hackAttackRPC(string playerCode) {
+	void hackAttackRPC(int playerCode) {
 		gameScript.serverScript.hackAttack (playerCode);
 	}
 
 	[RPC]
-	void interceptAttackRPC(string playerCode) {
+	void interceptAttackRPC(int playerCode) {
 		gameScript.serverScript.interceptAttack (playerCode);
 	}
 
 	[RPC]
-	void updateHackDataRPC(string playerCode, string hackedPlayerCode, bool justHacked)
+	void updateHackDataRPC(int playerCode, int hackedPlayerCode, bool justHacked)
 	{
 		Player player = PlayerByCode (playerCode);
 		Player hackedPlayer = PlayerByCode (hackedPlayerCode);
@@ -581,7 +580,7 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void killRPC(string assassinCode, string victimCode)
+	void killRPC(int assassinCode, int victimCode)
 	{
 		if (assassinCode == myCode) {
 			// YOU SLAYED VICTIMCODE
@@ -596,7 +595,7 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void respawnRPC(string playerCode, Vector3 position, Vector3 eulerAngles)
+	void respawnRPC(int playerCode, Vector3 position, Vector3 eulerAngles)
 	{
 		if (playerCode == myCode) {
 			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
@@ -610,7 +609,7 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void winnerRPC(string playerCode)
+	void winnerRPC(int playerCode)
 	{
 		winnerCode = playerCode;
 	}
@@ -618,7 +617,7 @@ public class ClientScript : MonoBehaviour {
 	// CLASSES
 	public class Player {
 
-		public string playerCode;
+		public int playerCode;
 		public GameObject visualAvatar;
 		public string lastAnimationOrder = "Idle01";
 		public Material visualMaterial;
@@ -628,30 +627,30 @@ public class ClientScript : MonoBehaviour {
 		public float immune = 0f;
 		public int kills = 0;
 		public int ping = 0;
-		public string hackingPlayerCode = "-1";
+		public int hackingPlayerCode = -1;
 		public float hackingTimer = 0f;
 		public bool justHacked = false;
 
 		public Vector3 targetPosition;
-		public Vector3 targetRotation;
+		public float targetAvatarEulerY;
 		public Vector3 cameraForward;
 		public float targetCameraEulerX;
 		public float currentCameraEulerX;
 
-		public Player(string auxPlayerCode) {
+		public Player(int auxPlayerCode) {
 
 			visualAvatar = Instantiate (Resources.Load("Prefabs/BOT") as GameObject);
 			Initialize(auxPlayerCode, visualAvatar);
 
 		}
 
-		public Player(string auxPlayerCode, GameObject visualAvatar) {
+		public Player(int auxPlayerCode, GameObject visualAvatar) {
 
 			Initialize(auxPlayerCode, visualAvatar);
 
 		}
 
-		public void Initialize (string auxPlayerCode, GameObject visualAvatar) {
+		public void Initialize (int auxPlayerCode, GameObject visualAvatar) {
 
 			playerCode = auxPlayerCode;
 			this.visualAvatar = visualAvatar;
@@ -662,7 +661,7 @@ public class ClientScript : MonoBehaviour {
 			sprintTrail.Emit = false;
 
 			targetPosition = visualAvatar.transform.position;
-			targetRotation = visualAvatar.transform.eulerAngles;
+			targetAvatarEulerY = visualAvatar.transform.eulerAngles.y;
 			cameraForward = Vector3.forward;
 
 		}
