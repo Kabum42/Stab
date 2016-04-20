@@ -88,7 +88,7 @@ public class ClientScript : MonoBehaviour {
 
 			if (winnerCode == -1) {
 				if (Network.isServer) { 
-					listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.playerCode).ToList();
+					sortList ();
 					GetComponent<NetworkView> ().RPC ("winnerRPC", RPCMode.All, listPlayers[0].playerCode);
 				}
 			} else if (winnerCode == myCode) {
@@ -110,16 +110,16 @@ public class ClientScript : MonoBehaviour {
 
 	void LateUpdate() {
 
-		for (int i = 0; i < listPlayers.Count; i++) {
-			if (listPlayers [i] != myPlayer) {
+		foreach (Player player in listPlayers) {
 
-				GameObject head = listPlayers [i].visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
+			if (player != myPlayer) {
 
-				float target = -listPlayers [i].currentCameraEulerX;
-
+				GameObject head = player.visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
+				float target = -player.currentCameraEulerX;
 				head.transform.eulerAngles = new Vector3 (head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
 
 			}
+
 		}
 
 	}
@@ -151,31 +151,31 @@ public class ClientScript : MonoBehaviour {
 
 	void updateHacking() {
 
-		for (int i = 0; i < listPlayers.Count; i++) {
+		foreach (Player player in listPlayers) {
 
-			if (listPlayers [i].hackingTimer > 0f) {
+			if (player.hackingTimer > 0f) {
 
-				listPlayers [i].hackingTimer = Mathf.Max (0f, listPlayers [i].hackingTimer - Time.deltaTime);
+				player.hackingTimer = Mathf.Max (0f, player.hackingTimer - Time.deltaTime);
 
-				if (listPlayers [i] == myPlayer) {
-					float aux = 1f - listPlayers [i].hackingTimer/hackingTimerMax;
+				if (player == myPlayer) {
+					float aux = 1f - player.hackingTimer/hackingTimerMax;
 					localPlayer.crosshairHackTimer.SetActive (true);
 					localPlayer.crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", aux);
 				}
 
 			}
 
-			if (listPlayers [i].hackingTimer <= 0f || listPlayers [i].hackingPlayerCode == -1) {
-				
-				listPlayers[i].hackingPlayerCode = -1;
-				listPlayers [i].hackingTimer = 0f;
+			if (player.hackingTimer <= 0f || player.hackingPlayerCode == -1) {
 
-				if (listPlayers [i] == myPlayer) {
+				player.hackingPlayerCode = -1;
+				player.hackingTimer = 0f;
+
+				if (player == myPlayer) {
 					localPlayer.crosshairHackTimer.SetActive (false);
 				}
 
 			}
-				
+
 		}
 
 	}
@@ -245,48 +245,52 @@ public class ClientScript : MonoBehaviour {
 
 	void synchronizeOtherPlayers () {
 
-		for (int i = 0; i < listPlayers.Count; i++) {
+		foreach (Player player in listPlayers) {
 
-			if (listPlayers [i].playerCode != myCode) {
+			if (player.playerCode != myCode) {
 
-				listPlayers [i].visualAvatar.transform.position = Vector3.Lerp (listPlayers [i].visualAvatar.transform.position, listPlayers [i].targetPosition, Time.deltaTime * 10f);
-				listPlayers [i].visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (listPlayers [i].visualAvatar.transform.eulerAngles, new Vector3(0f, listPlayers [i].targetAvatarEulerY, 0f), Time.deltaTime * 10f);
-				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
-				listPlayers [i].currentCameraEulerX = Mathf.LerpAngle (listPlayers [i].currentCameraEulerX, listPlayers [i].targetCameraEulerX, Time.deltaTime * 10f);
+				player.visualAvatar.transform.position = Vector3.Lerp (player.visualAvatar.transform.position, player.targetPosition, Time.deltaTime * 10f);
+				player.visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (player.visualAvatar.transform.eulerAngles, new Vector3(0f, player.targetAvatarEulerY, 0f), Time.deltaTime * 10f);
+				player.immune = Mathf.Max (0f, player.immune - Time.deltaTime);
+				player.currentCameraEulerX = Mathf.LerpAngle (player.currentCameraEulerX, player.targetCameraEulerX, Time.deltaTime * 10f);
 
 				float r = 1f;
 				float g = 1f;
 				float b = 1f;
 				float a = 1f;
 
-				if (myPlayer.hackingPlayerCode == listPlayers [i].playerCode) {
+				if (myPlayer.hackingPlayerCode == player.playerCode) {
 					g = 0f;
 					b = 0f;
 				}
-				if (listPlayers [i].hackingPlayerCode == myCode) {
+				if (player.hackingPlayerCode == myCode) {
 					a = 0f;
 				}
 
 				Color targetColor = new Color (r, g, b, a);
 
-				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), targetColor, Time.fixedDeltaTime * 5f);
+				Color c = Color.Lerp (player.visualMaterial.GetColor ("_Color"), targetColor, Time.fixedDeltaTime * 5f);
 
-				listPlayers [i].visualMaterial.SetColor ("_Color", c);
-				listPlayers [i].visualMaterial.SetFloat ("_Cutoff", 1f - c.a);
+				player.visualMaterial.SetColor ("_Color", c);
+				player.visualMaterial.SetFloat ("_Cutoff", 1f - c.a);
 
-				if (listPlayers [i].sprintActive && !listPlayers [i].sprintTrail.Emit) {
-					listPlayers [i].sprintTrail.Emit = true;
-				} else if (!listPlayers [i].sprintActive && listPlayers [i].sprintTrail.Emit) {
-					listPlayers [i].sprintTrail.Emit = false;
+				if (player.sprintActive && !player.sprintTrail.Emit) {
+					player.sprintTrail.Emit = true;
+				} else if (!player.sprintActive && player.sprintTrail.Emit) {
+					player.sprintTrail.Emit = false;
 				}
 
 			} else {
 				// ES MI PLAYER
-				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
+				player.immune = Mathf.Max (0f, player.immune - Time.deltaTime);
 			}
 
 		}
 
+	}
+
+	public void sortList() {
+		listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.playerCode).ToList();
 	}
 
 	void updateRanking() {
@@ -301,22 +305,26 @@ public class ClientScript : MonoBehaviour {
 			int minutes = totalSeconds / 60;
 			string auxTime = minutes.ToString("00") + ":" + seconds.ToString("00");
 
-			listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.playerCode).ToList();
+			sortList ();
 
-			for (int i = 0; i < listPlayers.Count; i++) {
-				if (listPlayers[i].playerCode == myCode) {
-					auxPlayers += "<color=#D7D520>" + "Player"+listPlayers[i].playerCode + "</color>";
+			int i = 0;
+			foreach (Player player in listPlayers) {
+
+				if (player.playerCode == myCode) {
+					auxPlayers += "<color=#D7D520>" + "Player"+player.playerCode + "</color>";
 				}
 				else {
-					auxPlayers += "Player"+listPlayers[i].playerCode;
+					auxPlayers += "Player"+player.playerCode;
 				}
-				auxKills += "<color=#FF8C8CFF>"+ listPlayers[i].kills + "</color>";
-				auxPings += listPlayers[i].ping +"";
+				auxKills += "<color=#FF8C8CFF>"+ player.kills + "</color>";
+				auxPings += player.ping +"";
 				if (i != listPlayers.Count -1) { 
 					auxPlayers += "\n"; 
 					auxKills += "\n"; 
 					auxPings += "\n";
 				}
+
+				i++;
 			}
 
 			rankingBackground.transform.FindChild ("TextPlayers").GetComponent<Text> ().text = auxPlayers;
@@ -368,7 +376,7 @@ public class ClientScript : MonoBehaviour {
 			if (chatManager.chatInputField.GetComponent<InputField> ().text != "") {
 
 				string info = chatManager.chatInputField.GetComponent<InputField> ().text;
-				GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, Network.player.ToString(), info);
+				GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, myCode, info);
 				chatManager.chatInputField.GetComponent<InputField> ().text = "";
 
 			}
@@ -433,9 +441,9 @@ public class ClientScript : MonoBehaviour {
 
 	public Player PlayerByCode(int playerCode) {
 
-		for (int i = 0; i < listPlayers.Count; i++) {
-			if (listPlayers[i].playerCode == playerCode) {
-				return listPlayers [i];
+		foreach (Player player in listPlayers) {
+			if (player.playerCode == playerCode) {
+				return player;
 			}
 		}
 
@@ -462,15 +470,15 @@ public class ClientScript : MonoBehaviour {
 	{
 		bool foundPlayer = false;
 
-		for (int i = 0; i < listPlayers.Count; i++) {
-
-			if (listPlayers[i].playerCode == playerCode) {
-				listPlayers[i].targetPosition = position;
-				listPlayers[i].targetAvatarEulerY = avatarEulerY;
-				listPlayers[i].cameraForward = cameraForward;
-				listPlayers[i].targetCameraEulerX = cameraEulerX;
-				listPlayers[i].SmartCrossfade(currentAnimation);
-				listPlayers[i].sprintActive = sprintActive;
+		foreach (Player player in listPlayers) {
+			
+			if (player.playerCode == playerCode) {
+				player.targetPosition = position;
+				player.targetAvatarEulerY = avatarEulerY;
+				player.cameraForward = cameraForward;
+				player.targetCameraEulerX = cameraEulerX;
+				player.SmartCrossfade(currentAnimation);
+				player.sprintActive = sprintActive;
 				foundPlayer = true;
 				break;
 			}
@@ -529,12 +537,12 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void removePlayerRPC(int playerCode) {
 
-		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
+		foreach (Player player in listPlayers) {
 
-			if (gameScript.clientScript.listPlayers[i].playerCode == playerCode) {
+			if (player.playerCode == playerCode) {
 
-				Destroy(gameScript.clientScript.listPlayers[i].visualAvatar);
-				gameScript.clientScript.listPlayers.RemoveAt(i);
+				Destroy(player.visualAvatar);
+				listPlayers.Remove (player);
 
 				chatManager.Add(new ChatMessage("System", "Player "+playerCode+" has left the game."));
 				chatManager.Write ();

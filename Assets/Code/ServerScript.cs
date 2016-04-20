@@ -47,16 +47,15 @@ public class ServerScript : MonoBehaviour {
 
 	void checkForSuicides() {
 
-		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
+		foreach (ClientScript.Player player in gameScript.clientScript.listPlayers) {
 
 			// THIS CHECKS IF SOMEONE IS FALLING INTO THE ETERNAL VOID OF THE BUGSPHERE
-			if (gameScript.clientScript.listPlayers [i].targetPosition.y < -100f) {
-				respawn (gameScript.clientScript.listPlayers [i].playerCode);
+			if (player.targetPosition.y < -100f) {
+				respawn (player.playerCode);
 			}
 
 		}
-
-
+			
 	}
 
 	public void respawn(int playerCode) {
@@ -119,12 +118,14 @@ public class ServerScript : MonoBehaviour {
 
 		currentRankingCooldown = 0f;
 
-		gameScript.clientScript.listPlayers.Sort (CompareListByKills);
+		gameScript.clientScript.sortList ();
 
-		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
-			gameScript.clientScript.listPlayers[i].ping = Network.GetAveragePing(gameScript.clientScript.NetworkPlayerByCode(gameScript.clientScript.listPlayers[i].playerCode));
-			if (gameScript.clientScript.listPlayers[i].ping < 0) { gameScript.clientScript.listPlayers[i].ping = 0; }
-			GetComponent<NetworkView>().RPC("updateRankingRPC", RPCMode.Others, gameScript.clientScript.listPlayers[i].playerCode, gameScript.clientScript.listPlayers[i].kills, gameScript.clientScript.listPlayers[i].ping);
+		foreach (ClientScript.Player player in gameScript.clientScript.listPlayers) {
+
+			player.ping = Network.GetAveragePing(gameScript.clientScript.NetworkPlayerByCode(player.playerCode));
+			if (player.ping < 0) { player.ping = 0; }
+			GetComponent<NetworkView>().RPC("updateRankingRPC", RPCMode.Others, player.playerCode, player.kills, player.ping);
+
 		}
 
 	}
@@ -133,9 +134,11 @@ public class ServerScript : MonoBehaviour {
 
 		currentHackDataCooldown = 0f;
 
-		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
-			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, gameScript.clientScript.listPlayers[i].playerCode, gameScript.clientScript.listPlayers[i].hackingPlayerCode, gameScript.clientScript.listPlayers[i].justHacked);
-			gameScript.clientScript.listPlayers [i].justHacked = false;
+		foreach (ClientScript.Player player in gameScript.clientScript.listPlayers) {
+
+			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, player.playerCode, player.hackingPlayerCode, player.justHacked);
+			player.justHacked = false;
+
 		}
 
 	}
@@ -180,11 +183,6 @@ public class ServerScript : MonoBehaviour {
 
 
 
-	}
-
-	private static int CompareListByKills(ClientScript.Player p1, ClientScript.Player p2)
-	{
-		return p1.kills.CompareTo(p2.kills); 
 	}
 
 	// NETWORK RELATED
