@@ -137,6 +137,8 @@ public class LocalPlayerScript : MonoBehaviour {
         crosshairHackTriangleOriginalScale = sourceTriangle.GetComponent<RectTransform>().localScale;
         Destroy(sourceTriangle);
 		crosshairHackTimer = crosshairHack.transform.FindChild("Timer").gameObject;
+		crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", 1f);
+		crosshairHackTimer.SetActive (false);
         crosshairHackBig = crosshairHack.transform.FindChild("Big").gameObject;
         GameObject sourceCharge = crosshairHack.transform.FindChild("Charge").gameObject;
         int num_charges = 3;
@@ -199,7 +201,6 @@ public class LocalPlayerScript : MonoBehaviour {
 		//adjustFirstPersonObjects ();
 		handleRegularInput();
 
-        hackingMockUp();
         interceptMockUp();
         alertMockUp();
 	
@@ -262,6 +263,7 @@ public class LocalPlayerScript : MonoBehaviour {
         // CLICK DERECHO
         if (Input.GetMouseButtonDown(1) && chargeResource >= 1f)
         {
+			
             chargeResource -= 1f;
             nextCharge++;
             if (nextCharge >= crosshairHackCharges.Count) { nextCharge = 0; }
@@ -270,24 +272,18 @@ public class LocalPlayerScript : MonoBehaviour {
             {
                 crosshairHackBigTargetZ += 360f;
             }
+
+			if (gameScript != null) {
+				if (Network.isServer) {
+					gameScript.serverScript.interceptAttack (gameScript.clientScript.myCode);
+				} else {
+					gameScript.clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, gameScript.clientScript.myCode);
+				}
+			}
+
         }
 
         crosshairHackBig.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, Mathf.LerpAngle(crosshairHackBig.GetComponent<RectTransform>().eulerAngles.z, crosshairHackBigTargetZ, Time.deltaTime*5f));
-
-    }
-
-    void hackingMockUp()
-    {
-
-        if (crosshairHackTimer.GetComponent<Image>().material.GetFloat("_Cutoff") < 1f)
-        {
-            float aux = Mathf.Min(1f, crosshairHackTimer.GetComponent<Image>().material.GetFloat("_Cutoff") + Time.deltaTime * (0.2f));
-            crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", aux);
-        }
-        else if (Input.GetMouseButtonDown(0))
-        {
-            crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", 0f);
-        }
 
     }
 
@@ -325,7 +321,19 @@ public class LocalPlayerScript : MonoBehaviour {
 		else if (attackChargeCooldown <= 0f) {
 
 			if (Input.GetMouseButtonDown (0)) {
-                dashAttack();
+				
+				crosshairHackTriclipTargetZ = crosshairHackTriclipOldZ - 120f;
+				if (crosshairHackTriclipTargetZ < 0f) { crosshairHackTriclipTargetZ += 360f; }
+				attackChargeCooldown = attackChargeCooldownMax;
+
+				if (gameScript != null) {
+					if (Network.isServer) {
+						gameScript.serverScript.hackAttack (gameScript.clientScript.myCode);
+					} else {
+						gameScript.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, gameScript.clientScript.myCode);
+					}
+				}
+
 			}
 
 		}
@@ -350,15 +358,6 @@ public class LocalPlayerScript : MonoBehaviour {
         }
 
     }
-
-    void dashAttack()
-    {
-
-        crosshairHackTriclipTargetZ = crosshairHackTriclipOldZ - 120f;
-        if (crosshairHackTriclipTargetZ < 0f) { crosshairHackTriclipTargetZ += 360f; }
-		attackChargeCooldown = attackChargeCooldownMax;
-
-	}
 
 	void handleRegularInput() {
 

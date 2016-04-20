@@ -10,8 +10,6 @@ public class ClientScript : MonoBehaviour {
 
 	[HideInInspector] public GameScript gameScript;
 
-	public float currentRankingCooldown = 0f;
-
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
@@ -36,6 +34,8 @@ public class ClientScript : MonoBehaviour {
 
 	private string winnerCode = "-1";
 
+	public static float hackingTimerMax = 3f;
+
 	// Use this for initialization
 	void Awake () {
 	
@@ -56,7 +56,6 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
-		localPlayer.gameScript = gameScript;
 
 		// TE UNES COMO PLAYER
 		myCode = Network.player.ToString ();
@@ -67,8 +66,6 @@ public class ClientScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
-		currentRankingCooldown += Time.deltaTime;
 
 		if (EventSystem.current.currentSelectedGameObject == chatManager.chatInputField) {
 			chatManager.lastChatPannelInteraction = 0f;
@@ -127,16 +124,25 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
+	public void setGameScript(GameScript auxGameScript) {
+
+		gameScript = auxGameScript;
+		localPlayer.gameScript = auxGameScript;
+
+	}
+
 	void updateCanvas() {
 
-		if (myPlayer.hackingPlayerCode == "-1") {
+		Player auxPlayer = firstLookingPlayer(myPlayer);
+
+		if (auxPlayer == null) {
 			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 1f, 1f);
 			textTargeted.SetActive(false);
 		}
 		else {
 			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 			textTargeted.SetActive(true);
-			textTargeted.GetComponent<Text>().text = "<Player "+myPlayer.hackingPlayerCode+">";
+			textTargeted.GetComponent<Text>().text = "<Player "+auxPlayer.playerCode+">";
 		}
 
 		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
@@ -145,80 +151,37 @@ public class ClientScript : MonoBehaviour {
 
 	void updateHacking() {
 
-		int playersHackingYou = 0;
-
-		// THIS IS WHO YOU'RE TRYING TO _HACK
-		Player auxPlayer = firstLookingPlayer(myPlayer);
-		if (auxPlayer != null) {
-			
-			myPlayer.hackingPlayerCode = auxPlayer.playerCode; 
-
-		} 
-		else { 
-			
-			myPlayer.hackingPlayerCode = "-1";
-
-		}
-
-
-
 		for (int i = 0; i < listPlayers.Count; i++) {
-			if (listPlayers [i] != myPlayer) {
 
-				// YOU TRY TO _HACK EVERYBODY TO UPDATE THEIR VARIABLES
-				float aux = tryHacking (myPlayer, listPlayers [i], ref listPlayers [i].isBeingHacked);
-				listPlayers [i].isBeingHacked = aux;
-				if (listPlayers [i].playerCode == myPlayer.hackingPlayerCode) {
-					myPlayer.amountCurrentHacking = aux;
+			if (listPlayers [i].hackingTimer > 0f) {
+
+				listPlayers [i].hackingTimer = Mathf.Max (0f, listPlayers [i].hackingTimer - Time.deltaTime);
+
+				if (listPlayers [i] == myPlayer) {
+					float aux = 1f - listPlayers [i].hackingTimer/hackingTimerMax;
+					localPlayer.crosshairHackTimer.SetActive (true);
+					localPlayer.crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", aux);
 				}
 
-				// THIS IS TO UPDATE YOUR VARIABLES
-				if (listPlayers [i].hackingPlayerCode == myCode) {
-					listPlayers [i].hackingMyPlayer = listPlayers [i].amountCurrentHacking;
-					playersHackingYou++;
-				} else if (listPlayers [i].lastTargetCode == myCode) {
-					listPlayers [i].hackingMyPlayer = Mathf.Max(0f, listPlayers [i].hackingMyPlayer - Time.deltaTime * slowSpeed);
-				} else {
-					listPlayers [i].hackingMyPlayer = Mathf.Max(0f, listPlayers [i].hackingMyPlayer - Time.deltaTime * fastSpeed);
+			}
+
+			if (listPlayers [i].hackingTimer <= 0f || listPlayers [i].hackingPlayerCode == "-1") {
+				
+				listPlayers[i].hackingPlayerCode = "-1";
+				listPlayers [i].hackingTimer = 0f;
+
+				if (listPlayers [i] == myPlayer) {
+					localPlayer.crosshairHackTimer.SetActive (false);
 				}
 
 			}
 				
 		}
 
-
-		if (playersHackingYou >= 3) {
-			// OVERLOAD
-		}
-
 	}
 
-	float tryHacking(Player p1, Player p2, ref float hackingVariable) {
 
-		if ((p1.hackingPlayerCode == p2.playerCode)) {
-			// HACKER IS LOOKING AT PREY
-			if (p2.hackingPlayerCode == p1.playerCode) {
-				// PREY IS LOOKING AT HACKER TOO, HACKER INTERCEPTED
-				return Mathf.Max(0f, hackingVariable - Time.deltaTime * fastSpeed);
-			} else {
-				// NOT INTERCEPTED, HACKER IS HACKING PREY
-				return Mathf.Min(1.5f, hackingVariable + Time.deltaTime * hackingSpeed);
-			}
-
-		} else {
-			// HACKER IS NOT LOOKING AT PREY
-			if (p1.lastTargetCode == p2.playerCode) {
-				// PREY WAS LAST HACKER'S TARGET, SLOW UNHACKING
-				return Mathf.Max(0f, hackingVariable - Time.deltaTime * slowSpeed);
-			} else {
-				// PREY WASN'T LAST HACKER'S TARGET, FAST UNHACKING
-				return Mathf.Max(0f, hackingVariable - Time.deltaTime * fastSpeed);
-			}
-		}
-
-	}
-
-	Player firstLookingPlayer(Player p1) {
+	public Player firstLookingPlayer(Player p1) {
 
 		float lookingDistance = 10f;
 
@@ -232,12 +195,8 @@ public class ClientScript : MonoBehaviour {
 				if (hits [i].collider.gameObject.GetComponent<PlayerMarker> () != null) {
 					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER
 					Player auxPlayer = hits[i].collider.gameObject.GetComponent<PlayerMarker> ().player;
-					if (auxPlayer.hackingMyPlayer < 1f) {
+					if (!(auxPlayer.hackingPlayerCode == myCode)) {
 						// YOU CAN SEE IT
-						if (p1.lastTargetCode != auxPlayer.playerCode) {
-							//StartCoroutine(TargetDetected());
-						}
-						p1.lastTargetCode = auxPlayer.playerCode;
 						return auxPlayer;
 					}
 
@@ -267,7 +226,8 @@ public class ClientScript : MonoBehaviour {
 				//bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
 				/* HACK SI AL FINAL NO SE USA EL SPRINT, QUITAR ESA INFO, QUE NO SE MANDE HACK */
 				bool sprintActive = false;
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, myPlayer.hackingPlayerCode, myPlayer.amountCurrentHacking, myPlayer.lastTargetCode);
+				//GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive, myPlayer.hackingPlayerCode, myPlayer.amountCurrentHacking, myPlayer.lastTargetCode);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive);
 
 			}
 
@@ -293,7 +253,25 @@ public class ClientScript : MonoBehaviour {
 				listPlayers [i].immune = Mathf.Max (0f, listPlayers [i].immune - Time.deltaTime);
 				listPlayers [i].currentCameraEulerX = Mathf.LerpAngle (listPlayers [i].currentCameraEulerX, listPlayers [i].targetCameraEulerX, Time.deltaTime * 10f);
 
-				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), new Color (1f, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].isBeingHacked, 1f -listPlayers[i].hackingMyPlayer), Time.fixedDeltaTime * 5f);
+				float r = 1f;
+				float g = 1f;
+				float b = 1f;
+				float a = 1f;
+
+				if (myPlayer.hackingPlayerCode == listPlayers [i].playerCode) {
+					g = 0f;
+					b = 0f;
+				}
+				if (listPlayers [i].hackingPlayerCode == myCode) {
+					a = 0f;
+				}
+
+				Color targetColor = new Color (r, g, b, a);
+
+				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), targetColor, Time.fixedDeltaTime * 5f);
+
+				Debug.Log (c.a);
+
 				listPlayers [i].visualMaterial.SetColor ("_Color", c);
 				listPlayers [i].visualMaterial.SetFloat ("_Cutoff", 1f - c.a);
 
@@ -481,7 +459,7 @@ public class ClientScript : MonoBehaviour {
 
 	// CLIENT RPCs
 	[RPC]
-	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, Vector3 cameraForward, float cameraEulerX, string currentAnimation, bool sprintActive, string hackingPlayerCode, float amountCurrentHacking, string lastTargetCode)
+	void updatePlayerRPC(string playerCode, Vector3 position, Vector3 rotation, Vector3 cameraForward, float cameraEulerX, string currentAnimation, bool sprintActive)
 	{
 		bool foundPlayer = false;
 
@@ -494,9 +472,9 @@ public class ClientScript : MonoBehaviour {
 				listPlayers[i].targetCameraEulerX = cameraEulerX;
 				listPlayers[i].SmartCrossfade(currentAnimation);
 				listPlayers[i].sprintActive = sprintActive;
-				listPlayers[i].hackingPlayerCode = hackingPlayerCode;
-				listPlayers [i].amountCurrentHacking = amountCurrentHacking;
-				listPlayers [i].lastTargetCode = lastTargetCode;
+				//listPlayers[i].hackingPlayerCode = hackingPlayerCode;
+				//listPlayers [i].amountCurrentHacking = amountCurrentHacking;
+				//listPlayers [i].lastTargetCode = lastTargetCode;
 				foundPlayer = true;
 				break;
 			}
@@ -582,6 +560,30 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
+	void hackAttackRPC(string playerCode) {
+		gameScript.serverScript.hackAttack (playerCode);
+	}
+
+	[RPC]
+	void interceptAttackRPC(string playerCode) {
+		gameScript.serverScript.interceptAttack (playerCode);
+	}
+
+	[RPC]
+	void updateHackDataRPC(string playerCode, string hackedPlayerCode, bool justHacked)
+	{
+		Player player = PlayerByCode (playerCode);
+		Player hackedPlayer = PlayerByCode (hackedPlayerCode);
+
+		if (hackedPlayer != null && justHacked) {
+			player.hackingTimer = hackingTimerMax;
+		}
+
+		player.hackingPlayerCode = hackedPlayerCode;
+
+	}
+
+	[RPC]
 	void killRPC(string assassinCode, string victimCode)
 	{
 		if (assassinCode == myCode) {
@@ -629,11 +631,9 @@ public class ClientScript : MonoBehaviour {
 		public float immune = 0f;
 		public int kills = 0;
 		public int ping = 0;
-		public string lastTargetCode = "-1";
 		public string hackingPlayerCode = "-1";
-		public float amountCurrentHacking = 0f;
-		public float hackingMyPlayer = 0f;
-		public float isBeingHacked = 0f;
+		public float hackingTimer = 0f;
+		public bool justHacked = false;
 
 		public Vector3 targetPosition;
 		public Vector3 targetRotation;
