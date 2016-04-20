@@ -239,6 +239,8 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		myPlayer.cameraForward = localPlayer.personalCamera.transform.forward;
+		myPlayer.targetPosition = myPlayer.visualAvatar.transform.position;
+		myPlayer.targetRotation = myPlayer.visualAvatar.transform.eulerAngles;
 
 	}
 
@@ -269,8 +271,6 @@ public class ClientScript : MonoBehaviour {
 				Color targetColor = new Color (r, g, b, a);
 
 				Color c = Color.Lerp (listPlayers [i].visualMaterial.GetColor ("_Color"), targetColor, Time.fixedDeltaTime * 5f);
-
-				Debug.Log (c.a);
 
 				listPlayers [i].visualMaterial.SetColor ("_Color", c);
 				listPlayers [i].visualMaterial.SetFloat ("_Cutoff", 1f - c.a);
@@ -472,9 +472,6 @@ public class ClientScript : MonoBehaviour {
 				listPlayers[i].targetCameraEulerX = cameraEulerX;
 				listPlayers[i].SmartCrossfade(currentAnimation);
 				listPlayers[i].sprintActive = sprintActive;
-				//listPlayers[i].hackingPlayerCode = hackingPlayerCode;
-				//listPlayers [i].amountCurrentHacking = amountCurrentHacking;
-				//listPlayers [i].lastTargetCode = lastTargetCode;
 				foundPlayer = true;
 				break;
 			}
