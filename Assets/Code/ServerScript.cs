@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class ServerScript : MonoBehaviour {
 
@@ -58,7 +59,7 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	public void respawn(string playerCode) {
+	public void respawn(int playerCode) {
 
         List<int> possibleRespawns = new List<int>();
         float cooldown = 5f;
@@ -82,7 +83,7 @@ public class ServerScript : MonoBehaviour {
             }
         }
 
-        int chosenRespawn = possibleRespawns[Random.Range(0, possibleRespawns.Count)];
+        int chosenRespawn = possibleRespawns[UnityEngine.Random.Range(0, possibleRespawns.Count)];
         listRespawnLocations[chosenRespawn].lastTimeUsed = Time.realtimeSinceStartup;
 
 		GetComponent<NetworkView> ().RPC ("respawnRPC", RPCMode.All, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
@@ -140,7 +141,7 @@ public class ServerScript : MonoBehaviour {
 	}
 
 
-	public void hackAttack (string playerCode) {
+	public void hackAttack (int playerCode) {
 
 		if (!gameScript.clientScript.localPlayer.gameEnded) {
 
@@ -175,7 +176,7 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	public void interceptAttack (string playerCode) {
+	public void interceptAttack (int playerCode) {
 
 
 
@@ -190,7 +191,7 @@ public class ServerScript : MonoBehaviour {
 	void OnPlayerDisconnected(NetworkPlayer player) {
 		Debug.Log("Clean up after player " + player);
 		Network.RemoveRPCs(player);
-		GetComponent<NetworkView>().RPC("removePlayerRPC", RPCMode.All, player.ToString());
+		GetComponent<NetworkView>().RPC("removePlayerRPC", RPCMode.All, Int32.Parse(player.ToString()));
 	}
 
 	// CLASSES
