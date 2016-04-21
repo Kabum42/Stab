@@ -160,9 +160,13 @@ public class ServerScript : MonoBehaviour {
 					if (victimPlayer.immune <= 0f) {
 
 						attackerPlayer.kills++;
-						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All,attackerPlayer.playerCode, victimPlayer.playerCode);
+						attackerPlayer.hackingPlayerCode = -1;
+						sendHackData ();
+						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, victimPlayer.playerCode);
+
 						respawn (victimPlayer.playerCode);
 						victimPlayer.immune = 5f;
+
 						sendRankingData ();
 
 					}

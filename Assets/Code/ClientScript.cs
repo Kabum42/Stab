@@ -13,7 +13,7 @@ public class ClientScript : MonoBehaviour {
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
-	public float remainingSeconds = (8f)*(60f); // 5 MINUTES
+	public float remainingSeconds = (8f)*(60f); // 8 MINUTES
 
 	private ChatManager chatManager;
 
@@ -183,14 +183,14 @@ public class ClientScript : MonoBehaviour {
 
 	public Player firstLookingPlayer(Player p1) {
 
-		float lookingDistance = 10f;
+		//float lookingDistance = 10f;
 
 		RaycastHit[] hits;
-		hits = Physics.RaycastAll (p1.visualAvatar.transform.position + LocalPlayerScript.centerOfCamera, p1.cameraForward, lookingDistance);
+		hits = Physics.RaycastAll (p1.visualAvatar.transform.position + LocalPlayerScript.centerOfCamera, p1.cameraForward);
 		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
 
 		for (int i = 0; i < hits.Length; i++) {
-			if (hits[i].collider.gameObject.tag != "LocalPlayer" && hits[i].collider.gameObject.GetComponent<AttackMarker>() == null && hits[i].collider.gameObject != p1.visualAvatar) {
+			if (hits[i].collider.gameObject.tag != "LocalPlayer" && hits[i].collider.gameObject != p1.visualAvatar) {
 
 				if (hits [i].collider.gameObject.GetComponent<PlayerMarker> () != null) {
 					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER
@@ -290,7 +290,12 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	public void sortList() {
-		listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.playerCode).ToList();
+
+		// FIRST CRITERION :  KILLS, FROM BIGGER TO SMALLER
+		// SECOND CRITERION :  LASTKILLREMAININGSECONDS, FROM SMALLER TO BIGGER
+		// THIRD CRITERION :  PLAYERCODE, JUST TO HAVE A UNIQUE ARBITRARY PARAMETER TO ORDER THEM IF THERE'S A DRAW
+		listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.lastKillRemainingSeconds).ThenBy(o=>o.playerCode).ToList();
+
 	}
 
 	void updateRanking() {
@@ -500,14 +505,12 @@ public class ClientScript : MonoBehaviour {
 				gameScript.serverScript.sendRankingData();
 				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
 				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, playerCode, remainingSeconds);
-				// Y LE ASIGNAMOS UN SITIO DONDE APARECER
+				// LE ASIGNAMOS UN SITIO DONDE APARECER
 				gameScript.serverScript.respawn(playerCode);
+				// AVISAMOS AL RESTO DE JUGADORES DE QUE SE HA UNIDO UN NUEVO JUGADOR
+				GetComponent<NetworkView>().RPC("joinedPlayerRPC", RPCMode.All, playerCode);
 
 			}
-
-			chatManager.Add(new ChatMessage("System", "Player "+aux.playerCode+" has joined the game."));
-			chatManager.Write ();
-			chatManager.lastChatPannelInteraction = 0f;
 
 		}
 
@@ -532,6 +535,17 @@ public class ClientScript : MonoBehaviour {
 		if (playerCode == myCode) {
 			remainingSeconds = auxRemainingSeconds;
 		}
+	}
+
+	[RPC]
+	void joinedPlayerRPC(int playerCode) {
+
+		if (playerCode != myCode) {
+			chatManager.Add(new ChatMessage("System", "Player " + playerCode + " has joined the game."));
+			chatManager.Write ();
+			chatManager.lastChatPannelInteraction = 0f;
+		}
+
 	}
 
 	[RPC]
@@ -600,6 +614,7 @@ public class ClientScript : MonoBehaviour {
 			textBigAlpha = 1f;
 			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinCode+"</color>";
 		}
+		PlayerByCode (assassinCode).lastKillRemainingSeconds = remainingSeconds;
 	}
 
 	[RPC]
@@ -634,6 +649,7 @@ public class ClientScript : MonoBehaviour {
 		public MeleeWeaponTrail sprintTrail;
 		public float immune = 0f;
 		public int kills = 0;
+		public float lastKillRemainingSeconds = float.MaxValue;
 		public int ping = 0;
 		public int hackingPlayerCode = -1;
 		public float hackingTimer = 0f;
