@@ -8,12 +8,12 @@ using System.Linq;
 
 public class ClientScript : MonoBehaviour {
 
-	[HideInInspector] public GameScript gameScript;
+	[HideInInspector] public ServerScript serverScript;
 
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
-	public float remainingSeconds = (8f)*(60f); // 8 MINUTES
+	[HideInInspector] public float remainingSeconds = (8f)*(60f); // 8 MINUTES
 
 	private ChatManager chatManager;
 
@@ -21,10 +21,10 @@ public class ClientScript : MonoBehaviour {
 	private GameObject textTargeted;
 	private GameObject textBig;
 	private float textBigAlpha = 0f;
-	public GameObject map;
+	[HideInInspector] public GameObject map;
 
-	public LocalPlayerScript localPlayer;
-	public int myCode;
+	[HideInInspector] public LocalPlayerScript localPlayer;
+	[HideInInspector] public int myCode;
 	private Player myPlayer;
 	public List<Player> listPlayers = new List<Player>();
 
@@ -51,8 +51,11 @@ public class ClientScript : MonoBehaviour {
 
 		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
 
-		if (!Network.isServer) {
-			map.transform.FindChild ("RespawnPoints").gameObject.SetActive (false);
+		if (Network.isServer) {
+			serverScript = gameObject.AddComponent<ServerScript> ();
+			serverScript.initialize (this);
+		} else {
+			Destroy(map.transform.FindChild ("RespawnPoints").gameObject);
 		}
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
@@ -121,13 +124,6 @@ public class ClientScript : MonoBehaviour {
 			}
 
 		}
-
-	}
-
-	public void setGameScript(GameScript auxGameScript) {
-
-		gameScript = auxGameScript;
-		localPlayer.gameScript = auxGameScript;
 
 	}
 
@@ -400,6 +396,9 @@ public class ClientScript : MonoBehaviour {
 			
 		chatManager.lastTimeChatInputFocused = chatManager.chatInputField.GetComponent<InputField> ().isFocused;
 
+		// THIS IS TO ADJUST THE HEIGHT
+		chatManager.Update ();
+
 	}
 
 	private IEnumerator CaretToEnd() {
@@ -502,11 +501,11 @@ public class ClientScript : MonoBehaviour {
 
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
-				gameScript.serverScript.sendRankingData();
+				serverScript.sendRankingData();
 				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
 				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, playerCode, remainingSeconds);
 				// LE ASIGNAMOS UN SITIO DONDE APARECER
-				gameScript.serverScript.respawn(playerCode);
+				serverScript.respawn(playerCode);
 				// AVISAMOS AL RESTO DE JUGADORES DE QUE SE HA UNIDO UN NUEVO JUGADOR
 				GetComponent<NetworkView>().RPC("joinedPlayerRPC", RPCMode.All, playerCode);
 
@@ -522,8 +521,7 @@ public class ClientScript : MonoBehaviour {
 		string owner = "Player " + playerCode;
 		if (playerCode == myCode) { owner = "You"; }
 
-		ChatMessage message = new ChatMessage (owner, text);
-		chatManager.Add (message);
+		chatManager.Add (new ChatMessage (owner, text));
 		chatManager.Write ();
 		chatManager.lastChatPannelInteraction = 0f;
 	}
@@ -579,12 +577,12 @@ public class ClientScript : MonoBehaviour {
 
 	[RPC]
 	void hackAttackRPC(int playerCode) {
-		gameScript.serverScript.hackAttack (playerCode);
+		serverScript.hackAttack (playerCode);
 	}
 
 	[RPC]
 	void interceptAttackRPC(int playerCode) {
-		gameScript.serverScript.interceptAttack (playerCode);
+		serverScript.interceptAttack (playerCode);
 	}
 
 	[RPC]

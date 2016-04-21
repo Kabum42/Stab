@@ -38,6 +38,16 @@ public class ChatManager {
 
 	}
 
+	public void Update() {
+
+		if (physicalChat.GetComponent<RectTransform> ().sizeDelta.y > 342.5f) {
+			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 60 + (physicalChat.GetComponent<RectTransform> ().sizeDelta.y - 342.5f)/(1f/0.35f));
+		} else {
+			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 60);
+		}
+
+	}
+
 	public void Write() {
 
 		string aux = "";
@@ -76,12 +86,6 @@ public class ChatManager {
 		physicalChat.GetComponent<Text> ().text = aux;
 
 		Canvas.ForceUpdateCanvases ();
-
-		if (physicalChat.GetComponent<RectTransform> ().sizeDelta.y > 342f) {
-			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 60 + (physicalChat.GetComponent<RectTransform> ().sizeDelta.y - 342f)/2.87f);
-		} else {
-			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 60);
-		}
 
 	}
 

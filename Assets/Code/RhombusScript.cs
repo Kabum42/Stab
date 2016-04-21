@@ -86,7 +86,7 @@ public class RhombusScript : MonoBehaviour {
 	private List<LogicalMatch> toRecycleLogicalMatches = new List<LogicalMatch> ();
 	private int currentLogicalMatchSelectedPosition = 0;
 	private LogicalMatch currentLogicalMatchSelected;
-	private LinkedList<PingMatch> unresolvedPingMatches = new LinkedList<PingMatch> ();
+	private List<PingMatch> unresolvedPingMatches = new List<PingMatch> ();
     // HACK
     // COULD BE A toRecyclePingMatches, THEN THEY WOULDN'T BE CREATED SO OFTEN
 
@@ -378,9 +378,9 @@ public class RhombusScript : MonoBehaviour {
 
 		currentLogicalMatchSelectedPosition = 0;
 
-        for (LinkedListNode<PingMatch> pingMatch = unresolvedPingMatches.First; pingMatch != null; pingMatch = pingMatch.Next)
+		foreach(PingMatch pingMatch in unresolvedPingMatches)
         {
-            pingMatch.Value.Cancel();
+            pingMatch.Cancel();
         }
 
 		unresolvedPingMatches.Clear ();
@@ -531,14 +531,12 @@ public class RhombusScript : MonoBehaviour {
 			checkedMatches = 1;
 		}
 			
-		// PINGMATCHES CON LINKED LIST
-		for(LinkedListNode<PingMatch> pingMatch = unresolvedPingMatches.First; pingMatch != null; pingMatch = pingMatch.Next)
+		foreach(PingMatch pingMatch in unresolvedPingMatches)
 		{
-			if (pingMatch.Value.Update()) {
+			if (pingMatch.Update()) {
 				// YA SE HA RECIBIDO EL PINGTIME, HAY QUE ELIMINARLO
-				lMatchManager.UpdateKey(pingMatch.Value.logicalMatch.managerKey);
+				lMatchManager.UpdateKey(pingMatch.logicalMatch.managerKey);
 				unresolvedPingMatches.Remove (pingMatch);
-				pingMatch.Value = null;
 			}
 		}
 
@@ -1090,7 +1088,7 @@ public class RhombusScript : MonoBehaviour {
 
             PingMatch pingMatch = new PingMatch(this, ref hData);
             pingMatch.DoPing();
-            owner.unresolvedPingMatches.AddLast(pingMatch);
+            owner.unresolvedPingMatches.Add(pingMatch);
 
 		}
 
