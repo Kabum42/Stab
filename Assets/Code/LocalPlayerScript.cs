@@ -260,7 +260,7 @@ public class LocalPlayerScript : MonoBehaviour {
             if (auxNext >= crosshairHackCharges.Count) { auxNext = 0; }
         }
 
-        // CLICK DERECHO
+        // RIGHT CLICK
         if (Input.GetMouseButtonDown(1) && chargeResource >= 1f)
         {
 			
@@ -321,7 +321,8 @@ public class LocalPlayerScript : MonoBehaviour {
 		else if (attackChargeCooldown <= 0f) {
 
 			if (Input.GetMouseButtonDown (0)) {
-				
+				// LEFT CLICK
+
 				crosshairHackTriclipTargetZ = crosshairHackTriclipOldZ - 120f;
 				if (crosshairHackTriclipTargetZ < 0f) { crosshairHackTriclipTargetZ += 360f; }
 				attackChargeCooldown = attackChargeCooldownMax;

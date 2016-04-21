@@ -51,19 +51,21 @@ public class ClientScript : MonoBehaviour {
 
 		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
 
+		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
+		localPlayer.clientScript = this;
+
+		// YOU JOIN AS PLAYER
+		myCode = Int32.Parse(Network.player.ToString ());
+		myPlayer = new Player(myCode, localPlayer.visualAvatar);
+		listPlayers.Add(myPlayer);
+
+		// SERVER RELATED
 		if (Network.isServer) {
 			serverScript = gameObject.AddComponent<ServerScript> ();
 			serverScript.initialize (this);
 		} else {
 			Destroy(map.transform.FindChild ("RespawnPoints").gameObject);
 		}
-
-		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
-
-		// TE UNES COMO PLAYER
-		myCode = Int32.Parse(Network.player.ToString ());
-		myPlayer = new Player(myCode, localPlayer.visualAvatar);
-		listPlayers.Add(myPlayer);
 
 	}
 	

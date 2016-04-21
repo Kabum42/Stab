@@ -346,6 +346,12 @@ public class RhombusScript : MonoBehaviour {
 	}
 
 	void OnConnectedToServer() {
+
+		foreach(PingMatch pingMatch in unresolvedPingMatches)
+		{
+			pingMatch.Cancel();
+		}
+		unresolvedPingMatches.Clear ();
 		
 		Application.LoadLevel ("Game");
 
