@@ -536,15 +536,22 @@ public class RhombusScript : MonoBehaviour {
 			NetworkManager.RefreshHostList ();
 			checkedMatches = 1;
 		}
-			
+
+        List<PingMatch> toDeletePingMatches = new List<PingMatch>();
 		foreach(PingMatch pingMatch in unresolvedPingMatches)
 		{
 			if (pingMatch.Update()) {
 				// YA SE HA RECIBIDO EL PINGTIME, HAY QUE ELIMINARLO
 				lMatchManager.UpdateKey(pingMatch.logicalMatch.managerKey);
-				unresolvedPingMatches.Remove (pingMatch);
+                toDeletePingMatches.Add(pingMatch);
 			}
 		}
+
+        foreach (PingMatch pingMatch in toDeletePingMatches)
+        {
+            unresolvedPingMatches.Remove(pingMatch);
+        }
+        toDeletePingMatches.Clear();
 
         if (joinMenuPingTimer.activeInHierarchy)
         {
