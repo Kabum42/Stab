@@ -119,13 +119,21 @@ public class ClientScript : MonoBehaviour {
 
 			if (player != myPlayer) {
 
-				GameObject head = player.visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
-				float target = -player.currentCameraEulerX;
-				head.transform.eulerAngles = new Vector3 (head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
+				RotateHead (player.visualAvatar, player.currentCameraEulerX);
 
 			}
 
 		}
+
+	}
+
+	public static void RotateHead(GameObject visualAvatar, float currentCameraEulerX) {
+
+		/*
+		GameObject head = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
+		float target = -currentCameraEulerX;
+		head.transform.eulerAngles = new Vector3 (head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
+		*/
 
 	}
 

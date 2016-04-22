@@ -584,11 +584,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void LateUpdate() {
 
-		GameObject head = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
-
-		float target = -personalCamera.transform.eulerAngles.x;
-
-		head.transform.eulerAngles = new Vector3 (head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
+		ClientScript.RotateHead (visualAvatar, personalCamera.transform.eulerAngles.x);
 
 	}
 
