@@ -184,7 +184,7 @@ public class ClientScript : MonoBehaviour {
 		//float lookingDistance = 10f;
 
 		RaycastHit[] hits;
-		hits = Physics.RaycastAll (p1.visualAvatar.transform.position + LocalPlayerScript.centerOfCamera, p1.cameraForward);
+		hits = Physics.RaycastAll (p1.targetPosition + LocalPlayerScript.centerOfCamera, p1.cameraForward);
 		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
 
 		for (int i = 0; i < hits.Length; i++) {
