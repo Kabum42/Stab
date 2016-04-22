@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 public class LocalPlayerScript : MonoBehaviour {
 
-    public GameScript gameScript;
+    [HideInInspector] public ClientScript clientScript;
 	public GameObject personalCamera;
 	private GameObject firstPersonCamera;
 	//private float cameraDistance = 3.2f;
@@ -260,7 +260,7 @@ public class LocalPlayerScript : MonoBehaviour {
             if (auxNext >= crosshairHackCharges.Count) { auxNext = 0; }
         }
 
-        // CLICK DERECHO
+        // RIGHT CLICK
         if (Input.GetMouseButtonDown(1) && chargeResource >= 1f)
         {
 			
@@ -273,11 +273,11 @@ public class LocalPlayerScript : MonoBehaviour {
                 crosshairHackBigTargetZ += 360f;
             }
 
-			if (gameScript != null) {
+			if (clientScript != null) {
 				if (Network.isServer) {
-					gameScript.serverScript.interceptAttack (gameScript.clientScript.myCode);
+					clientScript.serverScript.interceptAttack (clientScript.myCode);
 				} else {
-					gameScript.clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, gameScript.clientScript.myCode);
+					clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, clientScript.myCode);
 				}
 			}
 
@@ -321,16 +321,17 @@ public class LocalPlayerScript : MonoBehaviour {
 		else if (attackChargeCooldown <= 0f) {
 
 			if (Input.GetMouseButtonDown (0)) {
-				
+				// LEFT CLICK
+
 				crosshairHackTriclipTargetZ = crosshairHackTriclipOldZ - 120f;
 				if (crosshairHackTriclipTargetZ < 0f) { crosshairHackTriclipTargetZ += 360f; }
 				attackChargeCooldown = attackChargeCooldownMax;
 
-				if (gameScript != null) {
+				if (clientScript != null) {
 					if (Network.isServer) {
-						gameScript.serverScript.hackAttack (gameScript.clientScript.myCode);
+						clientScript.serverScript.hackAttack (clientScript.myCode);
 					} else {
-						gameScript.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, gameScript.clientScript.myCode);
+						clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, clientScript.myCode);
 					}
 				}
 

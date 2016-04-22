@@ -5,7 +5,7 @@ using System;
 
 public class ServerScript : MonoBehaviour {
 
-	[HideInInspector] public GameScript gameScript;
+	[HideInInspector] public ClientScript clientScript;
 	[HideInInspector] public List<RespawnLocation> listRespawnLocations = new List<RespawnLocation> ();
 	private float oldestTimeUsed;
 
@@ -15,9 +15,6 @@ public class ServerScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-	
-		createRespawnPoints(gameScript.clientScript.map.transform.FindChild ("RespawnPoints").gameObject);
-		respawn (gameScript.clientScript.myCode);
 
 	}
 	
@@ -26,6 +23,17 @@ public class ServerScript : MonoBehaviour {
 
 		checkForSuicides ();
 		checkIfSendDataToClients(); 
+
+	}
+
+	public void initialize(ClientScript auxClientScript) {
+
+		clientScript = auxClientScript;
+
+		GameObject respawnPoints = clientScript.map.transform.FindChild ("RespawnPoints").gameObject;
+		createRespawnPoints (respawnPoints);
+
+		respawn (clientScript.myCode);
 
 	}
 
@@ -47,16 +55,15 @@ public class ServerScript : MonoBehaviour {
 
 	void checkForSuicides() {
 
-		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
+		foreach (ClientScript.Player player in clientScript.listPlayers) {
 
 			// THIS CHECKS IF SOMEONE IS FALLING INTO THE ETERNAL VOID OF THE BUGSPHERE
-			if (gameScript.clientScript.listPlayers [i].targetPosition.y < -100f) {
-				respawn (gameScript.clientScript.listPlayers [i].playerCode);
+			if (player.targetPosition.y < -100f) {
+				respawn (player.playerCode);
 			}
 
 		}
-
-
+			
 	}
 
 	public void respawn(int playerCode) {
@@ -119,12 +126,14 @@ public class ServerScript : MonoBehaviour {
 
 		currentRankingCooldown = 0f;
 
-		gameScript.clientScript.listPlayers.Sort (CompareListByKills);
+		clientScript.sortList ();
 
-		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
-			gameScript.clientScript.listPlayers[i].ping = Network.GetAveragePing(gameScript.clientScript.NetworkPlayerByCode(gameScript.clientScript.listPlayers[i].playerCode));
-			if (gameScript.clientScript.listPlayers[i].ping < 0) { gameScript.clientScript.listPlayers[i].ping = 0; }
-			GetComponent<NetworkView>().RPC("updateRankingRPC", RPCMode.Others, gameScript.clientScript.listPlayers[i].playerCode, gameScript.clientScript.listPlayers[i].kills, gameScript.clientScript.listPlayers[i].ping);
+		foreach (ClientScript.Player player in clientScript.listPlayers) {
+
+			player.ping = Network.GetAveragePing(clientScript.NetworkPlayerByCode(player.playerCode));
+			if (player.ping < 0) { player.ping = 0; }
+			GetComponent<NetworkView>().RPC("updateRankingRPC", RPCMode.Others, player.playerCode, player.kills, player.ping);
+
 		}
 
 	}
@@ -133,9 +142,11 @@ public class ServerScript : MonoBehaviour {
 
 		currentHackDataCooldown = 0f;
 
-		for (int i = 0; i < gameScript.clientScript.listPlayers.Count; i++) {
-			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, gameScript.clientScript.listPlayers[i].playerCode, gameScript.clientScript.listPlayers[i].hackingPlayerCode, gameScript.clientScript.listPlayers[i].justHacked);
-			gameScript.clientScript.listPlayers [i].justHacked = false;
+		foreach (ClientScript.Player player in clientScript.listPlayers) {
+
+			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, player.playerCode, player.hackingPlayerCode, player.justHacked);
+			player.justHacked = false;
+
 		}
 
 	}
@@ -143,10 +154,10 @@ public class ServerScript : MonoBehaviour {
 
 	public void hackAttack (int playerCode) {
 
-		if (!gameScript.clientScript.localPlayer.gameEnded) {
+		if (!clientScript.localPlayer.gameEnded) {
 
-			ClientScript.Player attackerPlayer = gameScript.clientScript.PlayerByCode (playerCode);
-			ClientScript.Player victimPlayer = gameScript.clientScript.firstLookingPlayer(attackerPlayer);
+			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
+			ClientScript.Player victimPlayer = clientScript.firstLookingPlayer(attackerPlayer);
 
 			if (victimPlayer != null) {
 				// THERE'S A VICTIM
@@ -157,9 +168,13 @@ public class ServerScript : MonoBehaviour {
 					if (victimPlayer.immune <= 0f) {
 
 						attackerPlayer.kills++;
-						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All,attackerPlayer.playerCode, victimPlayer.playerCode);
+						attackerPlayer.hackingPlayerCode = -1;
+						sendHackData ();
+						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, victimPlayer.playerCode);
+
 						respawn (victimPlayer.playerCode);
 						victimPlayer.immune = 5f;
+
 						sendRankingData ();
 
 					}
@@ -180,11 +195,6 @@ public class ServerScript : MonoBehaviour {
 
 
 
-	}
-
-	private static int CompareListByKills(ClientScript.Player p1, ClientScript.Player p2)
-	{
-		return p1.kills.CompareTo(p2.kills); 
 	}
 
 	// NETWORK RELATED

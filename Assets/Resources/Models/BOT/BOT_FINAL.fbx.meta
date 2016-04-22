@@ -1,0 +1,298 @@
+fileFormatVersion: 2
+guid: d553d6c71ec1f9344bf36b943771f5f3
+timeCreated: 1461338596
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: Arm ik.L
+    100002: Arm ik.L_end
+    100004: Arm ik.R
+    100006: Arm ik.R_end
+    100008: Arm pole target.L
+    100010: Arm pole target.L_end
+    100012: Arm pole target.R
+    100014: Arm pole target.R_end
+    100016: Arm.L
+    100018: Arm.R
+    100020: Armature.001
+    100022: //RootNode
+    100024: Calf.L
+    100026: Calf.R
+    100028: Cheek.L
+    100030: Cheek.L_end
+    100032: Cheek.R
+    100034: Cheek.R_end
+    100036: Chest
+    100038: Ear.L
+    100040: Ear.L_end
+    100042: Ear.R
+    100044: Ear.R_end
+    100046: Eye
+    100048: Eye_end
+    100050: Foot roll.L
+    100052: Foot roll.R
+    100054: Foot.L
+    100056: Foot.R
+    100058: Forearm.L
+    100060: Forearm.R
+    100062: Hand.L
+    100064: Hand.R
+    100066: Head
+    100068: Head.001
+    100070: Head.001_end
+    100072: Index01.L
+    100074: Index01.R
+    100076: Index02.L
+    100078: Index02.R
+    100080: Index03.L
+    100082: Index03.L_end
+    100084: Index03.R
+    100086: Index03.R_end
+    100088: Leg control.L
+    100090: Leg control.R
+    100092: Leg ik.L
+    100094: Leg ik.L_end
+    100096: Leg ik.R
+    100098: Leg ik.R_end
+    100100: Leg pole target.L
+    100102: Leg pole target.L_end
+    100104: Leg pole target.R
+    100106: Leg pole target.R_end
+    100108: Leg.L
+    100110: Leg.R
+    100112: Mesh
+    100114: Middle01.L
+    100116: Middle01.R
+    100118: Middle02.L
+    100120: Middle02.R
+    100122: Middle03.L
+    100124: Middle03.L_end
+    100126: Middle03.R
+    100128: Middle03.R_end
+    100130: Nape
+    100132: Nape_end
+    100134: Neck
+    100136: PalmIndex.L
+    100138: PalmIndex.R
+    100140: PalmMiddle.L
+    100142: PalmMiddle.R
+    100144: PalmPinky.L
+    100146: PalmPinky.R
+    100148: PalmRing.L
+    100150: PalmRing.R
+    100152: Pelvis
+    100154: Pinky01.L
+    100156: Pinky01.R
+    100158: Pinky02.L
+    100160: Pinky02.R
+    100162: Pinky03.L
+    100164: Pinky03.L_end
+    100166: Pinky03.R
+    100168: Pinky03.R_end
+    100170: Ring01.L
+    100172: Ring01.R
+    100174: Ring02.L
+    100176: Ring02.R
+    100178: Ring03.L
+    100180: Ring03.L_end
+    100182: Ring03.R
+    100184: Ring03.R_end
+    100186: Shoulder.L
+    100188: Shoulder.R
+    100190: Spine
+    100192: Thumb01.L
+    100194: Thumb01.R
+    100196: Thumb02.L
+    100198: Thumb02.R
+    100200: Thumb03.L
+    100202: Thumb03.L_end
+    100204: Thumb03.R
+    100206: Thumb03.R_end
+    100208: Toe control.L
+    100210: Toe control.L_end
+    100212: Toe control.R
+    100214: Toe control.R_end
+    100216: Toe.L
+    100218: Toe.L_end
+    100220: Toe.R
+    100222: Toe.R_end
+    400000: Arm ik.L
+    400002: Arm ik.L_end
+    400004: Arm ik.R
+    400006: Arm ik.R_end
+    400008: Arm pole target.L
+    400010: Arm pole target.L_end
+    400012: Arm pole target.R
+    400014: Arm pole target.R_end
+    400016: Arm.L
+    400018: Arm.R
+    400020: Armature.001
+    400022: //RootNode
+    400024: Calf.L
+    400026: Calf.R
+    400028: Cheek.L
+    400030: Cheek.L_end
+    400032: Cheek.R
+    400034: Cheek.R_end
+    400036: Chest
+    400038: Ear.L
+    400040: Ear.L_end
+    400042: Ear.R
+    400044: Ear.R_end
+    400046: Eye
+    400048: Eye_end
+    400050: Foot roll.L
+    400052: Foot roll.R
+    400054: Foot.L
+    400056: Foot.R
+    400058: Forearm.L
+    400060: Forearm.R
+    400062: Hand.L
+    400064: Hand.R
+    400066: Head
+    400068: Head.001
+    400070: Head.001_end
+    400072: Index01.L
+    400074: Index01.R
+    400076: Index02.L
+    400078: Index02.R
+    400080: Index03.L
+    400082: Index03.L_end
+    400084: Index03.R
+    400086: Index03.R_end
+    400088: Leg control.L
+    400090: Leg control.R
+    400092: Leg ik.L
+    400094: Leg ik.L_end
+    400096: Leg ik.R
+    400098: Leg ik.R_end
+    400100: Leg pole target.L
+    400102: Leg pole target.L_end
+    400104: Leg pole target.R
+    400106: Leg pole target.R_end
+    400108: Leg.L
+    400110: Leg.R
+    400112: Mesh
+    400114: Middle01.L
+    400116: Middle01.R
+    400118: Middle02.L
+    400120: Middle02.R
+    400122: Middle03.L
+    400124: Middle03.L_end
+    400126: Middle03.R
+    400128: Middle03.R_end
+    400130: Nape
+    400132: Nape_end
+    400134: Neck
+    400136: PalmIndex.L
+    400138: PalmIndex.R
+    400140: PalmMiddle.L
+    400142: PalmMiddle.R
+    400144: PalmPinky.L
+    400146: PalmPinky.R
+    400148: PalmRing.L
+    400150: PalmRing.R
+    400152: Pelvis
+    400154: Pinky01.L
+    400156: Pinky01.R
+    400158: Pinky02.L
+    400160: Pinky02.R
+    400162: Pinky03.L
+    400164: Pinky03.L_end
+    400166: Pinky03.R
+    400168: Pinky03.R_end
+    400170: Ring01.L
+    400172: Ring01.R
+    400174: Ring02.L
+    400176: Ring02.R
+    400178: Ring03.L
+    400180: Ring03.L_end
+    400182: Ring03.R
+    400184: Ring03.R_end
+    400186: Shoulder.L
+    400188: Shoulder.R
+    400190: Spine
+    400192: Thumb01.L
+    400194: Thumb01.R
+    400196: Thumb02.L
+    400198: Thumb02.R
+    400200: Thumb03.L
+    400202: Thumb03.L_end
+    400204: Thumb03.R
+    400206: Thumb03.R_end
+    400208: Toe control.L
+    400210: Toe control.L_end
+    400212: Toe control.R
+    400214: Toe control.R_end
+    400216: Toe.L
+    400218: Toe.L_end
+    400220: Toe.R
+    400222: Toe.R_end
+    4300000: Mesh
+    9500000: //RootNode
+    13700000: Mesh
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleRotations: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
