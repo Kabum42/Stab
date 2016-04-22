@@ -116,24 +116,10 @@ public class ClientScript : MonoBehaviour {
 	void LateUpdate() {
 
 		foreach (Player player in listPlayers) {
-
 			if (player != myPlayer) {
-
-				RotateHead (player.visualAvatar, player.currentCameraEulerX);
-
+				LocalPlayerScript.RotateHead (player.visualAvatar, player.currentCameraEulerX);
 			}
-
 		}
-
-	}
-
-	public static void RotateHead(GameObject visualAvatar, float currentCameraEulerX) {
-
-		/*
-		GameObject head = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
-		float target = -currentCameraEulerX;
-		head.transform.eulerAngles = new Vector3 (head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
-		*/
 
 	}
 

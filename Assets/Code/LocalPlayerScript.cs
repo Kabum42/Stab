@@ -584,8 +584,31 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void LateUpdate() {
 
-		ClientScript.RotateHead (visualAvatar, personalCamera.transform.eulerAngles.x);
+		RotateHead (visualAvatar, personalCamera.transform.eulerAngles.x);
 
 	}
+
+    public static void RotateHead(GameObject visualAvatar, float currentCameraEulerX)
+    {
+
+        GameObject neck = visualAvatar.transform.FindChild("Armature.001/Pelvis/Spine/Chest/Neck").gameObject;
+        GameObject head = visualAvatar.transform.FindChild("Armature.001/Pelvis/Spine/Chest/Neck/Head").gameObject;
+
+        /*
+        if (currentCameraEulerX > 180)
+        {
+            float targetNeck = -currentCameraEulerX * 0.25f;
+            float targetHead = -currentCameraEulerX * 0.75f;
+
+            head.transform.eulerAngles = new Vector3(head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
+        }
+        else
+        {
+            
+        }
+        */
+        
+
+    }
 
 }
