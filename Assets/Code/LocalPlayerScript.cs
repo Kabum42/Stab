@@ -594,20 +594,26 @@ public class LocalPlayerScript : MonoBehaviour {
         GameObject neck = visualAvatar.transform.FindChild("Armature.001/Pelvis/Spine/Chest/Neck").gameObject;
         GameObject head = visualAvatar.transform.FindChild("Armature.001/Pelvis/Spine/Chest/Neck/Head").gameObject;
 
-        /*
+		float targetNeck = 0f;
+		float targetHead = 0f;
+		float minAngle = 25f;
+        
         if (currentCameraEulerX > 180)
         {
-            float targetNeck = -currentCameraEulerX * 0.25f;
-            float targetHead = -currentCameraEulerX * 0.75f;
-
-            head.transform.eulerAngles = new Vector3(head.transform.eulerAngles.x, head.transform.eulerAngles.y, target);
+			currentCameraEulerX = Mathf.Max (270f + minAngle, currentCameraEulerX);
+			targetNeck = (-currentCameraEulerX +360f)*0.25f;
+			targetHead = (-currentCameraEulerX +360f)*0.75f;
         }
         else
         {
-            
+			currentCameraEulerX = Mathf.Min (90f - minAngle, currentCameraEulerX);
+			targetNeck = (-currentCameraEulerX)*0.75f;
+			targetHead = (-currentCameraEulerX)*0.25f;
         }
-        */
-        
+
+		neck.transform.localEulerAngles = new Vector3 (0f, neck.transform.localEulerAngles.y, neck.transform.localEulerAngles.z);
+		neck.transform.RotateAround (head.transform.position, head.transform.forward, targetNeck);
+		head.transform.RotateAround(head.transform.position, head.transform.forward, targetHead);
 
     }
 
