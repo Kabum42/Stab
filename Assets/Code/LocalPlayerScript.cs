@@ -591,8 +591,8 @@ public class LocalPlayerScript : MonoBehaviour {
     public static void RotateHead(GameObject visualAvatar, float currentCameraEulerX)
     {
 
-        GameObject neck = visualAvatar.transform.FindChild("Armature.001/Pelvis/Spine/Chest/Neck").gameObject;
-        GameObject head = visualAvatar.transform.FindChild("Armature.001/Pelvis/Spine/Chest/Neck/Head").gameObject;
+        GameObject neck = visualAvatar.transform.FindChild("Armature/Pelvis/Spine/Chest/Neck").gameObject;
+        GameObject head = visualAvatar.transform.FindChild("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
 
 		float targetNeck = 0f;
 		float targetHead = 0f;

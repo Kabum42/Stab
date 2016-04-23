@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: d553d6c71ec1f9344bf36b943771f5f3
-timeCreated: 1461339476
+guid: 2c51353c1947cd4438ca52c4d9ba467b
+timeCreated: 1461421530
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
@@ -15,108 +15,96 @@ ModelImporter:
     100014: Arm pole target.R_end
     100016: Arm.L
     100018: Arm.R
-    100020: Armature.001
+    100020: Armature
     100022: //RootNode
     100024: Calf.L
     100026: Calf.R
-    100028: Cheek.L
-    100030: Cheek.L_end
-    100032: Cheek.R
-    100034: Cheek.R_end
-    100036: Chest
-    100038: Ear.L
-    100040: Ear.L_end
-    100042: Ear.R
-    100044: Ear.R_end
-    100046: Eye
-    100048: Eye_end
-    100050: Foot roll.L
-    100052: Foot roll.R
-    100054: Foot.L
-    100056: Foot.R
-    100058: Forearm.L
-    100060: Forearm.R
-    100062: Hand.L
-    100064: Hand.R
-    100066: Head
-    100068: Head.001
-    100070: Head.001_end
-    100072: Index01.L
-    100074: Index01.R
-    100076: Index02.L
-    100078: Index02.R
-    100080: Index03.L
-    100082: Index03.L_end
-    100084: Index03.R
-    100086: Index03.R_end
-    100088: Leg control.L
-    100090: Leg control.R
-    100092: Leg ik.L
-    100094: Leg ik.L_end
-    100096: Leg ik.R
-    100098: Leg ik.R_end
-    100100: Leg pole target.L
-    100102: Leg pole target.L_end
-    100104: Leg pole target.R
-    100106: Leg pole target.R_end
-    100108: Leg.L
-    100110: Leg.R
-    100112: Mesh
-    100114: Middle01.L
-    100116: Middle01.R
-    100118: Middle02.L
-    100120: Middle02.R
-    100122: Middle03.L
-    100124: Middle03.L_end
-    100126: Middle03.R
-    100128: Middle03.R_end
-    100130: Nape
-    100132: Nape_end
-    100134: Neck
-    100136: PalmIndex.L
-    100138: PalmIndex.R
-    100140: PalmMiddle.L
-    100142: PalmMiddle.R
-    100144: PalmPinky.L
-    100146: PalmPinky.R
-    100148: PalmRing.L
-    100150: PalmRing.R
-    100152: Pelvis
-    100154: Pinky01.L
-    100156: Pinky01.R
-    100158: Pinky02.L
-    100160: Pinky02.R
-    100162: Pinky03.L
-    100164: Pinky03.L_end
-    100166: Pinky03.R
-    100168: Pinky03.R_end
-    100170: Ring01.L
-    100172: Ring01.R
-    100174: Ring02.L
-    100176: Ring02.R
-    100178: Ring03.L
-    100180: Ring03.L_end
-    100182: Ring03.R
-    100184: Ring03.R_end
-    100186: Shoulder.L
-    100188: Shoulder.R
-    100190: Spine
-    100192: Thumb01.L
-    100194: Thumb01.R
-    100196: Thumb02.L
-    100198: Thumb02.R
-    100200: Thumb03.L
-    100202: Thumb03.L_end
-    100204: Thumb03.R
-    100206: Thumb03.R_end
-    100208: Toe control.L
-    100210: Toe control.L_end
-    100212: Toe control.R
-    100214: Toe control.R_end
-    100216: Toe.L
-    100218: Toe.L_end
-    100220: Toe.R
-    100222: Toe.R_end
+    100028: Chest
+    100030: Eye
+    100032: Eye_end
+    100034: Foot roll.L
+    100036: Foot roll.R
+    100038: Foot.L
+    100040: Foot.R
+    100042: Forearm.L
+    100044: Forearm.R
+    100046: Hand.L
+    100048: Hand.R
+    100050: Head
+    100052: Index01.L
+    100054: Index01.R
+    100056: Index02.L
+    100058: Index02.R
+    100060: Index03.L
+    100062: Index03.L_end
+    100064: Index03.R
+    100066: Index03.R_end
+    100068: Leg control.L
+    100070: Leg control.R
+    100072: Leg ik.L
+    100074: Leg ik.L_end
+    100076: Leg ik.R
+    100078: Leg ik.R_end
+    100080: Leg pole target.L
+    100082: Leg pole target.L_end
+    100084: Leg pole target.R
+    100086: Leg pole target.R_end
+    100088: Leg.L
+    100090: Leg.R
+    100092: Mesh
+    100094: Middle01.L
+    100096: Middle01.R
+    100098: Middle02.L
+    100100: Middle02.R
+    100102: Middle03.L
+    100104: Middle03.L_end
+    100106: Middle03.R
+    100108: Middle03.R_end
+    100110: Neck
+    100112: PalmIndex.L
+    100114: PalmIndex.R
+    100116: PalmMiddle.L
+    100118: PalmMiddle.R
+    100120: PalmPinky.L
+    100122: PalmPinky.R
+    100124: PalmRing.L
+    100126: PalmRing.R
+    100128: Pelvis
+    100130: Pinky01.L
+    100132: Pinky01.R
+    100134: Pinky02.L
+    100136: Pinky02.R
+    100138: Pinky03.L
+    100140: Pinky03.L_end
+    100142: Pinky03.R
+    100144: Pinky03.R_end
+    100146: Ring01.L
+    100148: Ring01.R
+    100150: Ring02.L
+    100152: Ring02.R
+    100154: Ring03.L
+    100156: Ring03.L_end
+    100158: Ring03.R
+    100160: Ring03.R_end
+    100162: Shoulder.L
+    100164: Shoulder.R
+    100166: Spine
+    100168: Thumb01.L
+    100170: Thumb01.R
+    100172: Thumb02.L
+    100174: Thumb02.R
+    100176: Thumb03.L
+    100178: Thumb03.L_end
+    100180: Thumb03.R
+    100182: Thumb03.R_end
+    100184: Toe control.L
+    100186: Toe control.L_end
+    100188: Toe control.R
+    100190: Toe control.R_end
+    100192: Toe.L
+    100194: Toe.L_end
+    100196: Toe.R
+    100198: Toe.R_end
     400000: Arm ik.L
     400002: Arm ik.L_end
     400004: Arm ik.R
@@ -127,108 +115,96 @@ ModelImporter:
     400014: Arm pole target.R_end
     400016: Arm.L
     400018: Arm.R
-    400020: Armature.001
+    400020: Armature
     400022: //RootNode
     400024: Calf.L
     400026: Calf.R
-    400028: Cheek.L
-    400030: Cheek.L_end
-    400032: Cheek.R
-    400034: Cheek.R_end
-    400036: Chest
-    400038: Ear.L
-    400040: Ear.L_end
-    400042: Ear.R
-    400044: Ear.R_end
-    400046: Eye
-    400048: Eye_end
-    400050: Foot roll.L
-    400052: Foot roll.R
-    400054: Foot.L
-    400056: Foot.R
-    400058: Forearm.L
-    400060: Forearm.R
-    400062: Hand.L
-    400064: Hand.R
-    400066: Head
-    400068: Head.001
-    400070: Head.001_end
-    400072: Index01.L
-    400074: Index01.R
-    400076: Index02.L
-    400078: Index02.R
-    400080: Index03.L
-    400082: Index03.L_end
-    400084: Index03.R
-    400086: Index03.R_end
-    400088: Leg control.L
-    400090: Leg control.R
-    400092: Leg ik.L
-    400094: Leg ik.L_end
-    400096: Leg ik.R
-    400098: Leg ik.R_end
-    400100: Leg pole target.L
-    400102: Leg pole target.L_end
-    400104: Leg pole target.R
-    400106: Leg pole target.R_end
-    400108: Leg.L
-    400110: Leg.R
-    400112: Mesh
-    400114: Middle01.L
-    400116: Middle01.R
-    400118: Middle02.L
-    400120: Middle02.R
-    400122: Middle03.L
-    400124: Middle03.L_end
-    400126: Middle03.R
-    400128: Middle03.R_end
-    400130: Nape
-    400132: Nape_end
-    400134: Neck
-    400136: PalmIndex.L
-    400138: PalmIndex.R
-    400140: PalmMiddle.L
-    400142: PalmMiddle.R
-    400144: PalmPinky.L
-    400146: PalmPinky.R
-    400148: PalmRing.L
-    400150: PalmRing.R
-    400152: Pelvis
-    400154: Pinky01.L
-    400156: Pinky01.R
-    400158: Pinky02.L
-    400160: Pinky02.R
-    400162: Pinky03.L
-    400164: Pinky03.L_end
-    400166: Pinky03.R
-    400168: Pinky03.R_end
-    400170: Ring01.L
-    400172: Ring01.R
-    400174: Ring02.L
-    400176: Ring02.R
-    400178: Ring03.L
-    400180: Ring03.L_end
-    400182: Ring03.R
-    400184: Ring03.R_end
-    400186: Shoulder.L
-    400188: Shoulder.R
-    400190: Spine
-    400192: Thumb01.L
-    400194: Thumb01.R
-    400196: Thumb02.L
-    400198: Thumb02.R
-    400200: Thumb03.L
-    400202: Thumb03.L_end
-    400204: Thumb03.R
-    400206: Thumb03.R_end
-    400208: Toe control.L
-    400210: Toe control.L_end
-    400212: Toe control.R
-    400214: Toe control.R_end
-    400216: Toe.L
-    400218: Toe.L_end
-    400220: Toe.R
-    400222: Toe.R_end
+    400028: Chest
+    400030: Eye
+    400032: Eye_end
+    400034: Foot roll.L
+    400036: Foot roll.R
+    400038: Foot.L
+    400040: Foot.R
+    400042: Forearm.L
+    400044: Forearm.R
+    400046: Hand.L
+    400048: Hand.R
+    400050: Head
+    400052: Index01.L
+    400054: Index01.R
+    400056: Index02.L
+    400058: Index02.R
+    400060: Index03.L
+    400062: Index03.L_end
+    400064: Index03.R
+    400066: Index03.R_end
+    400068: Leg control.L
+    400070: Leg control.R
+    400072: Leg ik.L
+    400074: Leg ik.L_end
+    400076: Leg ik.R
+    400078: Leg ik.R_end
+    400080: Leg pole target.L
+    400082: Leg pole target.L_end
+    400084: Leg pole target.R
+    400086: Leg pole target.R_end
+    400088: Leg.L
+    400090: Leg.R
+    400092: Mesh
+    400094: Middle01.L
+    400096: Middle01.R
+    400098: Middle02.L
+    400100: Middle02.R
+    400102: Middle03.L
+    400104: Middle03.L_end
+    400106: Middle03.R
+    400108: Middle03.R_end
+    400110: Neck
+    400112: PalmIndex.L
+    400114: PalmIndex.R
+    400116: PalmMiddle.L
+    400118: PalmMiddle.R
+    400120: PalmPinky.L
+    400122: PalmPinky.R
+    400124: PalmRing.L
+    400126: PalmRing.R
+    400128: Pelvis
+    400130: Pinky01.L
+    400132: Pinky01.R
+    400134: Pinky02.L
+    400136: Pinky02.R
+    400138: Pinky03.L
+    400140: Pinky03.L_end
+    400142: Pinky03.R
+    400144: Pinky03.R_end
+    400146: Ring01.L
+    400148: Ring01.R
+    400150: Ring02.L
+    400152: Ring02.R
+    400154: Ring03.L
+    400156: Ring03.L_end
+    400158: Ring03.R
+    400160: Ring03.R_end
+    400162: Shoulder.L
+    400164: Shoulder.R
+    400166: Spine
+    400168: Thumb01.L
+    400170: Thumb01.R
+    400172: Thumb02.L
+    400174: Thumb02.R
+    400176: Thumb03.L
+    400178: Thumb03.L_end
+    400180: Thumb03.R
+    400182: Thumb03.R_end
+    400184: Toe control.L
+    400186: Toe control.L_end
+    400188: Toe control.R
+    400190: Toe control.R_end
+    400192: Toe.L
+    400194: Toe.L_end
+    400196: Toe.R
+    400198: Toe.R_end
     4300000: Mesh
     9500000: //RootNode
     13700000: Mesh
@@ -688,12 +664,12 @@ ModelImporter:
         length: 0
         modified: 0
     skeleton:
-    - name: BOT(Clone)
+    - name: BOT_Perfect(Clone)
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
-    - name: Armature.001
+    - name: Armature
       position: {x: 0, y: 0, z: 0}
       rotation: {x: -4.32978e-17, y: 0.7071067, z: 0.7071068, w: -4.3297806e-17}
       scale: {x: 1, y: 1, z: 1}
@@ -893,73 +869,13 @@ ModelImporter:
       rotation: {x: -0.0005730552, y: 0.7071064, z: -0.0005730552, w: 0.7071067}
       scale: {x: 0.9999999, y: 0.99999976, z: 0.99999994}
       transformModified: 1
-    - name: Cheek.L
-      position: {x: 0.09078816, y: 0.013496218, z: 0.042707548}
-      rotation: {x: -0.00045549852, y: 0.4916835, z: 0.8707735, w: -0.00080619403}
-      scale: {x: 1, y: 1.0000002, z: 1}
-      transformModified: 1
-    - name: Cheek.L_end
-      position: {x: -0, y: 0.031110164, z: 0}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
-    - name: Cheek.R
-      position: {x: 0.0907882, y: 0.013496218, z: -0.042707503}
-      rotation: {x: 0.00045501257, y: -0.4916837, z: 0.87077343, w: -0.00080619473}
-      scale: {x: 1, y: 1.0000005, z: 1}
-      transformModified: 1
-    - name: Cheek.R_end
-      position: {x: -0, y: 0.031110164, z: 0}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
-    - name: Ear.L
-      position: {x: 0.00021140013, y: 0.060687385, z: 0.05116446}
-      rotation: {x: -0.0006548623, y: 0.7071065, z: 0.70710653, w: -0.00065466255}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
-    - name: Ear.L_end
-      position: {x: -0, y: 0.028330732, z: 0}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
-    - name: Ear.R
-      position: {x: 0.00021142684, y: 0.060687385, z: -0.051164467}
-      rotation: {x: -0.5004627, y: 0.49953672, z: -0.49953687, w: 0.5004629}
-      scale: {x: 0.99999994, y: 0.9999999, z: 0.99999994}
-      transformModified: 1
-    - name: Ear.R_end
-      position: {x: -0, y: 0.028330732, z: 0}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
     - name: Eye
-      position: {x: 0.24860476, y: 0.07336616, z: 0.0000000452514}
+      position: {x: 0.24858364, y: 0.0847665, z: 0.000000045248086}
       rotation: {x: -0.49953693, y: -0.50046265, z: -0.49953678, w: 0.50046283}
       scale: {x: 1.0000001, y: 1, z: 1}
       transformModified: 1
     - name: Eye_end
       position: {x: -0, y: 0.07033248, z: 0}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
-    - name: Head.001
-      position: {x: 0.095455915, y: -0.000080632264, z: 0.000000027178988}
-      rotation: {x: 0.7071066, y: 0.0006547623, z: 0.70710635, w: -0.00065476255}
-      scale: {x: 1.0000018, y: 1.0000001, z: 1}
-      transformModified: 1
-    - name: Head.001_end
-      position: {x: -0, y: 0.041645527, z: 0}
-      rotation: {x: 0, y: 0, z: 0, w: 1}
-      scale: {x: 1, y: 1, z: 1}
-      transformModified: 1
-    - name: Nape
-      position: {x: -0.032931104, y: 0.14730982, z: -0.0000000090322265}
-      rotation: {x: 0.50046283, y: -0.49953672, z: -0.5004627, w: -0.49953687}
-      scale: {x: 0.99999994, y: 0.99999976, z: 0.9999999}
-      transformModified: 1
-    - name: Nape_end
-      position: {x: -0, y: 0.029176429, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
       transformModified: 1
