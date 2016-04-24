@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class RagdollScript : MonoBehaviour {
 
-	private List<Articulation> articulations = new List<Articulation>();
+	public List<Articulation> articulations = new List<Articulation>();
 	private Animator animator;
 	private bool transformsInitialized = false;
 
@@ -26,8 +26,6 @@ public class RagdollScript : MonoBehaviour {
 		else if (Input.GetKeyDown(KeyCode.P)) {
 			Enable ();
 		}
-
-
 
 	}
 
@@ -83,6 +81,9 @@ public class RagdollScript : MonoBehaviour {
 			if (articulations [i].rigidbody != null) {
 				articulations [i].rigidbody.isKinematic = false;
 			}
+			if (articulations [i].collider != null) {
+				articulations [i].collider.isTrigger = false;
+			}
 		}
 
 	}
@@ -93,10 +94,24 @@ public class RagdollScript : MonoBehaviour {
 			if (articulations [i].rigidbody != null) {
 				articulations [i].rigidbody.isKinematic = true;
 			}
+			if (articulations [i].collider != null) {
+				articulations [i].collider.isTrigger = true;
+			}
 		}
 
 		animator.enabled = true;
-		animator.CrossFade ("standing_idle", 0.1f);
+
+	}
+
+	public bool IsArticulation (GameObject g) {
+
+		for (int i = 0; i < articulations.Count; i++) {
+			if (articulations [i].gameobject == g) {
+				return true;
+			}
+		}
+
+		return false;
 
 	}
 	
