@@ -177,26 +177,35 @@ public class ClientScript : MonoBehaviour {
 
 		//float lookingDistance = 10f;
 
+		Debug.DrawRay(p1.targetPosition + LocalPlayerScript.centerOfCamera, p1.cameraForward, Color.green, 10f);
+
 		RaycastHit[] hits;
 		hits = Physics.RaycastAll (p1.targetPosition + LocalPlayerScript.centerOfCamera, p1.cameraForward);
 		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
 
-		for (int i = 0; i < hits.Length; i++) {
-			if (hits[i].collider.gameObject.tag != "LocalPlayer" && hits[i].collider.gameObject != p1.visualAvatar) {
+		Debug.Log (hits.Length);
 
-				if (hits [i].collider.gameObject.GetComponent<PlayerMarker> () != null) {
+		for (int i = 0; i < hits.Length; i++) {
+
+			Debug.Log (hits [i].collider.gameObject);
+			Debug.Log (hits[i].collider.gameObject.tag != "LocalPlayer");
+			Debug.Log (!(p1.visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject)));
+
+			if (hits[i].collider.gameObject.tag != "LocalPlayer" && !(p1.visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject))) {
+
+				PlayerMarker pM = PlayerMarker.Traverse (hits [i].collider.gameObject);
+				Debug.Log (pM);
+
+				if (pM != null) {
 					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER
-					Player auxPlayer = hits[i].collider.gameObject.GetComponent<PlayerMarker> ().player;
-					if (!(auxPlayer.hackingPlayerCode == myCode)) {
+					Player auxPlayer = pM.player;
+					if (!(auxPlayer.hackingPlayerCode == p1.playerCode)) {
 						// YOU CAN SEE IT
+						Debug.Log(auxPlayer);
 						return auxPlayer;
 					}
 
 				}
-				else {
-					return null;
-				}
-
 			}
 		}
 
@@ -215,10 +224,8 @@ public class ClientScript : MonoBehaviour {
 			if (localPlayer != null && GetComponent<NetworkView> () != null) {
 
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
-				//bool sprintActive = (localPlayer.GetComponent<LocalPlayerScript>().sprintActive > 0f);
-				/* HACK SI AL FINAL NO SE USA EL SPRINT, QUITAR ESA INFO, QUE NO SE MANDE HACK */
-				bool sprintActive = false;
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder, sprintActive);
+
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
 
 			}
 
@@ -261,16 +268,14 @@ public class ClientScript : MonoBehaviour {
 
 				Color targetColor = new Color (r, g, b, a);
 
-				Color c = Color.Lerp (player.visualMaterial.GetColor ("_Color"), targetColor, Time.fixedDeltaTime * 5f);
+				for (int i = 0; i < player.visualMaterials.Length; i++) {
+					Color c = Color.Lerp (player.visualMaterials[i].GetColor ("_Color"), targetColor, Time.fixedDeltaTime * 5f);
 
-				player.visualMaterial.SetColor ("_Color", c);
-				player.visualMaterial.SetFloat ("_Cutoff", 1f - c.a);
-
-				if (player.sprintActive && !player.sprintTrail.Emit) {
-					player.sprintTrail.Emit = true;
-				} else if (!player.sprintActive && player.sprintTrail.Emit) {
-					player.sprintTrail.Emit = false;
+					player.visualMaterials[i].SetColor ("_Color", c);
+					player.visualMaterials[i].SetFloat ("_Cutoff", 1f - c.a);
 				}
+
+
 
 			} else {
 				// ES MI PLAYER
@@ -466,7 +471,7 @@ public class ClientScript : MonoBehaviour {
 
 	// CLIENT RPCs
 	[RPC]
-	void updatePlayerRPC(int playerCode, Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation, bool sprintActive)
+	void updatePlayerRPC(int playerCode, Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation)
 	{
 		bool foundPlayer = false;
 
@@ -478,7 +483,6 @@ public class ClientScript : MonoBehaviour {
 				player.cameraForward = cameraForward;
 				player.targetCameraEulerX = cameraEulerX;
 				player.SmartCrossfade(currentAnimation);
-				player.sprintActive = sprintActive;
 				foundPlayer = true;
 				break;
 			}
@@ -637,10 +641,7 @@ public class ClientScript : MonoBehaviour {
 		public int playerCode;
 		public GameObject visualAvatar;
 		public string lastAnimationOrder = "Idle01";
-		public Material visualMaterial;
-		public string currentMode = "regular";
-		public bool sprintActive = false;
-		public MeleeWeaponTrail sprintTrail;
+		public Material[] visualMaterials;
 		public float immune = 0f;
 		public int kills = 0;
 		public float lastKillRemainingSeconds = float.MaxValue;
@@ -674,9 +675,7 @@ public class ClientScript : MonoBehaviour {
 			this.visualAvatar = visualAvatar;
 			visualAvatar.name = "VisualAvatar "+playerCode;
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
-			visualMaterial = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().material;
-			sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
-			sprintTrail.Emit = false;
+			visualMaterials = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().materials;
 
 			targetPosition = visualAvatar.transform.position;
 			targetAvatarEulerY = visualAvatar.transform.eulerAngles.y;

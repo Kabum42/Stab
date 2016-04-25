@@ -103,7 +103,6 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar = Instantiate (Resources.Load("Prefabs/BOT") as GameObject);
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
-		visualAvatar.transform.localScale = new Vector3 (0.9f, 0.9f, 0.9f);
 		visualAvatar.name = "VisualAvatar";
 		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
 		materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
@@ -591,29 +590,33 @@ public class LocalPlayerScript : MonoBehaviour {
     public static void RotateHead(GameObject visualAvatar, float currentCameraEulerX)
     {
 
-        GameObject neck = visualAvatar.transform.FindChild("Armature/Pelvis/Spine/Chest/Neck").gameObject;
-        GameObject head = visualAvatar.transform.FindChild("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
+		if (visualAvatar.GetComponent<Animator> ().enabled) {
 
-		float targetNeck = 0f;
-		float targetHead = 0f;
-		float minAngle = 25f;
-        
-        if (currentCameraEulerX > 180)
-        {
-			currentCameraEulerX = Mathf.Max (270f + minAngle, currentCameraEulerX);
-			targetNeck = (-currentCameraEulerX +360f)*0.25f;
-			targetHead = (-currentCameraEulerX +360f)*0.75f;
-        }
-        else
-        {
-			currentCameraEulerX = Mathf.Min (90f - minAngle, currentCameraEulerX);
-			targetNeck = (-currentCameraEulerX)*0.75f;
-			targetHead = (-currentCameraEulerX)*0.25f;
-        }
+			GameObject neck = visualAvatar.transform.FindChild("Armature/Pelvis/Spine/Chest/Neck").gameObject;
+			GameObject head = visualAvatar.transform.FindChild("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
 
-		neck.transform.localEulerAngles = new Vector3 (0f, neck.transform.localEulerAngles.y, neck.transform.localEulerAngles.z);
-		neck.transform.RotateAround (head.transform.position, head.transform.forward, targetNeck);
-		head.transform.RotateAround(head.transform.position, head.transform.forward, targetHead);
+			float targetNeck = 0f;
+			float targetHead = 0f;
+			float minAngle = 25f;
+
+			if (currentCameraEulerX > 180)
+			{
+				currentCameraEulerX = Mathf.Max (270f + minAngle, currentCameraEulerX);
+				targetNeck = (-currentCameraEulerX +360f)*0.25f;
+				targetHead = (-currentCameraEulerX +360f)*0.75f;
+			}
+			else
+			{
+				currentCameraEulerX = Mathf.Min (90f - minAngle, currentCameraEulerX);
+				targetNeck = (-currentCameraEulerX)*0.75f;
+				targetHead = (-currentCameraEulerX)*0.25f;
+			}
+
+			neck.transform.localEulerAngles = new Vector3 (0f, neck.transform.localEulerAngles.y, neck.transform.localEulerAngles.z);
+			neck.transform.RotateAround (head.transform.position, head.transform.forward, targetNeck);
+			head.transform.RotateAround(head.transform.position, head.transform.forward, targetHead);
+
+		}
 
     }
 
