@@ -382,7 +382,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.LeftShift) && impulseResource >= 1f && impulsing == 0f) {
 				impulseResource -= 1f;
-				impulsing = 0.25f;
+				impulsing = 0.13f;
 			}
 
 
