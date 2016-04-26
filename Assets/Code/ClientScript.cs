@@ -36,6 +36,8 @@ public class ClientScript : MonoBehaviour {
 
 	public static float hackingTimerMax = 3f;
 
+	private List<int> hackAttackBuffer = new List<int>();
+
 	// Use this for initialization
 	void Awake () {
 	
@@ -113,12 +115,23 @@ public class ClientScript : MonoBehaviour {
 	
 	}
 
+
+
 	void LateUpdate() {
 
 		foreach (Player player in listPlayers) {
-			if (player != myPlayer) {
-				LocalPlayerScript.RotateHead (player.visualAvatar, player.currentCameraEulerX);
+			
+			LocalPlayerScript.RotateHead (player.visualAvatar, player.currentCameraEulerX);
+
+		}
+
+		if (Network.isServer) {
+
+			foreach (int playerCode in hackAttackBuffer) {
+				serverScript.hackAttack (playerCode);
 			}
+			hackAttackBuffer.Clear ();
+
 		}
 
 	}
@@ -177,31 +190,21 @@ public class ClientScript : MonoBehaviour {
 
 		//float lookingDistance = 10f;
 
-		Debug.DrawRay(p1.targetPosition + LocalPlayerScript.centerOfCamera, p1.cameraForward, Color.green, 10f);
-
 		RaycastHit[] hits;
 		hits = Physics.RaycastAll (p1.targetPosition + LocalPlayerScript.centerOfCamera, p1.cameraForward);
 		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
 
-		Debug.Log (hits.Length);
-
 		for (int i = 0; i < hits.Length; i++) {
-
-			Debug.Log (hits [i].collider.gameObject);
-			Debug.Log (hits[i].collider.gameObject.tag != "LocalPlayer");
-			Debug.Log (!(p1.visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject)));
 
 			if (hits[i].collider.gameObject.tag != "LocalPlayer" && !(p1.visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject))) {
 
 				PlayerMarker pM = PlayerMarker.Traverse (hits [i].collider.gameObject);
-				Debug.Log (pM);
 
 				if (pM != null) {
 					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER
 					Player auxPlayer = pM.player;
 					if (!(auxPlayer.hackingPlayerCode == p1.playerCode)) {
 						// YOU CAN SEE IT
-						Debug.Log(auxPlayer);
 						return auxPlayer;
 					}
 
@@ -225,7 +228,7 @@ public class ClientScript : MonoBehaviour {
 
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
 
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
 
 			}
 
@@ -236,6 +239,7 @@ public class ClientScript : MonoBehaviour {
 
 		}
 
+		myPlayer.currentCameraEulerX = localPlayer.personalCamera.transform.eulerAngles.x;
 		myPlayer.cameraForward = localPlayer.personalCamera.transform.forward;
 		myPlayer.targetPosition = myPlayer.visualAvatar.transform.position;
 		myPlayer.targetAvatarEulerY = myPlayer.visualAvatar.transform.eulerAngles.y;
@@ -498,6 +502,7 @@ public class ClientScript : MonoBehaviour {
 			aux.targetPosition = position;
 			aux.targetAvatarEulerY = avatarEulerY;
 			aux.SmartCrossfade(currentAnimation);
+			aux.currentCameraEulerX = cameraEulerX;
 
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
@@ -577,7 +582,7 @@ public class ClientScript : MonoBehaviour {
 
 	[RPC]
 	void hackAttackRPC(int playerCode) {
-		serverScript.hackAttack (playerCode);
+		hackAttackBuffer.Add (playerCode);
 	}
 
 	[RPC]
