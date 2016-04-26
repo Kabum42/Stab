@@ -320,17 +320,15 @@ public class ClientScript : MonoBehaviour {
 				if (playersCrosshair.Contains (player)) {
 					r = 0f;
 					b = 0f;
-				}
-
-				/*
-				if (myPlayer.hackingPlayerCode == player.playerCode) {
+				} else if (myPlayer.hackingPlayerCode == player.playerCode) {
 					g = 0f;
 					b = 0f;
 				}
+
 				if (player.hackingPlayerCode == myCode) {
 					a = 0f;
 				}
-				*/
+
 
 				Color targetColor = new Color (r, g, b, a);
 
