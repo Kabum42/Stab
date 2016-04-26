@@ -20,11 +20,13 @@ public class RagdollScript : MonoBehaviour {
 
 	void Update() {
 
-		if (Input.GetKeyDown(KeyCode.O)) {
-			Disable();
-		}
-		else if (Input.GetKeyDown(KeyCode.P)) {
-			Enable ();
+		if (Input.GetKey(KeyCode.LeftShift)) {
+			if (Input.GetKeyDown(KeyCode.O)) {
+				Disable();
+			}
+			else if (Input.GetKeyDown(KeyCode.P)) {
+				Enable ();
+			}
 		}
 
 	}
