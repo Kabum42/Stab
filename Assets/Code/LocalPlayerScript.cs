@@ -215,7 +215,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
         float cutoff = alertHacked.GetComponent<Image>().material.GetFloat("_Cutoff");
 
-        if (Input.GetKeyDown(KeyCode.Return) && cutoff == 1f)
+        if (Input.GetKeyDown(KeyCode.Y) && cutoff == 1f)
         {
             cutoff -= Time.deltaTime;
             alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", cutoff);
