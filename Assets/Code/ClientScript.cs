@@ -36,6 +36,10 @@ public class ClientScript : MonoBehaviour {
 
 	public static float hackingTimerMax = 3f;
 
+	private List<int> hackAttackBuffer = new List<int>();
+
+	private Camera auxCamera;
+
 	// Use this for initialization
 	void Awake () {
 	
@@ -66,6 +70,12 @@ public class ClientScript : MonoBehaviour {
 		} else {
 			Destroy(map.transform.FindChild ("RespawnPoints").gameObject);
 		}
+
+		GameObject auxCameraHolder = new GameObject ();
+		auxCamera = auxCameraHolder.AddComponent<Camera> ();
+		auxCamera.fieldOfView = 70f;
+		auxCameraHolder.name = "AuxiliarCamera";
+		auxCameraHolder.SetActive (false);
 
 	}
 	
@@ -113,12 +123,23 @@ public class ClientScript : MonoBehaviour {
 	
 	}
 
+
+
 	void LateUpdate() {
 
 		foreach (Player player in listPlayers) {
-			if (player != myPlayer) {
-				LocalPlayerScript.RotateHead (player.visualAvatar, player.currentCameraEulerX);
+			
+			LocalPlayerScript.RotateHead (player.visualAvatar, player.currentCameraEulerX);
+
+		}
+
+		if (Network.isServer) {
+
+			foreach (int playerCode in hackAttackBuffer) {
+				serverScript.hackAttack (playerCode);
 			}
+			hackAttackBuffer.Clear ();
+
 		}
 
 	}
@@ -177,31 +198,21 @@ public class ClientScript : MonoBehaviour {
 
 		//float lookingDistance = 10f;
 
-		Debug.DrawRay(p1.targetPosition + LocalPlayerScript.centerOfCamera, p1.cameraForward, Color.green, 10f);
-
 		RaycastHit[] hits;
 		hits = Physics.RaycastAll (p1.targetPosition + LocalPlayerScript.centerOfCamera, p1.cameraForward);
 		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
 
-		Debug.Log (hits.Length);
-
 		for (int i = 0; i < hits.Length; i++) {
-
-			Debug.Log (hits [i].collider.gameObject);
-			Debug.Log (hits[i].collider.gameObject.tag != "LocalPlayer");
-			Debug.Log (!(p1.visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject)));
 
 			if (hits[i].collider.gameObject.tag != "LocalPlayer" && !(p1.visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject))) {
 
 				PlayerMarker pM = PlayerMarker.Traverse (hits [i].collider.gameObject);
-				Debug.Log (pM);
 
 				if (pM != null) {
 					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER
 					Player auxPlayer = pM.player;
 					if (!(auxPlayer.hackingPlayerCode == p1.playerCode)) {
 						// YOU CAN SEE IT
-						Debug.Log(auxPlayer);
 						return auxPlayer;
 					}
 
@@ -210,6 +221,49 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		return null;
+
+	}
+
+	public List<Player> insideBigCrosshair(Player p1) {
+
+		List<Player> playersInside = new List<Player> ();
+
+		foreach (Player player in listPlayers) {
+
+			if (player != p1) {
+
+				bool IsInside = false;
+
+				auxCamera.gameObject.transform.position = p1.cameraMockup.transform.position;
+				auxCamera.gameObject.transform.eulerAngles = p1.cameraMockup.transform.eulerAngles;
+
+				for (int i = 0; i < player.vitalPoints.Length; i++) {
+
+					Vector3 aux = auxCamera.WorldToScreenPoint (player.vitalPoints[i].transform.position);
+
+					if (aux.z >= 0f) {
+						// IF THE AUXILIAR POSITION IS IN FRONT OF THE CAMERA
+						Vector2 auxRelative = new Vector2 (aux.x -Screen.width/2f, aux.y -Screen.height/2f);
+						auxRelative = auxRelative / Screen.width;
+
+						float distance = Vector2.Distance (auxRelative, new Vector2 (0f, 0f));
+
+						if (distance <= 0.24f) {
+							IsInside = true;
+						}
+
+					}
+
+				}
+
+				if (IsInside) {
+					playersInside.Add (player);
+				}
+
+			}
+		}
+
+		return playersInside;
 
 	}
 		
@@ -225,7 +279,7 @@ public class ClientScript : MonoBehaviour {
 
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
 
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.forward, localPlayer.GetComponent<LocalPlayerScript>().personalCamera.transform.eulerAngles.x, localPlayer.GetComponent<LocalPlayerScript> ().lastAnimationOrder);
+				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
 
 			}
 
@@ -236,13 +290,17 @@ public class ClientScript : MonoBehaviour {
 
 		}
 
+		myPlayer.currentCameraEulerX = localPlayer.personalCamera.transform.eulerAngles.x;
 		myPlayer.cameraForward = localPlayer.personalCamera.transform.forward;
 		myPlayer.targetPosition = myPlayer.visualAvatar.transform.position;
 		myPlayer.targetAvatarEulerY = myPlayer.visualAvatar.transform.eulerAngles.y;
+		myPlayer.cameraMockup.transform.LookAt (myPlayer.cameraMockup.transform.position + myPlayer.cameraForward);
 
 	}
 
 	void synchronizeOtherPlayers () {
+
+		List<Player> playersCrosshair = insideBigCrosshair (myPlayer);
 
 		foreach (Player player in listPlayers) {
 
@@ -252,12 +310,19 @@ public class ClientScript : MonoBehaviour {
 				player.visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (player.visualAvatar.transform.eulerAngles, new Vector3(0f, player.targetAvatarEulerY, 0f), Time.deltaTime * 10f);
 				player.immune = Mathf.Max (0f, player.immune - Time.deltaTime);
 				player.currentCameraEulerX = Mathf.LerpAngle (player.currentCameraEulerX, player.targetCameraEulerX, Time.deltaTime * 10f);
+				player.cameraMockup.transform.LookAt (player.cameraMockup.transform.position + player.cameraForward);
 
 				float r = 1f;
 				float g = 1f;
 				float b = 1f;
 				float a = 1f;
 
+				if (playersCrosshair.Contains (player)) {
+					r = 0f;
+					b = 0f;
+				}
+
+				/*
 				if (myPlayer.hackingPlayerCode == player.playerCode) {
 					g = 0f;
 					b = 0f;
@@ -265,6 +330,7 @@ public class ClientScript : MonoBehaviour {
 				if (player.hackingPlayerCode == myCode) {
 					a = 0f;
 				}
+				*/
 
 				Color targetColor = new Color (r, g, b, a);
 
@@ -498,6 +564,7 @@ public class ClientScript : MonoBehaviour {
 			aux.targetPosition = position;
 			aux.targetAvatarEulerY = avatarEulerY;
 			aux.SmartCrossfade(currentAnimation);
+			aux.currentCameraEulerX = cameraEulerX;
 
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
@@ -577,7 +644,7 @@ public class ClientScript : MonoBehaviour {
 
 	[RPC]
 	void hackAttackRPC(int playerCode) {
-		serverScript.hackAttack (playerCode);
+		hackAttackBuffer.Add (playerCode);
 	}
 
 	[RPC]
@@ -640,6 +707,8 @@ public class ClientScript : MonoBehaviour {
 
 		public int playerCode;
 		public GameObject visualAvatar;
+		public GameObject cameraMockup;
+		public GameObject[] vitalPoints;
 		public string lastAnimationOrder = "Idle01";
 		public Material[] visualMaterials;
 		public float immune = 0f;
@@ -680,6 +749,13 @@ public class ClientScript : MonoBehaviour {
 			targetPosition = visualAvatar.transform.position;
 			targetAvatarEulerY = visualAvatar.transform.eulerAngles.y;
 			cameraForward = Vector3.forward;
+			cameraMockup = visualAvatar.transform.FindChild ("CameraMockup").gameObject;
+			cameraMockup.transform.localPosition = LocalPlayerScript.centerOfCamera;
+
+			vitalPoints = new GameObject[3];
+			vitalPoints [0] = visualAvatar.transform.FindChild ("Armature/Pelvis").gameObject;
+			vitalPoints [1] = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest").gameObject;
+			vitalPoints [2] = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
 
 		}
 

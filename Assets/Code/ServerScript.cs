@@ -193,7 +193,36 @@ public class ServerScript : MonoBehaviour {
 
 	public void interceptAttack (int playerCode) {
 
+		if (!clientScript.localPlayer.gameEnded) {
 
+			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
+
+			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer);
+
+			bool deaths = false;
+
+			foreach (ClientScript.Player player in playersCrosshair) {
+
+				if (player.hackingPlayerCode == attackerPlayer.playerCode) {
+					// YOU'RE DEAD, MADAFACKA
+					deaths = true;
+
+					attackerPlayer.kills++;
+					GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, player.playerCode);
+
+					respawn (player.playerCode);
+					player.immune = 5f;
+
+				}
+
+			}
+
+			if (deaths) {
+				sendHackData ();
+				sendRankingData ();
+			}
+
+		}
 
 	}
 

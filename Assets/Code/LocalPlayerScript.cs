@@ -105,7 +105,12 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
 		visualAvatar.name = "VisualAvatar";
 		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
-		materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
+		//materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
+		// THIS IS TO HIDE THE MAIN CHARACTER BUT STILL RENDER IT SO ALL ANIMATION AND PHYSICS UPDATES TAKE IT INTO ACCOUNT
+		Material[] materials = materialCarrier.GetComponent<SkinnedMeshRenderer>().materials;
+		for (int i = 0; i < materials.Length; i++) {
+			materials[i].SetFloat ("_Cutoff", 1f);
+		}
 		//sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
 		crosshairHack = Instantiate (Resources.Load("Prefabs/CrosshairHack") as GameObject);
@@ -205,18 +210,12 @@ public class LocalPlayerScript : MonoBehaviour {
 	
 	}
 
-	void FixedUpdate() {
-
-		handleMovementInput ();
-
-	}
-
     void alertMockUp()
     {
 
         float cutoff = alertHacked.GetComponent<Image>().material.GetFloat("_Cutoff");
 
-        if (Input.GetKeyDown(KeyCode.Return) && cutoff == 1f)
+        if (Input.GetKeyDown(KeyCode.Y) && cutoff == 1f)
         {
             cutoff -= Time.deltaTime;
             alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", cutoff);
@@ -383,7 +382,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (Input.GetKeyDown(KeyCode.LeftShift) && impulseResource >= 1f && impulsing == 0f) {
 				impulseResource -= 1f;
-				impulsing = 0.25f;
+				impulsing = 0.13f;
 			}
 
 
@@ -579,11 +578,15 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	}
 
+	void FixedUpdate() {
 
+		handleMovementInput ();
+
+	}
 
 	void LateUpdate() {
 
-		RotateHead (visualAvatar, personalCamera.transform.eulerAngles.x);
+		//RotateHead (visualAvatar, personalCamera.transform.eulerAngles.x);
 
 	}
 
@@ -591,6 +594,10 @@ public class LocalPlayerScript : MonoBehaviour {
     {
 
 		if (visualAvatar.GetComponent<Animator> ().enabled) {
+
+			while (currentCameraEulerX < 0) {
+				currentCameraEulerX += 360f;
+			}
 
 			GameObject neck = visualAvatar.transform.FindChild("Armature/Pelvis/Spine/Chest/Neck").gameObject;
 			GameObject head = visualAvatar.transform.FindChild("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
