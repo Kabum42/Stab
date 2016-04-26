@@ -232,22 +232,32 @@ public class ClientScript : MonoBehaviour {
 
 			if (player != p1) {
 
+				bool IsInside = false;
+
 				auxCamera.gameObject.transform.position = p1.cameraMockup.transform.position;
 				auxCamera.gameObject.transform.eulerAngles = p1.cameraMockup.transform.eulerAngles;
-				Vector3 aux = auxCamera.WorldToScreenPoint (player.cameraMockup.transform.position);
 
-				if (aux.z >= 0f) {
-					// IF THE AUXILIAR POSITION IS IN FRONT OF THE CAMERA
-					Vector2 auxRelative = new Vector2 (aux.x -Screen.width/2f, aux.y -Screen.height/2f);
-					auxRelative = auxRelative / Screen.width;
-					//Debug.Log (auxRelative);
-					float distance = Vector2.Distance (auxRelative, new Vector2 (0f, 0f));
+				for (int i = 0; i < player.vitalPoints.Length; i++) {
 
+					Vector3 aux = auxCamera.WorldToScreenPoint (player.vitalPoints[i].transform.position);
 
-					if (distance <= 0.25f) {
-						playersInside.Add (player);
+					if (aux.z >= 0f) {
+						// IF THE AUXILIAR POSITION IS IN FRONT OF THE CAMERA
+						Vector2 auxRelative = new Vector2 (aux.x -Screen.width/2f, aux.y -Screen.height/2f);
+						auxRelative = auxRelative / Screen.width;
+
+						float distance = Vector2.Distance (auxRelative, new Vector2 (0f, 0f));
+
+						if (distance <= 0.24f) {
+							IsInside = true;
+						}
+
 					}
 
+				}
+
+				if (IsInside) {
+					playersInside.Add (player);
 				}
 
 			}
@@ -698,6 +708,7 @@ public class ClientScript : MonoBehaviour {
 		public int playerCode;
 		public GameObject visualAvatar;
 		public GameObject cameraMockup;
+		public GameObject[] vitalPoints;
 		public string lastAnimationOrder = "Idle01";
 		public Material[] visualMaterials;
 		public float immune = 0f;
@@ -740,6 +751,11 @@ public class ClientScript : MonoBehaviour {
 			cameraForward = Vector3.forward;
 			cameraMockup = visualAvatar.transform.FindChild ("CameraMockup").gameObject;
 			cameraMockup.transform.localPosition = LocalPlayerScript.centerOfCamera;
+
+			vitalPoints = new GameObject[3];
+			vitalPoints [0] = visualAvatar.transform.FindChild ("Armature/Pelvis").gameObject;
+			vitalPoints [1] = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest").gameObject;
+			vitalPoints [2] = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine/Chest/Neck/Head").gameObject;
 
 		}
 
