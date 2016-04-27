@@ -40,6 +40,9 @@ public class ClientScript : MonoBehaviour {
 
 	private Camera auxCamera;
 
+	public static float hackKillDistance = 5f;
+	public static float interceptKillDistance = 10f;
+
 	// Use this for initialization
 	void Awake () {
 	
@@ -149,10 +152,29 @@ public class ClientScript : MonoBehaviour {
 		Player auxPlayer = firstLookingPlayer(myPlayer);
 
 		if (auxPlayer == null) {
+			foreach (GameObject triangle in localPlayer.crosshairHackTriangles) {
+				triangle.SetActive (true);
+			}
+			localPlayer.crosshairHackTriclip.SetActive (true);
+			localPlayer.crosshairHackSkull.SetActive (false);
 			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 1f, 1f);
 			textTargeted.SetActive(false);
 		}
 		else {
+
+			if (Vector3.Distance (auxPlayer.cameraMockup.transform.position, myPlayer.cameraMockup.transform.position) < hackKillDistance && myPlayer.hackingPlayerCode == auxPlayer.playerCode) {
+				foreach (GameObject triangle in localPlayer.crosshairHackTriangles) {
+					triangle.SetActive (false);
+				}
+				localPlayer.crosshairHackTriclip.SetActive (false);
+				localPlayer.crosshairHackSkull.SetActive (true);
+			} else {
+				foreach (GameObject triangle in localPlayer.crosshairHackTriangles) {
+					triangle.SetActive (true);
+				}
+				localPlayer.crosshairHackTriclip.SetActive (true);
+				localPlayer.crosshairHackSkull.SetActive (false);
+			}
 			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 			textTargeted.SetActive(true);
 			textTargeted.GetComponent<Text>().text = "<Player "+auxPlayer.playerCode+">";
@@ -256,9 +278,7 @@ public class ClientScript : MonoBehaviour {
 
 				}
 
-				float distanceIntercept = 10f;
-
-				if (IsInside && Vector3.Distance(player.cameraMockup.transform.position, p1.cameraMockup.transform.position) < distanceIntercept) {
+				if (IsInside && Vector3.Distance(player.cameraMockup.transform.position, p1.cameraMockup.transform.position) < interceptKillDistance) {
 					playersInside.Add (player);
 				}
 
@@ -319,10 +339,7 @@ public class ClientScript : MonoBehaviour {
 				float b = 1f;
 				float a = 1f;
 
-				if (playersCrosshair.Contains (player)) {
-					r = 0f;
-					b = 0f;
-				} else if (myPlayer.hackingPlayerCode == player.playerCode) {
+				if (myPlayer.hackingPlayerCode == player.playerCode) {
 					g = 0f;
 					b = 0f;
 				}
