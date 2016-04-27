@@ -53,7 +53,7 @@ public class ClientScript : MonoBehaviour {
 
 		textBig = GameObject.Find ("Canvas/TextBig");
 
-		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Portal") as GameObject);
+		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Basic") as GameObject);
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
 		localPlayer.clientScript = this;
@@ -256,7 +256,9 @@ public class ClientScript : MonoBehaviour {
 
 				}
 
-				if (IsInside) {
+				float distanceIntercept = 10f;
+
+				if (IsInside && Vector3.Distance(player.cameraMockup.transform.position, p1.cameraMockup.transform.position) < distanceIntercept) {
 					playersInside.Add (player);
 				}
 
