@@ -163,7 +163,7 @@ public class ServerScript : MonoBehaviour {
 				// THERE'S A VICTIM
 				float distance = Vector3.Distance(attackerPlayer.targetPosition, victimPlayer.targetPosition);
 
-				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && distance <= 2f) {
+				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && distance <= 5f) {
 					// IF THE DISTANCE IS SMALL AND WAS ALREADY HACKED, DIES
 					if (victimPlayer.immune <= 0f) {
 
