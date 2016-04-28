@@ -6,7 +6,6 @@ public class RagdollScript : MonoBehaviour {
 
 	public List<Articulation> articulations = new List<Articulation>();
 	private Animator animator;
-	private bool transformsInitialized = false;
 
 	// Use this for initialization
 	void Start () {
@@ -20,7 +19,7 @@ public class RagdollScript : MonoBehaviour {
 
 	void Update() {
 
-		if (Input.GetKey(KeyCode.LeftControl)) {
+		if (Input.GetKey(KeyCode.I)) {
 			if (Input.GetKeyDown(KeyCode.O)) {
 				Disable();
 			}
@@ -31,19 +30,14 @@ public class RagdollScript : MonoBehaviour {
 
 	}
 
+	/*
 	void LateUpdate() {
 
-		if (animator.enabled && transformsInitialized) {
+		if (animator.enabled && false) {
 			for (int i = 0; i < articulations.Count; i++) {
 				articulations [i].gameobject.transform.localPosition = Hacks.LerpVector3 (articulations [i].lastPosition, articulations [i].gameobject.transform.localPosition, Time.deltaTime * 5f);
 				articulations [i].gameobject.transform.localEulerAngles = Hacks.LerpVector3Angle (articulations [i].lastEulerAngles, articulations [i].gameobject.transform.localEulerAngles, Time.deltaTime * 5f);
 			}
-		} else if (!animator.enabled && !transformsInitialized) {
-			for (int i = 0; i < articulations.Count; i++) {
-				articulations [i].lastPosition = articulations [i].gameobject.transform.localPosition;
-				articulations [i].lastEulerAngles = articulations [i].gameobject.transform.localEulerAngles;
-			}
-			transformsInitialized = true;
 		}
 
 		for (int i = 0; i < articulations.Count; i++) {
@@ -51,8 +45,8 @@ public class RagdollScript : MonoBehaviour {
 			articulations [i].lastEulerAngles = articulations [i].gameobject.transform.localEulerAngles;
 		}
 
-
 	}
+	*/
 
 	void TraverseHierarchy(Transform root) {
 		
@@ -139,6 +133,9 @@ public class Articulation {
 		if (gameobject.GetComponent<Collider> () != null) {
 			collider = gameobject.GetComponent<Collider> ();
 		}
+
+		lastPosition = gameobject.transform.localPosition;
+		lastEulerAngles = gameobject.transform.localEulerAngles;
 
 	}
 

@@ -40,6 +40,9 @@ public class ClientScript : MonoBehaviour {
 
 	private Camera auxCamera;
 
+	public static float hackKillDistance = 5f;
+	public static float interceptKillDistance = 10f;
+
 	// Use this for initialization
 	void Awake () {
 	
@@ -146,16 +149,28 @@ public class ClientScript : MonoBehaviour {
 
 	void updateCanvas() {
 
-		Player auxPlayer = firstLookingPlayer(myPlayer);
+		Player auxPlayer = insideBigCrosshairExclusive(myPlayer, float.MaxValue, "smallCrosshair");
 
 		if (auxPlayer == null) {
+			localPlayer.crosshairHackTriclip.SetActive (true);
+			localPlayer.crosshairHackSkull.SetActive (false);
 			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 1f, 1f);
 			textTargeted.SetActive(false);
 		}
 		else {
+
+			if (Vector3.Distance (auxPlayer.cameraMockup.transform.position, myPlayer.cameraMockup.transform.position) < hackKillDistance && myPlayer.hackingPlayerCode == auxPlayer.playerCode) {
+				localPlayer.crosshairHackTriclip.SetActive (false);
+				localPlayer.crosshairHackSkull.SetActive (true);
+			} else {
+				localPlayer.crosshairHackTriclip.SetActive (true);
+				localPlayer.crosshairHackSkull.SetActive (false);
+			}
+
 			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 			textTargeted.SetActive(true);
 			textTargeted.GetComponent<Text>().text = "<Player "+auxPlayer.playerCode+">";
+
 		}
 
 		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
@@ -216,6 +231,10 @@ public class ClientScript : MonoBehaviour {
 						return auxPlayer;
 					}
 
+				} else {
+
+					return null;
+
 				}
 			}
 		}
@@ -224,7 +243,42 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
-	public List<Player> insideBigCrosshair(Player p1) {
+	public bool blockingBetweenPlayers(Player p1, GameObject p2Object) {
+
+		RaycastHit[] hits;
+		Vector3 distance = (p2Object.transform.position - (p1.targetPosition +  LocalPlayerScript.centerOfCamera));
+		Vector3 direction = distance.normalized;
+		hits = Physics.RaycastAll (p1.targetPosition + LocalPlayerScript.centerOfCamera, direction, distance.magnitude);
+		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
+
+		Player p2 = PlayerMarker.Traverse (p2Object).player;
+
+		for (int i = 0; i < hits.Length; i++) {
+
+			if (hits[i].collider.gameObject.tag != "LocalPlayer" && !(p1.visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject)) && !(p2.visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject))) {
+
+				PlayerMarker pM = PlayerMarker.Traverse (hits [i].collider.gameObject);
+
+				if (pM == null) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+
+	}
+
+	public List<Player> insideBigCrosshair(Player p1, float distanceZ, string key) {
+
+		float minDistanceInScreen = 0f;
+		if (key == "bigCrosshair") { minDistanceInScreen = 0.24f; }
+
+		return insideBigCrosshair (p1, distanceZ, minDistanceInScreen);
+
+	}
+
+	public List<Player> insideBigCrosshair(Player p1, float distanceZ, float minDistanceInScreen) {
 
 		List<Player> playersInside = new List<Player> ();
 
@@ -246,9 +300,10 @@ public class ClientScript : MonoBehaviour {
 						Vector2 auxRelative = new Vector2 (aux.x -Screen.width/2f, aux.y -Screen.height/2f);
 						auxRelative = auxRelative / Screen.width;
 
-						float distance = Vector2.Distance (auxRelative, new Vector2 (0f, 0f));
+						float distanceInScreen = Vector2.Distance (auxRelative, new Vector2 (0f, 0f));
 
-						if (distance <= 0.24f) {
+						if (distanceInScreen <= minDistanceInScreen && !blockingBetweenPlayers(p1, player.vitalPoints[i])) {
+							// IS INSIDE THE SCREEN DISTANCE AND NOTHING DIFFERENT FROM A PLAYER IS BLOCKING THE VIEW
 							IsInside = true;
 						}
 
@@ -256,9 +311,7 @@ public class ClientScript : MonoBehaviour {
 
 				}
 
-				float distanceIntercept = 10f;
-
-				if (IsInside && Vector3.Distance(player.cameraMockup.transform.position, p1.cameraMockup.transform.position) < distanceIntercept) {
+				if (IsInside && Vector3.Distance(player.cameraMockup.transform.position, p1.cameraMockup.transform.position) < distanceZ) {
 					playersInside.Add (player);
 				}
 
@@ -266,6 +319,66 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		return playersInside;
+
+	}
+
+	public Player insideBigCrosshairExclusive(Player p1, float distanceZ, string key) {
+
+		float minDistanceInScreen = 0f;
+		if (key == "bigCrosshair") { minDistanceInScreen = 0.23f; }
+		if (key == "smallCrosshair") { minDistanceInScreen = 0.05f; }
+
+		return insideBigCrosshairExclusive (p1, distanceZ, minDistanceInScreen);
+
+	}
+
+	public Player insideBigCrosshairExclusive(Player p1, float distanceZ, float minDistanceInScreen) {
+
+		Player playerInside = null;
+		float minDistanceZ = float.MaxValue;
+
+		foreach (Player player in listPlayers) {
+
+			if (player != p1) {
+
+				bool IsInside = false;
+
+				auxCamera.gameObject.transform.position = p1.cameraMockup.transform.position;
+				auxCamera.gameObject.transform.eulerAngles = p1.cameraMockup.transform.eulerAngles;
+
+				for (int i = 0; i < player.vitalPoints.Length; i++) {
+
+					Vector3 aux = auxCamera.WorldToScreenPoint (player.vitalPoints[i].transform.position);
+
+					if (aux.z >= 0f) {
+						// IF THE AUXILIAR POSITION IS IN FRONT OF THE CAMERA
+						Vector2 auxRelative = new Vector2 (aux.x -Screen.width/2f, aux.y -Screen.height/2f);
+						auxRelative = auxRelative / Screen.width;
+
+						float distanceInScreen = Vector2.Distance (auxRelative, new Vector2 (0f, 0f));
+
+						if (distanceInScreen <= minDistanceInScreen && !blockingBetweenPlayers(p1, player.vitalPoints[i])) {
+							// IS INSIDE THE SCREEN DISTANCE AND NOTHING DIFFERENT FROM A PLAYER IS BLOCKING THE VIEW
+							IsInside = true;
+						}
+
+					}
+
+				}
+
+				float currentDistanceZ = Vector3.Distance (player.cameraMockup.transform.position, p1.cameraMockup.transform.position);
+
+				if (IsInside && currentDistanceZ < distanceZ) {
+					if (currentDistanceZ < minDistanceZ) {
+						minDistanceZ = currentDistanceZ;
+						playerInside = player;
+					}
+				}
+
+			}
+		}
+
+		return playerInside;
 
 	}
 		
@@ -302,8 +415,6 @@ public class ClientScript : MonoBehaviour {
 
 	void synchronizeOtherPlayers () {
 
-		List<Player> playersCrosshair = insideBigCrosshair (myPlayer);
-
 		foreach (Player player in listPlayers) {
 
 			if (player.playerCode != myCode) {
@@ -319,10 +430,7 @@ public class ClientScript : MonoBehaviour {
 				float b = 1f;
 				float a = 1f;
 
-				if (playersCrosshair.Contains (player)) {
-					r = 0f;
-					b = 0f;
-				} else if (myPlayer.hackingPlayerCode == player.playerCode) {
+				if (myPlayer.hackingPlayerCode == player.playerCode) {
 					g = 0f;
 					b = 0f;
 				}
@@ -689,10 +797,14 @@ public class ClientScript : MonoBehaviour {
 			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			localPlayer.transform.position = position;
 			localPlayer.transform.eulerAngles = eulerAngles;
+			myPlayer.targetPosition = position;
+			myPlayer.targetAvatarEulerY = eulerAngles.y;
 		} else {
 			Player auxPlayer = PlayerByCode (playerCode);
 			auxPlayer.visualAvatar.transform.position = position;
 			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
+			auxPlayer.targetPosition = position;
+			auxPlayer.targetAvatarEulerY = eulerAngles.y;
 		}
 	}
 

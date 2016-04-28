@@ -157,13 +157,13 @@ public class ServerScript : MonoBehaviour {
 		if (!clientScript.localPlayer.gameEnded) {
 
 			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
-			ClientScript.Player victimPlayer = clientScript.firstLookingPlayer(attackerPlayer);
+			ClientScript.Player victimPlayer = clientScript.insideBigCrosshairExclusive(attackerPlayer, float.MaxValue, "smallCrosshair");
 
 			if (victimPlayer != null) {
 				// THERE'S A VICTIM
 				float distance = Vector3.Distance(attackerPlayer.targetPosition, victimPlayer.targetPosition);
 
-				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && distance <= 5f) {
+				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && distance <= ClientScript.hackKillDistance) {
 					// IF THE DISTANCE IS SMALL AND WAS ALREADY HACKED, DIES
 					if (victimPlayer.immune <= 0f) {
 
@@ -197,7 +197,7 @@ public class ServerScript : MonoBehaviour {
 
 			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
 
-			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer);
+			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer, ClientScript.interceptKillDistance, "bigCrosshair");
 
 			bool deaths = false;
 

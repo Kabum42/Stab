@@ -15,7 +15,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float allPlayerRotationX = 0f;
 	private float cameraValueX = 0f;
 	private float cameraValueY = -17f;
-	public static Vector3 centerOfCamera = new Vector3 (0f, 1.4f, 0f);
+	public static Vector3 centerOfCamera = new Vector3 (0f, 1.55f, 0f);
 	//public static Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
     //public static Vector3 centerOfCamera = new Vector3(0f, 1.4f, 0f);
 	private Vector3 lastPositionCursor;
@@ -42,14 +42,15 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	//public MeleeWeaponTrail sprintTrail;
 
-	public GameObject crosshairHack;
-    public GameObject crosshairHackDot;
-    public GameObject crosshairHackTriclip;
-    public List<GameObject> crosshairHackTriangles = new List<GameObject>();
-	public GameObject crosshairHackTimer;
-    public GameObject crosshairHackBig;
-    public List<GameObject> crosshairHackCharges = new List<GameObject>();
-    public List<GameObject> crosshairHackChargesFull = new List<GameObject>();
+	[HideInInspector] public GameObject crosshairHack;
+	[HideInInspector] public GameObject crosshairHackDot;
+	[HideInInspector] public GameObject crosshairHackTriclip;
+	[HideInInspector] public List<GameObject> crosshairHackTriangles = new List<GameObject>();
+	[HideInInspector] public GameObject crosshairHackTimer;
+	[HideInInspector] public GameObject crosshairHackBig;
+	[HideInInspector] public List<GameObject> crosshairHackCharges = new List<GameObject>();
+	[HideInInspector] public List<GameObject> crosshairHackChargesFull = new List<GameObject>();
+	[HideInInspector] public GameObject crosshairHackSkull;
 
     private int nextCharge = 1;
     public float chargeResource = 3f;
@@ -161,6 +162,8 @@ public class LocalPlayerScript : MonoBehaviour {
             crosshairHackChargesFull.Add(newCharge.transform.FindChild("Full").gameObject);
         }
         Destroy(sourceCharge);
+		crosshairHackSkull = crosshairHack.transform.FindChild("Skull").gameObject;
+		crosshairHackSkull.SetActive (false);
 
         alertHacked = Instantiate(Resources.Load("Prefabs/Alert") as GameObject);
         alertHacked.transform.SetParent(GameObject.Find("Canvas").transform);
