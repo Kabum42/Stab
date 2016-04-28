@@ -197,7 +197,7 @@ public class ServerScript : MonoBehaviour {
 
 			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
 
-			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer);
+			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer, ClientScript.interceptKillDistance);
 
 			bool deaths = false;
 
