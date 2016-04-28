@@ -735,10 +735,14 @@ public class ClientScript : MonoBehaviour {
 			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			localPlayer.transform.position = position;
 			localPlayer.transform.eulerAngles = eulerAngles;
+			myPlayer.targetPosition = position;
+			myPlayer.targetAvatarEulerY = eulerAngles.y;
 		} else {
 			Player auxPlayer = PlayerByCode (playerCode);
 			auxPlayer.visualAvatar.transform.position = position;
 			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
+			auxPlayer.targetPosition = position;
+			auxPlayer.targetAvatarEulerY = eulerAngles.y;
 		}
 	}
 
