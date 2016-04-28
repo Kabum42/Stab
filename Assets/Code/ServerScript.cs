@@ -157,7 +157,7 @@ public class ServerScript : MonoBehaviour {
 		if (!clientScript.localPlayer.gameEnded) {
 
 			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
-			ClientScript.Player victimPlayer = clientScript.firstLookingPlayer(attackerPlayer);
+			ClientScript.Player victimPlayer = clientScript.insideBigCrosshairExclusive(attackerPlayer, float.MaxValue, "smallCrosshair");
 
 			if (victimPlayer != null) {
 				// THERE'S A VICTIM
@@ -197,7 +197,7 @@ public class ServerScript : MonoBehaviour {
 
 			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
 
-			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer, ClientScript.interceptKillDistance);
+			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer, ClientScript.interceptKillDistance, "bigCrosshair");
 
 			bool deaths = false;
 
