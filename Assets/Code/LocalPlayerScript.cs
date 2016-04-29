@@ -64,7 +64,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	//public AnimationCurve attackCameraDistance;
 
 	public bool nextCooldownFree = false;
-	private static float attackChargeCooldownMax = 0.5f;
+	private static float attackChargeCooldownMax = 0.25f;
 	public float attackChargeCooldown = 0f;
 
     private Vector3 attackOldPosition;
