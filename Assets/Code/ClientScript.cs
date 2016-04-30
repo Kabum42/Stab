@@ -149,7 +149,7 @@ public class ClientScript : MonoBehaviour {
 
 	void updateCanvas() {
 
-		Player auxPlayer = insideBigCrosshairExclusive(myPlayer, float.MaxValue, "smallCrosshair");
+		Player auxPlayer = insideBigCrosshairExclusive(myPlayer, float.MaxValue, "smallCrosshair", false);
 
 		if (auxPlayer == null) {
 			localPlayer.crosshairHackTriclip.SetActive (true);
@@ -269,22 +269,22 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
-	public List<Player> insideBigCrosshair(Player p1, float distanceZ, string key) {
+	public List<Player> insideBigCrosshair(Player p1, float distanceZ, string key, bool invisibleAllowed) {
 
 		float minDistanceInScreen = 0f;
 		if (key == "bigCrosshair") { minDistanceInScreen = 0.24f; }
 
-		return insideBigCrosshair (p1, distanceZ, minDistanceInScreen);
+		return insideBigCrosshair (p1, distanceZ, minDistanceInScreen, invisibleAllowed);
 
 	}
 
-	public List<Player> insideBigCrosshair(Player p1, float distanceZ, float minDistanceInScreen) {
+	public List<Player> insideBigCrosshair(Player p1, float distanceZ, float minDistanceInScreen, bool invisibleAllowed) {
 
 		List<Player> playersInside = new List<Player> ();
 
 		foreach (Player player in listPlayers) {
 
-			if (player != p1) {
+			if (player != p1 && (invisibleAllowed || player.hackingPlayerCode != p1.playerCode)) {
 
 				bool IsInside = false;
 
@@ -322,24 +322,24 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
-	public Player insideBigCrosshairExclusive(Player p1, float distanceZ, string key) {
+	public Player insideBigCrosshairExclusive(Player p1, float distanceZ, string key, bool invisibleAllowed) {
 
 		float minDistanceInScreen = 0f;
 		if (key == "bigCrosshair") { minDistanceInScreen = 0.23f; }
 		if (key == "smallCrosshair") { minDistanceInScreen = 0.05f; }
 
-		return insideBigCrosshairExclusive (p1, distanceZ, minDistanceInScreen);
+		return insideBigCrosshairExclusive (p1, distanceZ, minDistanceInScreen, invisibleAllowed);
 
 	}
 
-	public Player insideBigCrosshairExclusive(Player p1, float distanceZ, float minDistanceInScreen) {
+	public Player insideBigCrosshairExclusive(Player p1, float distanceZ, float minDistanceInScreen, bool invisibleAllowed) {
 
 		Player playerInside = null;
 		float minDistanceZ = float.MaxValue;
 
 		foreach (Player player in listPlayers) {
 
-			if (player != p1) {
+			if (player != p1 && (invisibleAllowed || player.hackingPlayerCode != p1.playerCode)) {
 
 				bool IsInside = false;
 

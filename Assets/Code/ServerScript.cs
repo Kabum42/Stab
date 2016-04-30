@@ -93,6 +93,7 @@ public class ServerScript : MonoBehaviour {
         int chosenRespawn = possibleRespawns[UnityEngine.Random.Range(0, possibleRespawns.Count)];
         listRespawnLocations[chosenRespawn].lastTimeUsed = Time.realtimeSinceStartup;
 
+		clientScript.PlayerByCode (playerCode).hackingPlayerCode = -1;
 		GetComponent<NetworkView> ().RPC ("respawnRPC", RPCMode.All, playerCode, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
 
         // UPDATE NEW OLDEST_TIME
@@ -157,7 +158,7 @@ public class ServerScript : MonoBehaviour {
 		if (!clientScript.localPlayer.gameEnded) {
 
 			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
-			ClientScript.Player victimPlayer = clientScript.insideBigCrosshairExclusive(attackerPlayer, float.MaxValue, "smallCrosshair");
+			ClientScript.Player victimPlayer = clientScript.insideBigCrosshairExclusive(attackerPlayer, float.MaxValue, "smallCrosshair", false);
 
 			if (victimPlayer != null) {
 				// THERE'S A VICTIM
@@ -197,7 +198,7 @@ public class ServerScript : MonoBehaviour {
 
 			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
 
-			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer, ClientScript.interceptKillDistance, "bigCrosshair");
+			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer, ClientScript.interceptKillDistance, "bigCrosshair", true);
 
 			bool deaths = false;
 

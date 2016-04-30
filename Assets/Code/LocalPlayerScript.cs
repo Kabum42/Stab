@@ -45,26 +45,27 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public GameObject crosshairHack;
 	[HideInInspector] public GameObject crosshairHackDot;
 	[HideInInspector] public GameObject crosshairHackTriclip;
-	[HideInInspector] public List<GameObject> crosshairHackTriangles = new List<GameObject>();
 	[HideInInspector] public GameObject crosshairHackTimer;
+	[HideInInspector] public GameObject crosshairHackSmall;
 	[HideInInspector] public GameObject crosshairHackBig;
 	[HideInInspector] public List<GameObject> crosshairHackCharges = new List<GameObject>();
 	[HideInInspector] public List<GameObject> crosshairHackChargesFull = new List<GameObject>();
+	[HideInInspector] public List<GameObject> crosshairHackInterceptCharges = new List<GameObject>();
+	[HideInInspector] public List<GameObject> crosshairHackInterceptChargesFull = new List<GameObject>();
 	[HideInInspector] public GameObject crosshairHackSkull;
 
-    private int nextCharge = 1;
-    public float chargeResource = 3f;
+	private int nextHackCharge = 1;
+	public float hackResource = 3f;
 
-    public AnimationCurve crosshairHackTriclipSizeCurve;
-    public AnimationCurve crosshairHackTriangleCurve;
-    public AnimationCurve crosshairHackTriangleSizeCurve;
+	private int nextInterceptCharge = 1;
+    public float interceptResource = 3f;
 
 	public GameObject impulseText;
 
 	//public AnimationCurve attackCameraDistance;
 
 	public bool nextCooldownFree = false;
-	private static float attackChargeCooldownMax = 0.5f;
+	private static float attackChargeCooldownMax = 0.25f;
 	public float attackChargeCooldown = 0f;
 
     private Vector3 attackOldPosition;
@@ -73,8 +74,11 @@ public class LocalPlayerScript : MonoBehaviour {
     private float crosshairHackTriclipOldZ = 0f;
     private float crosshairHackTriclipTargetZ = 0f;
     private Vector3 crosshairHackTriclipOriginalScale;
-    private Vector3 crosshairHackTriangleOriginalScale;
 
+	private float crosshairHackSmallOldZ = 0f;
+	private float crosshairHackSmallTargetZ = 0f;
+
+	private float crosshairHackBigOldZ = 0f;
     private float crosshairHackBigTargetZ = 0f;
 
 	private GameObject firstPersonObjects;
@@ -124,44 +128,50 @@ public class LocalPlayerScript : MonoBehaviour {
         crosshairHackDot = crosshairHack.transform.FindChild("Dot").gameObject;
         crosshairHackTriclip = crosshairHack.transform.FindChild("Triclip").gameObject;
 		crosshairHackTriclipOriginalScale = crosshairHackTriclip.GetComponent<RectTransform>().localScale;
-        GameObject sourceTriangle = crosshairHack.transform.FindChild("Triangle").gameObject;
-        int num_triangles = 3;
-        for (int i = 0; i < num_triangles; i++)
-        {
-            GameObject newTriangle = Instantiate(sourceTriangle);
-            newTriangle.transform.SetParent(crosshairHack.transform);
-            newTriangle.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-            float aux = (float)i / (float)num_triangles;
-            newTriangle.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, aux * 360f);
-            Vector2 upVector2 = new Vector2(newTriangle.GetComponent<RectTransform>().up.x, newTriangle.GetComponent<RectTransform>().up.y);
-            newTriangle.GetComponent<RectTransform>().anchoredPosition = upVector2*20f;
-            newTriangle.name = "Triangle_" + (i + 1);
-			newTriangle.GetComponent<RectTransform> ().localScale = sourceTriangle.GetComponent<RectTransform>().localScale;
-            crosshairHackTriangles.Add(newTriangle);
-        }
-        crosshairHackTriangleOriginalScale = sourceTriangle.GetComponent<RectTransform>().localScale;
-        Destroy(sourceTriangle);
 		crosshairHackTimer = crosshairHack.transform.FindChild("Timer").gameObject;
 		crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", 1f);
 		crosshairHackTimer.SetActive (false);
+		crosshairHackSmall = crosshairHack.transform.FindChild("Small").gameObject;
         crosshairHackBig = crosshairHack.transform.FindChild("Big").gameObject;
-        GameObject sourceCharge = crosshairHack.transform.FindChild("Charge").gameObject;
-        int num_charges = 3;
-        for (int i = 0; i < num_charges; i++)
+
+
+		GameObject sourceHackCharge = crosshairHack.transform.FindChild("HackCharge").gameObject;
+		int num_hack_charges = 3;
+		for (int i = 0; i < num_hack_charges; i++)
+		{
+			GameObject newCharge = Instantiate(sourceHackCharge);
+			newCharge.transform.SetParent(crosshairHackSmall.transform);
+			newCharge.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+			float aux = (float)i / (float)num_hack_charges;
+			newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
+			Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
+			newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 225f;
+			newCharge.name = "Charge_" + (i + 1);
+			newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
+			crosshairHackCharges.Add(newCharge);
+			crosshairHackChargesFull.Add(newCharge.transform.FindChild("Full").gameObject);
+		}
+		Destroy(sourceHackCharge);
+
+
+		GameObject sourceInterceptCharge = crosshairHack.transform.FindChild("InterceptCharge").gameObject;
+		int num_intercept_charges = 3;
+        for (int i = 0; i < num_intercept_charges; i++)
         {
-            GameObject newCharge = Instantiate(sourceCharge);
+            GameObject newCharge = Instantiate(sourceInterceptCharge);
             newCharge.transform.SetParent(crosshairHackBig.transform);
             newCharge.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-            float aux = (float)i / (float)num_charges;
+            float aux = (float)i / (float)num_intercept_charges;
             newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
             Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
             newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 900f;
             newCharge.name = "Charge_" + (i + 1);
             newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
-            crosshairHackCharges.Add(newCharge);
-            crosshairHackChargesFull.Add(newCharge.transform.FindChild("Full").gameObject);
+            crosshairHackInterceptCharges.Add(newCharge);
+            crosshairHackInterceptChargesFull.Add(newCharge.transform.FindChild("Full").gameObject);
         }
-        Destroy(sourceCharge);
+        Destroy(sourceInterceptCharge);
+
 		crosshairHackSkull = crosshairHack.transform.FindChild("Skull").gameObject;
 		crosshairHackSkull.SetActive (false);
 
@@ -203,12 +213,12 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		handleAttack ();
+		handleHack ();
+		handleIntercept();
 		handleCameraChanges ();
 		//adjustFirstPersonObjects ();
 		handleRegularInput();
 
-        interceptMockUp();
         alertMockUp();
 	
 	}
@@ -234,45 +244,53 @@ public class LocalPlayerScript : MonoBehaviour {
 
     }
 
-    void interceptMockUp()
+    void handleIntercept()
     {
 
-        if (chargeResource < 3f)
+        if (interceptResource < 3f)
         {
-            chargeResource += Time.deltaTime*(1f/2f);
-            if (chargeResource >= 3f) { chargeResource = 3f; }
+            interceptResource += Time.deltaTime*(1f/2f);
+            if (interceptResource >= 3f) { interceptResource = 3f; }
         }
 
         // TODAS VACIAS
-        for (int i = 0; i < crosshairHackCharges.Count; i++)
+        for (int i = 0; i < crosshairHackInterceptCharges.Count; i++)
         {
-            crosshairHackChargesFull[i].SetActive(false);
+            crosshairHackInterceptChargesFull[i].SetActive(false);
         }
 
-        float auxCharge = chargeResource;
-        int auxNext = nextCharge;
+        float auxResource = interceptResource;
+        int auxNext = nextInterceptCharge;
 
         // SE LLENAN LAS QUE TOCAN
-        while (auxCharge >= 1f)
+        while (auxResource >= 1f)
         {
-            crosshairHackChargesFull[auxNext].SetActive(true);
-            auxCharge -= 1f;
+            crosshairHackInterceptChargesFull[auxNext].SetActive(true);
+            auxResource -= 1f;
             auxNext++;
-            if (auxNext >= crosshairHackCharges.Count) { auxNext = 0; }
+            if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
         }
 
         // RIGHT CLICK
-        if (Input.GetMouseButtonDown(1) && chargeResource >= 1f)
+        if (Input.GetMouseButtonDown(1) && interceptResource >= 1f)
         {
 			
-            chargeResource -= 1f;
-            nextCharge++;
-            if (nextCharge >= crosshairHackCharges.Count) { nextCharge = 0; }
+            interceptResource -= 1f;
+            nextInterceptCharge++;
+            if (nextInterceptCharge >= crosshairHackInterceptCharges.Count) { nextInterceptCharge = 0; }
             crosshairHackBigTargetZ -= 120f;
+
             if (crosshairHackBigTargetZ < 0f)
             {
                 crosshairHackBigTargetZ += 360f;
+				crosshairHackBigOldZ += 360f;
             }
+
+
+			if (crosshairHackBigOldZ < crosshairHackBigTargetZ) {
+				crosshairHackBigOldZ += 360f;
+			}
+
 
 			if (clientScript != null) {
 				if (Network.isServer) {
@@ -284,9 +302,80 @@ public class LocalPlayerScript : MonoBehaviour {
 
         }
 
-        crosshairHackBig.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, Mathf.LerpAngle(crosshairHackBig.GetComponent<RectTransform>().eulerAngles.z, crosshairHackBigTargetZ, Time.deltaTime*5f));
+		crosshairHackBigOldZ = Mathf.Lerp (crosshairHackBigOldZ, crosshairHackBigTargetZ, Time.deltaTime * 5f);
+        crosshairHackBig.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackBigOldZ);
 
     }
+
+	void handleHack() {
+
+		if (hackResource < 3f)
+		{
+			hackResource += Time.deltaTime;
+			if (hackResource >= 3f) { hackResource = 3f; }
+		}
+
+		// TODAS VACIAS
+		for (int i = 0; i < crosshairHackCharges.Count; i++)
+		{
+			crosshairHackChargesFull[i].SetActive(false);
+		}
+
+		float auxResource = hackResource;
+		int auxNext = nextHackCharge;
+
+		// SE LLENAN LAS QUE TOCAN
+		while (auxResource >= 1f)
+		{
+			crosshairHackChargesFull[auxNext].SetActive(true);
+			auxResource -= 1f;
+			auxNext++;
+			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
+		}
+
+
+		// LEFT CLICK
+		if (Input.GetMouseButtonDown (0) && hackResource >= 1f) {
+
+			hackResource -= 1f;
+			nextHackCharge++;
+			if (nextHackCharge >= crosshairHackCharges.Count) { nextHackCharge = 0; }
+			crosshairHackSmallTargetZ -= 120f;
+
+			if (crosshairHackSmallTargetZ < 0f)
+			{
+				crosshairHackSmallTargetZ += 360f;
+				crosshairHackSmallOldZ += 360f;
+			}
+
+
+			if (crosshairHackSmallOldZ < crosshairHackSmallTargetZ) {
+				crosshairHackSmallOldZ += 360f;
+			}
+
+			if (clientScript != null) {
+				if (Network.isServer) {
+					clientScript.serverScript.hackAttack (clientScript.myCode);
+				} else {
+					clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, clientScript.myCode);
+				}
+			}
+
+		}
+
+		crosshairHackSmallOldZ = Mathf.Lerp (crosshairHackSmallOldZ, crosshairHackSmallTargetZ, Time.deltaTime * 5f);
+		crosshairHackSmall.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackSmallOldZ);
+		crosshairHackTriclip.GetComponent<RectTransform> ().eulerAngles = crosshairHackSmall.GetComponent<RectTransform> ().eulerAngles;
+
+		if (hackResource >= 1f) {
+			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.2f, 0.2f, 0.2f), Time.deltaTime*10f);
+			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 1f), Time.deltaTime * 10f);
+		} else {
+			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.15f, 0.15f, 0.15f), Time.deltaTime*10f);
+			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 0.5f), Time.deltaTime * 10f);
+		}
+
+	}
 
 	void adjustFirstPersonObjects() {
 
@@ -304,62 +393,6 @@ public class LocalPlayerScript : MonoBehaviour {
 		firstPersonObjects.transform.localPosition = new Vector3 (0f, difference*maxAmount, 0f);
 
 	}
-
-	void handleAttack() {
-
-		if (attackChargeCooldown > 0f) {
-
-			attackChargeCooldown -= Time.deltaTime;
-
-			if (attackChargeCooldown <= 0f) { 
-                attackChargeCooldown = 0f;
-            }
-
-            float aux = 1 - (attackChargeCooldown / attackChargeCooldownMax);
-            crosshairHackTriclip.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, Mathf.LerpAngle(crosshairHackTriclipOldZ, crosshairHackTriclipTargetZ, aux));
-
-        }
-		else if (attackChargeCooldown <= 0f) {
-
-			if (Input.GetMouseButtonDown (0)) {
-				// LEFT CLICK
-
-				crosshairHackTriclipTargetZ = crosshairHackTriclipOldZ - 120f;
-				if (crosshairHackTriclipTargetZ < 0f) { crosshairHackTriclipTargetZ += 360f; }
-				attackChargeCooldown = attackChargeCooldownMax;
-
-				if (clientScript != null) {
-					if (Network.isServer) {
-						clientScript.serverScript.hackAttack (clientScript.myCode);
-					} else {
-						clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, clientScript.myCode);
-					}
-				}
-
-			}
-
-		}
-
-        crosshairHackTriclip.GetComponent<RectTransform>().localScale = crosshairHackTriclipOriginalScale * crosshairHackTriclipSizeCurve.Evaluate(1f - attackChargeCooldown / attackChargeCooldownMax);
-
-        adjustCrossHairHackTriangles();
-
-	}
-
-    void adjustCrossHairHackTriangles()
-    {
-
-        for (int i = 0; i < crosshairHackTriangles.Count; i++)
-        {
-            Vector2 upVector2 = new Vector2(crosshairHackTriangles[i].GetComponent<RectTransform>().up.x, crosshairHackTriangles[i].GetComponent<RectTransform>().up.y);
-            float multiplier = crosshairHackTriangleCurve.Evaluate(1f - attackChargeCooldown / attackChargeCooldownMax);
-            Vector2 targetAnchor = upVector2 * 15f * multiplier;
-            crosshairHackTriangles[i].GetComponent<RectTransform>().anchoredPosition = targetAnchor;
-
-            crosshairHackTriangles[i].GetComponent<RectTransform>().localScale = crosshairHackTriangleOriginalScale * crosshairHackTriangleSizeCurve.Evaluate(1f - attackChargeCooldown / attackChargeCooldownMax);
-        }
-
-    }
 
 	void handleRegularInput() {
 
