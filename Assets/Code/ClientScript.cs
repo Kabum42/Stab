@@ -85,6 +85,8 @@ public class ClientScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		localPlayer.dead = myPlayer.dead;
+
 		if (EventSystem.current.currentSelectedGameObject == chatManager.chatInputField) {
 			chatManager.lastChatPannelInteraction = 0f;
 		} else if (chatManager.lastChatPannelInteraction < chatManager.chatPannelInteractionThreshold) {
@@ -97,7 +99,9 @@ public class ClientScript : MonoBehaviour {
 		updateChat ();
 		updateRanking ();
 		updateCanvas ();
-		updateMyInfoInOtherClients ();
+		if (!myPlayer.dead) {
+			updateMyInfoInOtherClients ();
+		}
 		synchronizeOtherPlayers ();
 		updateHacking ();
 
@@ -226,7 +230,7 @@ public class ClientScript : MonoBehaviour {
 				if (pM != null) {
 					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER
 					Player auxPlayer = pM.player;
-					if (!(auxPlayer.hackingPlayerCode == p1.playerCode)) {
+					if (!(auxPlayer.hackingPlayerCode == p1.playerCode) && !auxPlayer.dead) {
 						// YOU CAN SEE IT
 						return auxPlayer;
 					}
@@ -284,7 +288,7 @@ public class ClientScript : MonoBehaviour {
 
 		foreach (Player player in listPlayers) {
 
-			if (player != p1 && (invisibleAllowed || player.hackingPlayerCode != p1.playerCode)) {
+			if (player != p1 && (invisibleAllowed || player.hackingPlayerCode != p1.playerCode) && !player.dead) {
 
 				bool IsInside = false;
 
@@ -339,7 +343,7 @@ public class ClientScript : MonoBehaviour {
 
 		foreach (Player player in listPlayers) {
 
-			if (player != p1 && (invisibleAllowed || player.hackingPlayerCode != p1.playerCode)) {
+			if (player != p1 && (invisibleAllowed || player.hackingPlayerCode != p1.playerCode) && !player.dead) {
 
 				bool IsInside = false;
 
@@ -652,11 +656,13 @@ public class ClientScript : MonoBehaviour {
 		foreach (Player player in listPlayers) {
 			
 			if (player.playerCode == playerCode) {
-				player.targetPosition = position;
-				player.targetAvatarEulerY = avatarEulerY;
-				player.cameraForward = cameraForward;
-				player.targetCameraEulerX = cameraEulerX;
-				player.SmartCrossfade(currentAnimation);
+				if (!player.dead) {
+					player.targetPosition = position;
+					player.targetAvatarEulerY = avatarEulerY;
+					player.cameraForward = cameraForward;
+					player.targetCameraEulerX = cameraEulerX;
+					player.SmartCrossfade(currentAnimation);
+				}
 				foundPlayer = true;
 				break;
 			}
@@ -777,18 +783,27 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void killRPC(int assassinCode, int victimCode)
 	{
+		Player assassinPlayer = PlayerByCode (assassinCode);
+		Player victimPlayer = PlayerByCode (victimCode);
+
 		if (assassinCode == myCode) {
 			// YOU SLAYED VICTIMCODE
 			textBigAlpha = 1f;
 			textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimCode+"</color>";
-			localPlayer.nextCooldownFree = true;
 		} else if (victimCode == myCode) {
 			// SLAYED BY ASSASSINCODE
 			textBigAlpha = 1f;
 			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinCode+"</color>";
 		}
-		PlayerByCode (assassinCode).lastKillRemainingSeconds = remainingSeconds;
+		assassinPlayer.lastKillRemainingSeconds = remainingSeconds;
+		victimPlayer.dead = true;
+		victimPlayer.visualAvatar.GetComponent<RagdollScript> ().Enable ();
+
+		Vector3 forceDirection = victimPlayer.cameraMockup.transform.position - assassinPlayer.cameraMockup.transform.position;
+		forceDirection.Normalize ();
+		victimPlayer.visualAvatar.GetComponent<RagdollScript> ().rootGameObject.GetComponent<Rigidbody> ().AddForce (forceDirection * 7000f);
 	}
+		
 
 	[RPC]
 	void respawnRPC(int playerCode, Vector3 position, Vector3 eulerAngles)
@@ -806,6 +821,8 @@ public class ClientScript : MonoBehaviour {
 			auxPlayer.targetPosition = position;
 			auxPlayer.targetAvatarEulerY = eulerAngles.y;
 		}
+		PlayerByCode (playerCode).visualAvatar.GetComponent<RagdollScript> ().Disable ();
+		PlayerByCode (playerCode).dead = false;
 	}
 
 	[RPC]
@@ -823,6 +840,8 @@ public class ClientScript : MonoBehaviour {
 		public GameObject[] vitalPoints;
 		public string lastAnimationOrder = "Idle01";
 		public Material[] visualMaterials;
+		public bool dead = false;
+		public float deadTime = 0f;
 		public float immune = 0f;
 		public int kills = 0;
 		public float lastKillRemainingSeconds = float.MaxValue;

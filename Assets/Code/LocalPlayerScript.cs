@@ -21,7 +21,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	private Vector3 lastPositionCursor;
 	private float sensitivityX = 10f;
 	private float sensitivityY = 5f;
-    public static float stabbingDistance = 2.5f;
 
 	private static float baseSpeed = 5f;
 	private float turboSpeed = baseSpeed*(1.5f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
@@ -39,6 +38,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public float impulseResource = 3f;
 	public float impulsing = 0f;
+
+	 public bool dead = false;
 
 	//public MeleeWeaponTrail sprintTrail;
 
@@ -64,7 +65,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	//public AnimationCurve attackCameraDistance;
 
-	public bool nextCooldownFree = false;
 	private static float attackChargeCooldownMax = 0.25f;
 	public float attackChargeCooldown = 0f;
 
@@ -213,13 +213,15 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		handleHack ();
-		handleIntercept();
-		handleCameraChanges ();
-		//adjustFirstPersonObjects ();
-		handleRegularInput();
+		if (!dead) {
+			handleHack ();
+			handleIntercept();
+			handleCameraChanges ();
+			//adjustFirstPersonObjects ();
+			handleRegularInput();
 
-        alertMockUp();
+			alertMockUp();
+		}
 	
 	}
 
@@ -616,7 +618,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void FixedUpdate() {
 
-		handleMovementInput ();
+		if (!dead) {
+			handleMovementInput ();
+		}
 
 	}
 
