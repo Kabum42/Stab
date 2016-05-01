@@ -353,7 +353,7 @@ public class RhombusScript : MonoBehaviour {
 		}
 		unresolvedPingMatches.Clear ();
 		
-		Application.LoadLevel ("Game");
+		Application.LoadLevel ("Basic");
 
 	}
 
@@ -858,7 +858,7 @@ public class RhombusScript : MonoBehaviour {
 					if (createMenuNameTextString.Length != 0) {
 						// Start match
 						NetworkManager.StartServer (createMenuNameTextString, 10);
-						Application.LoadLevel ("Game");
+						Application.LoadLevel ("Basic");
 					} else {
 						locked = true;
 						createSelected = 0;

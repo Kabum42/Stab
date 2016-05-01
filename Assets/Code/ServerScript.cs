@@ -21,7 +21,7 @@ public class ServerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		checkForSuicides ();
+		checkForRespawns ();
 		checkIfSendDataToClients(); 
 
 	}
@@ -53,7 +53,7 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	void checkForSuicides() {
+	void checkForRespawns() {
 
 		foreach (ClientScript.Player player in clientScript.listPlayers) {
 
@@ -62,8 +62,17 @@ public class ServerScript : MonoBehaviour {
 				respawn (player.playerCode);
 			}
 
+			// THIS CHECKS IF SOMEONE IS DEAD AS RAGDOLL FOR TOO MUCH AND MUST RESPAWN
+			if (player.deadTime > 0f) {
+				player.deadTime -= Time.deltaTime;
+				if (player.deadTime <= 0f) {
+					player.deadTime = 0f;
+					respawn (player.playerCode);
+				}
+			}
+
 		}
-			
+
 	}
 
 	public void respawn(int playerCode) {
@@ -173,8 +182,8 @@ public class ServerScript : MonoBehaviour {
 						sendHackData ();
 						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, victimPlayer.playerCode);
 
-						respawn (victimPlayer.playerCode);
-						victimPlayer.immune = 5f;
+						victimPlayer.deadTime = 3f;
+						//respawn (victimPlayer.playerCode);
 
 						sendRankingData ();
 

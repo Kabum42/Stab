@@ -4,12 +4,14 @@ using System.Collections.Generic;
 
 public class RagdollScript : MonoBehaviour {
 
+	public GameObject rootGameObject;
 	public List<Articulation> articulations = new List<Articulation>();
 	private Animator animator;
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 
+		rootGameObject = this.transform.FindChild ("Armature/Pelvis").gameObject;
 		TraverseHierarchy (this.gameObject.transform);
 		TraverseHierarchy2 (this.gameObject.transform);
 
