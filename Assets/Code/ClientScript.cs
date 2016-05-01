@@ -153,7 +153,8 @@ public class ClientScript : MonoBehaviour {
 
 	void updateCanvas() {
 
-		Player auxPlayer = insideBigCrosshairExclusive(myPlayer, float.MaxValue, "smallCrosshair", false);
+		//Player auxPlayer = insideBigCrosshairExclusive(myPlayer, float.MaxValue, "smallCrosshair", false);
+		Player auxPlayer = null;
 
 		if (auxPlayer == null) {
 			localPlayer.crosshairHackTriclip.SetActive (true);
@@ -356,6 +357,7 @@ public class ClientScript : MonoBehaviour {
 
 					if (aux.z >= 0f) {
 						// IF THE AUXILIAR POSITION IS IN FRONT OF THE CAMERA
+
 						Vector2 auxRelative = new Vector2 (aux.x -Screen.width/2f, aux.y -Screen.height/2f);
 						auxRelative = auxRelative / Screen.width;
 
