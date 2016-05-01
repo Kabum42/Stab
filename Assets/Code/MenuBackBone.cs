@@ -28,6 +28,7 @@ public class MenuBackBone : MonoBehaviour {
 	void Start () {
 
 		GlobalData.Start ();
+		GlobalData.loadedMenuScene = true;
 
 		menuMusic = this.gameObject.AddComponent<AudioSource> ();
 		menuMusic.clip = Resources.Load("Sound/Music/Ossuary_6_Air") as AudioClip;

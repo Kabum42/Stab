@@ -56,7 +56,7 @@ public class ClientScript : MonoBehaviour {
 
 		textBig = GameObject.Find ("Canvas/TextBig");
 
-		map = Instantiate (Resources.Load("Prefabs/Maps/Map_Basic") as GameObject);
+		map = this.gameObject;
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
 		localPlayer.clientScript = this;

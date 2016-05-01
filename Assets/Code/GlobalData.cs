@@ -3,6 +3,7 @@ using System.Collections;
 
 public static class GlobalData {
 
+	public static bool loadedMenuScene = false;
     public static bool started = false;
 	public static float crossfadeAnimation = 0.15f;
 	//public static float crossfadeAnimation = 0.05f;
