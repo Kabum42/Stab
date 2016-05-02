@@ -801,9 +801,14 @@ public class ClientScript : MonoBehaviour {
 		victimPlayer.dead = true;
 		victimPlayer.visualAvatar.GetComponent<RagdollScript> ().Enable ();
 		victimPlayer.hackingPlayerCode = -1;
-		for (int i = 0; i < victimPlayer.visualMaterials.Length; i++) {
-			victimPlayer.visualMaterials[i].SetFloat ("_Cutoff", 0f);
-		}
+
+        if (victimPlayer != myPlayer)
+        {
+            for (int i = 0; i < victimPlayer.visualMaterials.Length; i++)
+            {
+                victimPlayer.visualMaterials[i].SetFloat("_Cutoff", 0f);
+            }
+        }
 
 		Vector3 forceDirection = victimPlayer.cameraMockup.transform.position - assassinPlayer.cameraMockup.transform.position;
 		forceDirection.Normalize ();
