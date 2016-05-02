@@ -153,8 +153,7 @@ public class ClientScript : MonoBehaviour {
 
 	void updateCanvas() {
 
-		//Player auxPlayer = insideBigCrosshairExclusive(myPlayer, float.MaxValue, "smallCrosshair", false);
-		Player auxPlayer = null;
+		Player auxPlayer = insideBigCrosshairExclusive(myPlayer, float.MaxValue, "smallCrosshair", false);
 
 		if (auxPlayer == null) {
 			localPlayer.crosshairHackTriclip.SetActive (true);
@@ -798,8 +797,13 @@ public class ClientScript : MonoBehaviour {
 			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinCode+"</color>";
 		}
 		assassinPlayer.lastKillRemainingSeconds = remainingSeconds;
+
 		victimPlayer.dead = true;
 		victimPlayer.visualAvatar.GetComponent<RagdollScript> ().Enable ();
+		victimPlayer.hackingPlayerCode = -1;
+		for (int i = 0; i < victimPlayer.visualMaterials.Length; i++) {
+			victimPlayer.visualMaterials[i].SetFloat ("_Cutoff", 0f);
+		}
 
 		Vector3 forceDirection = victimPlayer.cameraMockup.transform.position - assassinPlayer.cameraMockup.transform.position;
 		forceDirection.Normalize ();
@@ -816,6 +820,9 @@ public class ClientScript : MonoBehaviour {
 			localPlayer.transform.eulerAngles = eulerAngles;
 			myPlayer.targetPosition = position;
 			myPlayer.targetAvatarEulerY = eulerAngles.y;
+			localPlayer.hackResource = 3f;
+			localPlayer.interceptResource = 3f;
+			localPlayer.blinkResource = 3f;
 		} else {
 			Player auxPlayer = PlayerByCode (playerCode);
 			auxPlayer.visualAvatar.transform.position = position;

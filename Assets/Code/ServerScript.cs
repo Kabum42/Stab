@@ -183,8 +183,8 @@ public class ServerScript : MonoBehaviour {
 						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, victimPlayer.playerCode);
 
 						victimPlayer.deadTime = 3f;
-						//respawn (victimPlayer.playerCode);
 
+						sendHackData ();
 						sendRankingData ();
 
 					}
@@ -220,8 +220,7 @@ public class ServerScript : MonoBehaviour {
 					attackerPlayer.kills++;
 					GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, player.playerCode);
 
-					respawn (player.playerCode);
-					player.immune = 5f;
+					player.deadTime = 3f;
 
 				}
 

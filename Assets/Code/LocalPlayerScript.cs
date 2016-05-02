@@ -36,7 +36,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	private float notMoving = 0f;
 
-	public float impulseResource = 3f;
+	public float blinkResource = 3f;
 	public float impulsing = 0f;
 
 	 public bool dead = false;
@@ -64,9 +64,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	public GameObject impulseText;
 
 	//public AnimationCurve attackCameraDistance;
-
-	private static float attackChargeCooldownMax = 0.25f;
-	public float attackChargeCooldown = 0f;
 
     private Vector3 attackOldPosition;
     private Vector3 attackTargetPosition;
@@ -398,8 +395,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleRegularInput() {
 
-		impulseResource = Mathf.Min (3f, impulseResource + Time.deltaTime*(1f/4f));
-		impulseText.GetComponent<Text> ().text = impulseResource.ToString ("0.#");
+		blinkResource = Mathf.Min (3f, blinkResource + Time.deltaTime*(1f/4f));
+		impulseText.GetComponent<Text> ().text = blinkResource.ToString ("0.#");
 
 		if (impulsing > 0f) {
 
@@ -418,8 +415,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			receiveInput2 = true;
 
-			if (Input.GetKeyDown(KeyCode.LeftShift) && impulseResource >= 1f && impulsing == 0f) {
-				impulseResource -= 1f;
+			if (Input.GetKeyDown(KeyCode.LeftShift) && blinkResource >= 1f && impulsing == 0f) {
+				blinkResource -= 1f;
 				impulsing = 0.13f;
 			}
 
