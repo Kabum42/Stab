@@ -32,14 +32,13 @@ public class LocalPlayerScript : MonoBehaviour {
 	public GameObject materialCarrier;
 
 	public bool receiveInput = true;
-	private bool receiveInput2 = true;
 
 	private float notMoving = 0f;
 
 	public float blinkResource = 3f;
-	public float impulsing = 0f;
+	public float blinkDistance = 5f;
 
-	 public bool dead = false;
+	public bool dead = false;
 
 	//public MeleeWeaponTrail sprintTrail;
 
@@ -61,7 +60,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private int nextInterceptCharge = 1;
     public float interceptResource = 3f;
 
-	public GameObject impulseText;
+	public GameObject blinkText;
 
 	//public AnimationCurve attackCameraDistance;
 
@@ -180,11 +179,11 @@ public class LocalPlayerScript : MonoBehaviour {
         alertHacked.SetActive(true);
         alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f);
 
-		impulseText = Instantiate (Resources.Load("Prefabs/ImpulseText") as GameObject);
-		impulseText.transform.SetParent(GameObject.Find ("Canvas").transform);
-		impulseText.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-64, 35);
-		impulseText.name = "ImpulseText";
-		impulseText.GetComponent<RectTransform> ().localScale = new Vector3 (1f, 1f, 1f);
+		blinkText = Instantiate (Resources.Load("Prefabs/ImpulseText") as GameObject);
+		blinkText.transform.SetParent(GameObject.Find ("Canvas").transform);
+		blinkText.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-64, 35);
+		blinkText.name = "ImpulseText";
+		blinkText.GetComponent<RectTransform> ().localScale = new Vector3 (1f, 1f, 1f);
 
 		lastPositionCursor = Input.mousePosition;
 
@@ -401,6 +400,35 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	}
 
+	public Vector3Nullable firstLookingNonPlayer(float distance) {
+
+		Vector3Nullable vector3Nullable = new Vector3Nullable ();
+
+		RaycastHit[] hits;
+		hits = Physics.RaycastAll (this.transform.position + LocalPlayerScript.centerOfCamera, this.personalCamera.transform.forward, distance);
+		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
+
+		for (int i = 0; i < hits.Length; i++) {
+
+			if (hits[i].collider.gameObject.tag != "LocalPlayer" && !(visualAvatar.GetComponent<RagdollScript>().IsArticulation(hits[i].collider.gameObject))) {
+
+				PlayerMarker pM = PlayerMarker.Traverse (hits [i].collider.gameObject);
+
+				if (pM == null) {
+					// DOESN'T MATTER WHO, IT COLLIDED WITH A NON-PLAYER
+					vector3Nullable.isNull = false;
+					vector3Nullable.vector3 = hits[i].point;
+					return vector3Nullable;
+				} else {
+					return vector3Nullable;
+				}
+			}
+		}
+
+		return vector3Nullable;
+
+	}
+
 	void adjustFirstPersonObjects() {
 
 		float difference = 0f;
@@ -421,42 +449,26 @@ public class LocalPlayerScript : MonoBehaviour {
 	void handleRegularInput() {
 
 		blinkResource = Mathf.Min (3f, blinkResource + Time.deltaTime*(1f/4f));
-		impulseText.GetComponent<Text> ().text = blinkResource.ToString ("0.#");
+		blinkText.GetComponent<Text> ().text = blinkResource.ToString ("0.#");
 
-		if (impulsing > 0f) {
+		if (receiveInput) {
 
-			receiveInput2 = false;
-
-			impulsing -= Time.deltaTime;
-			if (impulsing <= 0f) { impulsing = 0f; }
-
-			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
-			this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * Time.deltaTime * 20f);
-
-			auxFieldOfView = Mathf.Min (1f, auxFieldOfView + Time.deltaTime*10f);
-			maxFieldOfView = Mathf.Lerp (maxFieldOfView, 80f, Time.deltaTime * 5f);
-
-		} else if (receiveInput) {
-
-			receiveInput2 = true;
-
-			if (Input.GetKeyDown(KeyCode.LeftShift) && blinkResource >= 1f && impulsing == 0f) {
+			if (Input.GetKeyDown(KeyCode.LeftShift) && blinkResource >= 1f) {
+				
 				blinkResource -= 1f;
-				impulsing = 0.13f;
-			}
+				this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 
+				float colliderOffset = this.transform.GetComponent<CapsuleCollider> ().radius;
+				Vector3Nullable blockingPoint = firstLookingNonPlayer (blinkDistance + colliderOffset);
 
-			/* HACK ESTO ES PARA VER COMO FUNCIONABA EL EMIT, SI NO SE USA EL SPRINT, QUITARLO
-			if (sprintActive > 0f) {
-				characterSpeed = turboSpeed;
-				if (!sprintTrail.Emit) { sprintTrail.Emit = true; }
-			}
-			else {
-				characterSpeed = baseSpeed;
-				if (sprintTrail.Emit) { sprintTrail.Emit = false; }
-			}
-			*/
+				if (blockingPoint.isNull == true) {
+					this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * blinkDistance);
+				} else {
+					float distanceToBlock = Vector3.Distance (blockingPoint.vector3, visualAvatar.transform.position + LocalPlayerScript.centerOfCamera);
+					this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * (distanceToBlock - colliderOffset));
+				}
 
+			}
 
 			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
 
@@ -472,7 +484,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		Vector2 movement = new Vector3 (0, 0);
 
-		if (receiveInput && receiveInput2) {
+		if (receiveInput) {
 
 			if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
 				movement = new Vector3(movement.x, 1f);
@@ -604,9 +616,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleCameraChanges() {
 
-		if (receiveInput2) {
-			cameraValueY += (Input.GetAxis("Mouse Y"))*sensitivityY;
-		}
+
+		cameraValueY += (Input.GetAxis("Mouse Y"))*sensitivityY;
+
 
 		//cameraValueY = Mathf.Clamp (cameraValueY, -60f, 60f);
 		cameraValueY = Mathf.Clamp (cameraValueY, -90f, 90f);
@@ -630,7 +642,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 
 		float changeX = 0f;
-		if (receiveInput2) { changeX = (Input.GetAxis("Mouse X"))*sensitivityX; }
+		changeX = (Input.GetAxis("Mouse X"))*sensitivityX; 
 
 		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 
@@ -688,5 +700,16 @@ public class LocalPlayerScript : MonoBehaviour {
 		}
 
     }
+
+	public class Vector3Nullable {
+
+		public bool isNull = true;
+		public Vector3 vector3 = Vector3.zero;
+
+		public Vector3Nullable() {
+
+		}
+
+	}
 
 }
