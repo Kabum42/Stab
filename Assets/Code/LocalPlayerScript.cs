@@ -395,7 +395,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (clientScript != null) {
 			ClientScript.Player auxPlayer = clientScript.firstLookingPlayer (clientScript.myPlayer);
-			return auxPlayer;
+			return auxPlayerwwwwwwwwwwww;
 		}
 		return null;
 
