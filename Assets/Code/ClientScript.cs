@@ -25,7 +25,7 @@ public class ClientScript : MonoBehaviour {
 
 	[HideInInspector] public LocalPlayerScript localPlayer;
 	[HideInInspector] public int myCode;
-	private Player myPlayer;
+	public Player myPlayer;
 	public List<Player> listPlayers = new List<Player>();
 
 	private static float slowSpeed = 1f/(1f);
@@ -35,8 +35,6 @@ public class ClientScript : MonoBehaviour {
 	private int winnerCode = -1;
 
 	public static float hackingTimerMax = 3f;
-
-	private List<int> hackAttackBuffer = new List<int>();
 
 	private Camera auxCamera;
 
@@ -137,15 +135,6 @@ public class ClientScript : MonoBehaviour {
 		foreach (Player player in listPlayers) {
 			
 			LocalPlayerScript.RotateHead (player.visualAvatar, player.currentCameraEulerX);
-
-		}
-
-		if (Network.isServer) {
-
-			foreach (int playerCode in hackAttackBuffer) {
-				serverScript.hackAttack (playerCode);
-			}
-			hackAttackBuffer.Clear ();
 
 		}
 
@@ -758,13 +747,13 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void hackAttackRPC(int playerCode) {
-		hackAttackBuffer.Add (playerCode);
+	void hackAttackRPC(int attackerCode, int victimCode) {
+		serverScript.hackAttack (attackerCode, victimCode);
 	}
 
 	[RPC]
-	void interceptAttackRPC(int playerCode) {
-		serverScript.interceptAttack (playerCode);
+	void interceptAttackRPC(int attackerCode, int victimCode) {
+		serverScript.interceptAttack (attackerCode, victimCode);
 	}
 
 	[RPC]

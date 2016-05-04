@@ -162,24 +162,21 @@ public class ServerScript : MonoBehaviour {
 	}
 
 
-	public void hackAttack (int playerCode) {
+	public void hackAttack (int attackerCode, int victimCode) {
 
 		if (!clientScript.localPlayer.gameEnded) {
 
-			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
-			ClientScript.Player victimPlayer = clientScript.insideBigCrosshairExclusive(attackerPlayer, float.MaxValue, "smallCrosshair", false);
+			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (attackerCode);
+			ClientScript.Player victimPlayer = clientScript.PlayerByCode (victimCode);
 
-			if (victimPlayer != null) {
-				// THERE'S A VICTIM
-				float distance = Vector3.Distance(attackerPlayer.targetPosition, victimPlayer.targetPosition);
-
-				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && distance <= ClientScript.hackKillDistance) {
-					// IF THE DISTANCE IS SMALL AND WAS ALREADY HACKED, DIES
+			if (!attackerPlayer.dead && !victimPlayer.dead && victimPlayer.hackingPlayerCode != attackerCode) {
+				// IT'S POSSIBLE
+				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode) {
+					// IF WAS ALREADY HACKED, DIES
 					if (victimPlayer.immune <= 0f) {
 
 						attackerPlayer.kills++;
 						attackerPlayer.hackingPlayerCode = -1;
-						sendHackData ();
 						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, victimPlayer.playerCode);
 
 						victimPlayer.deadTime = 3f;
@@ -190,7 +187,7 @@ public class ServerScript : MonoBehaviour {
 					}
 
 				} else {
-					// IF THE DISTANCE IS BIG OR ISN'T HACKED, THEN IT'S HACKED
+					// IF WASN'T HACKED, THEN IT'S HACKED
 					attackerPlayer.hackingPlayerCode = victimPlayer.playerCode;
 					attackerPlayer.hackingTimer = ClientScript.hackingTimerMax;
 					attackerPlayer.justHacked = true;
@@ -201,34 +198,24 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	public void interceptAttack (int playerCode) {
+	public void interceptAttack (int attackerCode, int victimCode) {
 
 		if (!clientScript.localPlayer.gameEnded) {
 
-			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (playerCode);
+			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (attackerCode);
+			ClientScript.Player victimPlayer = clientScript.PlayerByCode (victimCode);
 
-			List<ClientScript.Player> playersCrosshair = clientScript.insideBigCrosshair (attackerPlayer, ClientScript.interceptKillDistance, "bigCrosshair", true);
+			if (!attackerPlayer.dead && !victimPlayer.dead && victimPlayer.hackingPlayerCode == attackerPlayer.playerCode) {
+				// IT'S POSSIBLE
 
-			bool deaths = false;
+				attackerPlayer.kills++;
+				GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, victimPlayer.playerCode);
 
-			foreach (ClientScript.Player player in playersCrosshair) {
+				victimPlayer.deadTime = 3f;
 
-				if (player.hackingPlayerCode == attackerPlayer.playerCode) {
-					// YOU'RE DEAD, MADAFACKA
-					deaths = true;
-
-					attackerPlayer.kills++;
-					GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, player.playerCode);
-
-					player.deadTime = 3f;
-
-				}
-
-			}
-
-			if (deaths) {
 				sendHackData ();
 				sendRankingData ();
+
 			}
 
 		}

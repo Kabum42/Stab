@@ -292,11 +292,20 @@ public class LocalPlayerScript : MonoBehaviour {
 
 
 			if (clientScript != null) {
-				if (Network.isServer) {
-					clientScript.serverScript.interceptAttack (clientScript.myCode);
-				} else {
-					clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, clientScript.myCode);
+
+				List<ClientScript.Player> playersInside = clientScript.insideBigCrosshair (clientScript.myPlayer, float.MaxValue, "bigCrosshair", true);
+
+				foreach (ClientScript.Player player in playersInside) {
+					if (player.hackingPlayerCode == clientScript.myCode) {
+						if (Network.isServer) {
+							clientScript.serverScript.interceptAttack (clientScript.myCode, player.playerCode);
+						} else {
+							clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, clientScript.myCode, player.playerCode);
+						}
+					}
 				}
+
+
 			}
 
         }
@@ -353,11 +362,17 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 
 			if (clientScript != null) {
-				if (Network.isServer) {
-					clientScript.serverScript.hackAttack (clientScript.myCode);
-				} else {
-					clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, clientScript.myCode);
+
+				ClientScript.Player victimPlayer = clientScript.firstLookingPlayer (clientScript.myPlayer);
+
+				if (victimPlayer != null) {
+					if (Network.isServer) {
+						clientScript.serverScript.hackAttack (clientScript.myCode, victimPlayer.playerCode);
+					} else {
+						clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, clientScript.myCode, victimPlayer.playerCode);
+					}
 				}
+
 			}
 
 		}
