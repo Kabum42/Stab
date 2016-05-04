@@ -142,7 +142,7 @@ public class ClientScript : MonoBehaviour {
 
 	void updateCanvas() {
 
-		Player auxPlayer = insideBigCrosshairExclusive(myPlayer, float.MaxValue, "smallCrosshair", false);
+		Player auxPlayer = localPlayer.playerOnCrosshair();
 
 		if (auxPlayer == null) {
 			localPlayer.crosshairHackTriclip.SetActive (true);

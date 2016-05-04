@@ -363,7 +363,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (clientScript != null) {
 
-				ClientScript.Player victimPlayer = clientScript.firstLookingPlayer (clientScript.myPlayer);
+				ClientScript.Player victimPlayer = playerOnCrosshair ();
 
 				if (victimPlayer != null) {
 					if (Network.isServer) {
@@ -388,6 +388,16 @@ public class LocalPlayerScript : MonoBehaviour {
 			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.15f, 0.15f, 0.15f), Time.deltaTime*10f);
 			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 0.5f), Time.deltaTime * 10f);
 		}
+
+	}
+
+	public ClientScript.Player playerOnCrosshair() {
+
+		if (clientScript != null) {
+			ClientScript.Player auxPlayer = clientScript.firstLookingPlayer (clientScript.myPlayer);
+			return auxPlayer;
+		}
+		return null;
 
 	}
 
