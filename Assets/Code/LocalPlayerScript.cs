@@ -54,6 +54,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public List<GameObject> crosshairHackInterceptChargesFull = new List<GameObject>();
 	[HideInInspector] public GameObject crosshairHackSkull;
 
+
+
 	private int nextHackCharge = 1;
 	public float hackResource = 3f;
 
@@ -375,6 +377,15 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			}
 
+			Vector3Nullable vector3Nullable = firstLookingNonPlayer(-1f);
+			if (!vector3Nullable.isNull) {
+				GameObject laserShot = Instantiate (Resources.Load ("Prefabs/LaserShot") as GameObject);
+				laserShot.transform.eulerAngles = personalCamera.transform.eulerAngles;
+				float distance = 1f;
+				laserShot.transform.position = vector3Nullable.vector3 - laserShot.transform.forward*distance*(1/2f);
+				laserShot.GetComponent<Projector> ().farClipPlane = distance;
+			}
+
 		}
 
 		crosshairHackSmallOldZ = Mathf.Lerp (crosshairHackSmallOldZ, crosshairHackSmallTargetZ, Time.deltaTime * 5f);
@@ -407,7 +418,11 @@ public class LocalPlayerScript : MonoBehaviour {
 		Vector3Nullable vector3Nullable = new Vector3Nullable ();
 
 		RaycastHit[] hits;
-		hits = Physics.RaycastAll (this.transform.position + LocalPlayerScript.centerOfCamera, this.personalCamera.transform.forward, distance);
+		if (distance >= 0f) {
+			hits = Physics.RaycastAll (this.transform.position + LocalPlayerScript.centerOfCamera, this.personalCamera.transform.forward, distance);
+		} else {
+			hits = Physics.RaycastAll (this.transform.position + LocalPlayerScript.centerOfCamera, this.personalCamera.transform.forward);
+		}
 		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
 
 		for (int i = 0; i < hits.Length; i++) {
