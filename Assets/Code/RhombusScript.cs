@@ -1267,7 +1267,8 @@ public class RhombusScript : MonoBehaviour {
 
 			lastSalt += saltStep;
 			double quality = (double)lMatch.pingQuality;
-			double players = (999f - (double)lMatch.players) / 1000f;
+			float relativePlayers = ((float)lMatch.players / (float)lMatch.maxPlayers) * 998f;
+			double players = (999f - (double)relativePlayers) / 1000f;
 			double key = quality + players + lastSalt;
 
 			return key;
