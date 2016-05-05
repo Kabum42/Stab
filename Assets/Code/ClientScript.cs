@@ -43,6 +43,8 @@ public class ClientScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Awake () {
+
+		GlobalData.clientScript = this;
 	
 		chatManager = new ChatManager(GameObject.Find ("Canvas/ChatPanel/ScrollRect/AllChat"));
 
@@ -57,11 +59,12 @@ public class ClientScript : MonoBehaviour {
 		map = this.gameObject;
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
-		localPlayer.clientScript = this;
 
 		// YOU JOIN AS PLAYER
 		myCode = Int32.Parse(Network.player.ToString ());
 		myPlayer = new Player(myCode, localPlayer.visualAvatar);
+		localPlayer.visualAvatar.GetComponent<PlayerMarker>().player = myPlayer;
+
 		listPlayers.Add(myPlayer);
 
 		// SERVER RELATED

@@ -7,9 +7,9 @@ using System.Collections.Generic;
 
 public class LocalPlayerScript : MonoBehaviour {
 
-    [HideInInspector] public ClientScript clientScript;
 	public GameObject personalCamera;
 	private GameObject firstPersonCamera;
+	public HackCapsuleScript hackCapsule;
 	//private float cameraDistance = 3.2f;
     private float cameraDistance = 0f;
 	private float allPlayerRotationX = 0f;
@@ -101,6 +101,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
 		personalCamera.transform.localPosition = centerOfCamera;
 		firstPersonCamera = this.gameObject.transform.FindChild ("PersonalCamera/FirstPersonCamera").gameObject;
+		hackCapsule = this.gameObject.transform.FindChild ("PersonalCamera/HackCapsule").gameObject.GetComponent<HackCapsuleScript>();
 		visualAvatar = Instantiate (Resources.Load("Prefabs/BOT") as GameObject);
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
@@ -290,16 +291,16 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 
 
-			if (clientScript != null) {
+			if (GlobalData.clientScript != null) {
 
-				List<ClientScript.Player> playersInside = clientScript.insideBigCrosshair (clientScript.myPlayer, float.MaxValue, "bigCrosshair", true);
+				List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, float.MaxValue, "bigCrosshair", true);
 
 				foreach (ClientScript.Player player in playersInside) {
-					if (player.hackingPlayerCode == clientScript.myCode) {
+					if (player.hackingPlayerCode == GlobalData.clientScript.myCode) {
 						if (Network.isServer) {
-							clientScript.serverScript.interceptAttack (clientScript.myCode, player.playerCode);
+							GlobalData.clientScript.serverScript.interceptAttack (GlobalData.clientScript.myCode, player.playerCode);
 						} else {
-							clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, clientScript.myCode, player.playerCode);
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, player.playerCode);
 						}
 					}
 				}
@@ -360,15 +361,15 @@ public class LocalPlayerScript : MonoBehaviour {
 				crosshairHackSmallOldZ += 360f;
 			}
 
-			if (clientScript != null) {
+			if (GlobalData.clientScript != null) {
 
 				ClientScript.Player victimPlayer = playerOnCrosshair ();
 
 				if (victimPlayer != null) {
 					if (Network.isServer) {
-						clientScript.serverScript.hackAttack (clientScript.myCode, victimPlayer.playerCode);
+						GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, victimPlayer.playerCode);
 					} else {
-						clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, clientScript.myCode, victimPlayer.playerCode);
+						GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, victimPlayer.playerCode);
 					}
 				}
 
@@ -392,8 +393,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public ClientScript.Player playerOnCrosshair() {
 
-		if (clientScript != null) {
-			ClientScript.Player auxPlayer = clientScript.firstLookingPlayer (clientScript.myPlayer);
+		if (GlobalData.clientScript != null) {
+			//ClientScript.Player auxPlayer = hackCapsule.firstLookingPlayer();
+			ClientScript.Player auxPlayer = GlobalData.clientScript.firstLookingPlayer(GlobalData.clientScript.myPlayer);
 			return auxPlayer;
 		}
 		return null;
