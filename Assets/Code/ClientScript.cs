@@ -34,7 +34,7 @@ public class ClientScript : MonoBehaviour {
 
 	private int winnerCode = -1;
 
-	public static float hackingTimerMax = 3f;
+	public static float hackingTimerMax = 5f;
 
 	private Camera auxCamera;
 
@@ -155,7 +155,7 @@ public class ClientScript : MonoBehaviour {
 		}
 		else {
 
-			if (Vector3.Distance (auxPlayer.cameraMockup.transform.position, myPlayer.cameraMockup.transform.position) < hackKillDistance && myPlayer.hackingPlayerCode == auxPlayer.playerCode) {
+			if (Vector3.Distance (auxPlayer.cameraMockup.transform.position, myPlayer.cameraMockup.transform.position) <= hackKillDistance && myPlayer.hackingPlayerCode == auxPlayer.playerCode) {
 				localPlayer.crosshairHackTriclip.SetActive (false);
 				localPlayer.crosshairHackSkull.SetActive (true);
 			} else {

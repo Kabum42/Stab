@@ -171,8 +171,8 @@ public class ServerScript : MonoBehaviour {
 
 			if (!attackerPlayer.dead && !victimPlayer.dead && victimPlayer.hackingPlayerCode != attackerCode) {
 				// IT'S POSSIBLE
-				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode) {
-					// IF WAS ALREADY HACKED, DIES
+				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && Vector3.Distance(attackerPlayer.cameraMockup.transform.position, victimPlayer.cameraMockup.transform.position) <= ClientScript.hackKillDistance) {
+					// IF WAS ALREADY HACKED AND WITHIN KILL DISTANCE, DIES
 					if (victimPlayer.immune <= 0f) {
 
 						attackerPlayer.kills++;
@@ -187,7 +187,7 @@ public class ServerScript : MonoBehaviour {
 					}
 
 				} else {
-					// IF WASN'T HACKED, THEN IT'S HACKED
+					// IF WASN'T HACKED OR WITHIN KILL DISTANCE, THEN IT'S HACKED
 					attackerPlayer.hackingPlayerCode = victimPlayer.playerCode;
 					attackerPlayer.hackingTimer = ClientScript.hackingTimerMax;
 					attackerPlayer.justHacked = true;

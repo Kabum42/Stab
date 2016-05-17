@@ -108,6 +108,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar.transform.parent = this.gameObject.transform;
 		visualAvatar.transform.localPosition = new Vector3 (0, 0, 0);
 		visualAvatar.name = "VisualAvatar";
+		Hacks.SetLayerRecursively (this.gameObject, LayerMask.NameToLayer ("Ignore Raycast"));
 		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
 		//materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
 		// THIS IS TO HIDE THE MAIN CHARACTER BUT STILL RENDER IT SO ALL ANIMATION AND PHYSICS UPDATES TAKE IT INTO ACCOUNT
@@ -396,8 +397,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	public ClientScript.Player playerOnCrosshair() {
 
 		if (GlobalData.clientScript != null) {
-			//ClientScript.Player auxPlayer = hackCapsule.firstLookingPlayer();
-			ClientScript.Player auxPlayer = GlobalData.clientScript.firstLookingPlayer(GlobalData.clientScript.myPlayer);
+			ClientScript.Player auxPlayer = hackCapsule.firstLookingPlayer();
+			//ClientScript.Player auxPlayer = GlobalData.clientScript.firstLookingPlayer(GlobalData.clientScript.myPlayer);
 			return auxPlayer;
 		}
 		return null;

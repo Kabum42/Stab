@@ -5,7 +5,7 @@ using System.Linq;
 
 public class HackCapsuleScript : MonoBehaviour {
 
-	/*
+
 	public List<GameObject> listTriggering = new List<GameObject>();
 
 	void Update() {
@@ -30,9 +30,9 @@ public class HackCapsuleScript : MonoBehaviour {
 		if (GlobalData.clientScript != null && !listTriggering.Contains (other.gameObject)) {
 			ClientScript.Player player = getPlayerFromGameObject (other.gameObject);
 			if (player == null) {
-				listTriggering.Add (other.gameObject);
+				//listTriggering.Add (other.gameObject);
 			}
-			else if (player != null && player != GlobalData.clientScript.myPlayer) {
+			else {
 				listTriggering.Add(other.gameObject);
 			}
 		}
@@ -65,20 +65,37 @@ public class HackCapsuleScript : MonoBehaviour {
 			
 			listTriggering = listTriggering.OrderBy(o=>Vector3.Distance(GlobalData.clientScript.localPlayer.personalCamera.transform.position, o.transform.position)).ToList();
 			for (int i = 0; i < listTriggering.Count; i++) {
+				// CHECKING PLAYER LIMBS BY DISTANCE
 				ClientScript.Player auxPlayer = getPlayerFromGameObject(listTriggering[i]);
-				if (auxPlayer != null) {
-					if (!auxPlayer.dead) {
-						return auxPlayer;
+
+				Vector3 originRaycast = GlobalData.clientScript.localPlayer.personalCamera.transform.position;
+				Vector3 endRaycast = listTriggering [i].transform.position;
+
+				Vector3 directionRaycast = (endRaycast - originRaycast).normalized;
+				RaycastHit hitInfo;
+				float maxDistance = Vector3.Distance(originRaycast, endRaycast);
+				Physics.Raycast(originRaycast, directionRaycast, out hitInfo, maxDistance);
+
+				if (hitInfo.collider != null && hitInfo.collider.gameObject != null) {
+					// IT COLLIDED WITH SOMETHING
+					ClientScript.Player auxPlayer2 = getPlayerFromGameObject(hitInfo.collider.gameObject);
+
+					if (auxPlayer == auxPlayer2) {
+						if (!auxPlayer.dead) {
+							return auxPlayer;
+						}
+					} else {
+						//return null;
 					}
-				} else {
-					return null;
+
 				}
+
 			}
 
 		}
 		return null;
 
 	}
-	*/
+
 
 }
