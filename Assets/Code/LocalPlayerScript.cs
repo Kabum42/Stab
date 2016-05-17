@@ -37,6 +37,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public float blinkResource = 3f;
 	public float blinkDistance = 5f;
+	public bool blinking = false;
+	public Vector3 blinkStart;
+	public Vector3 blinkEnd;
 
 	public bool dead = false;
 
@@ -83,9 +86,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	private GameObject armRight;
 
     private GameObject alertHacked;
-
-	private float auxFieldOfView = 0f;
-	private float maxFieldOfView = 75f;
 
 	private bool lastTimeGrounded = true;
 	private static float footStepCooldownMax = 0.35f;
@@ -377,15 +377,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			}
 
-			Vector3Nullable vector3Nullable = firstLookingNonPlayer(-1f);
-			if (!vector3Nullable.isNull) {
-				GameObject laserShot = Instantiate (Resources.Load ("Prefabs/LaserShot") as GameObject);
-				laserShot.transform.eulerAngles = personalCamera.transform.eulerAngles;
-				float distance = 1f;
-				laserShot.transform.position = vector3Nullable.vector3 - laserShot.transform.forward*distance*(1/2f);
-				laserShot.GetComponent<Projector> ().farClipPlane = distance;
-			}
-
 		}
 
 		crosshairHackSmallOldZ = Mathf.Lerp (crosshairHackSmallOldZ, crosshairHackSmallTargetZ, Time.deltaTime * 5f);
@@ -470,19 +461,24 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (receiveInput) {
 
-			if (Input.GetKeyDown(KeyCode.LeftShift) && blinkResource >= 1f) {
+			if (Input.GetKeyDown(KeyCode.LeftShift) && blinkResource >= 1f && !blinking) {
+
+				blinking = true;
 				
 				blinkResource -= 1f;
-				this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
+
+				blinkStart = this.transform.GetComponent<Rigidbody> ().position;
 
 				float colliderOffset = this.transform.GetComponent<CapsuleCollider> ().radius;
 				Vector3Nullable blockingPoint = firstLookingNonPlayer (blinkDistance + colliderOffset);
 
 				if (blockingPoint.isNull == true) {
-					this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * blinkDistance);
+					blinkEnd = blinkStart + personalCamera.transform.forward * blinkDistance;
+					//this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * blinkDistance);
 				} else {
 					float distanceToBlock = Vector3.Distance (blockingPoint.vector3, visualAvatar.transform.position + LocalPlayerScript.centerOfCamera);
-					this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * (distanceToBlock - colliderOffset));
+					blinkEnd = blinkStart + personalCamera.transform.forward * (distanceToBlock - colliderOffset);
+					//this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * (distanceToBlock - colliderOffset));
 				}
 
 			}
@@ -493,6 +489,28 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			}
 
+		}
+
+		if (blinking) {
+
+			this.transform.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
+
+			Vector3 previousPosition = this.transform.GetComponent<Rigidbody> ().position;
+			Vector3 blinkDirection = blinkEnd - blinkStart;
+			blinkDirection.Normalize ();
+			Vector3 currentPosition = previousPosition + blinkDirection * Time.deltaTime * 80f;
+
+			if (Vector3.Distance (blinkEnd, currentPosition) > Vector3.Distance (blinkEnd, previousPosition)) {
+				// BLINKING HAS ENDED
+				blinking = false;
+
+			}
+
+			this.transform.GetComponent<Rigidbody> ().MovePosition (currentPosition);
+			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (personalCamera.GetComponent<Camera> ().fieldOfView, 80f, Time.deltaTime * 10f);
+
+		} else {
+			personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.Lerp (personalCamera.GetComponent<Camera> ().fieldOfView, 70f, Time.deltaTime * 10f);
 		}
 
 	}
@@ -572,9 +590,6 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 
 		}
-
-		personalCamera.GetComponent<Camera> ().fieldOfView = Mathf.SmoothStep (70f, maxFieldOfView, auxFieldOfView);
-		firstPersonCamera.GetComponent<Camera> ().fieldOfView = personalCamera.GetComponent<Camera> ().fieldOfView;
 
 		if (!lastTimeGrounded && IsGrounded ()) {
 			// JUST LANDED
