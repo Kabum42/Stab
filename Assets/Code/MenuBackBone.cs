@@ -24,6 +24,9 @@ public class MenuBackBone : MonoBehaviour {
 
 	public Vector3 neuronOffset = new Vector3(-8f, -3.5f, 1f);
 
+	public int scrollValue = 0;
+	public float scrollCooldown = 0f;
+
 	// Use this for initialization
 	void Start () {
 
@@ -170,17 +173,19 @@ public class MenuBackBone : MonoBehaviour {
 
 	private void ProcessInput() {
 
+		handleScroll ();
+
 		if (!rhombus.active) {
 
-			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+			if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow) || scrollValue == 1)
 			{
-
+				
 				currentMenuNeuron.optionSelected--;
 				if (currentMenuNeuron.optionSelected < 0) { currentMenuNeuron.optionSelected = currentMenuNeuron.options.Count -1; }
 				currentMenuNeuron.clockwise = true;
 				SoundMoveSelected ();
 
-			} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) {
+			} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow) || scrollValue == -1) {
 
 				currentMenuNeuron.optionSelected++;
 				if (currentMenuNeuron.optionSelected > (currentMenuNeuron.options.Count -1)) { currentMenuNeuron.optionSelected = 0; }
@@ -193,7 +198,7 @@ public class MenuBackBone : MonoBehaviour {
 
 
 
-		if (Input.GetKeyDown (KeyCode.Return) && !rhombus.active) {
+		if ((Input.GetKeyDown (KeyCode.Return) || Input.GetMouseButtonDown(0)) && !rhombus.active) {
 
 			string action = currentMenuNeuron.options [currentMenuNeuron.optionSelected].action;
 
@@ -264,7 +269,7 @@ public class MenuBackBone : MonoBehaviour {
 
 			}
 
-		} else if (Input.GetKeyDown (KeyCode.Escape)) {
+		} else if (Input.GetKeyDown (KeyCode.Escape) || Input.GetMouseButtonDown(1)) {
 
 			if (!rhombus.active) {
 
@@ -282,6 +287,31 @@ public class MenuBackBone : MonoBehaviour {
 		}
 
 	}
+
+	void handleScroll() {
+
+		if (Input.mouseScrollDelta.y == 0f) {
+			scrollCooldown = Mathf.Max (0f, scrollCooldown - Time.deltaTime);
+		} else {
+			scrollCooldown = 0.1f;
+		}
+
+		if (scrollCooldown <= 0f) {
+			scrollValue = 0;
+		}
+			
+		if (scrollValue == 0) {
+			if (Input.mouseScrollDelta.y > 0.01f) {
+				scrollValue = 1;
+			} else if (Input.mouseScrollDelta.y < -0.01f) {
+				scrollValue = -1;
+			}
+		} else {
+			scrollValue = 2;
+		}
+
+	}
+
 
     private void Back()
     {
