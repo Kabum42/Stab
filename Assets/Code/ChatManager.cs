@@ -16,13 +16,12 @@ public class ChatManager {
 	private int maxMessages = 10;
 	private ScrollRect scrollRect;
 
-	public ChatManager(GameObject auxPhysicalChat) {
+	public ChatManager(GameObject auxChatPanel) {
 
-		physicalChat = auxPhysicalChat;
-		scrollRect = auxPhysicalChat.transform.parent.gameObject.GetComponent<ScrollRect> ();
-
-		chatInputField = GameObject.Find ("Canvas/ChatPanel/InputField");
-		chatPanel = GameObject.Find ("Canvas/ChatPanel");
+		chatPanel = auxChatPanel;
+		chatInputField = chatPanel.transform.FindChild ("InputField").gameObject;
+		physicalChat = chatPanel.transform.FindChild ("ScrollRect/AllChat").gameObject;
+		scrollRect = physicalChat.transform.parent.gameObject.GetComponent<ScrollRect> ();
 
 	}
 
