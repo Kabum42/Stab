@@ -40,6 +40,8 @@ public class ClientScript : MonoBehaviour {
 	public static float hackKillDistance = 3f;
 	public static float interceptKillDistance = 6f;
 
+	private bool justRespawned = false;
+
 	// Use this for initialization
 	void Awake () {
 
@@ -356,7 +358,12 @@ public class ClientScript : MonoBehaviour {
 
 				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
 
-				GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
+				if (justRespawned) {
+					justRespawned = false;
+					GetComponent<NetworkView> ().RPC ("updatePlayerInstantRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position);
+				} else {
+					GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
+				}
 
 			}
 
@@ -680,6 +687,19 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
+	void updatePlayerInstantRPC(int playerCode, Vector3 position)
+	{
+		bool foundPlayer = false;
+
+		Player player = PlayerByCode (playerCode);
+		if (player != null) {
+			player.visualAvatar.transform.position = position;
+			player.targetPosition = position;
+		}
+
+	}
+
+	[RPC]
 	void addChatMessageRPC(int playerCode, string text)
 	{
 		string owner = "Player " + playerCode;
@@ -814,11 +834,12 @@ public class ClientScript : MonoBehaviour {
 			localPlayer.hackResource = 3f;
 			localPlayer.interceptResource = 3f;
 			localPlayer.blinkResource = 3f;
+			justRespawned = true;
 		} else {
 			Player auxPlayer = PlayerByCode (playerCode);
 			auxPlayer.visualAvatar.transform.position = position;
-			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
 			auxPlayer.targetPosition = position;
+			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
 			auxPlayer.targetAvatarEulerY = eulerAngles.y;
 		}
 		PlayerByCode (playerCode).visualAvatar.GetComponent<RagdollScript> ().Disable ();
