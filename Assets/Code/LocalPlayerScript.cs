@@ -504,7 +504,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			if (Vector3.Distance (blinkEnd, currentPosition) > Vector3.Distance (blinkEnd, previousPosition)) {
 				// BLINKING HAS ENDED
 				blinking = false;
-
+				currentPosition = previousPosition;
 			}
 
 			this.transform.GetComponent<Rigidbody> ().MovePosition (currentPosition);

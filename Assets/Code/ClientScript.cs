@@ -637,6 +637,31 @@ public class ClientScript : MonoBehaviour {
 			else
 				Debug.Log("Successfully diconnected from the server");
 
+		Disconnect ();
+	}
+
+	void OnFailedToConnect(NetworkConnectionError info) {
+
+		Debug.Log ("As a client could not connect for some reason");
+
+		Disconnect ();
+	}
+
+	void OnFailedToConnectToMasterServer(NetworkConnectionError info) {
+
+		Debug.Log ("Could not connect to master server");
+
+		Disconnect ();
+	}
+
+	void OnMasterServerEvent(MasterServerEvent msEvent) {
+		if (msEvent == MasterServerEvent.RegistrationFailedGameName || msEvent == MasterServerEvent.RegistrationFailedGameType || msEvent == MasterServerEvent.RegistrationFailedNoServer) {
+			Debug.Log ("Could not connect to master server");
+			Disconnect();
+		}
+	}
+
+	public static void Disconnect() {
 		Application.LoadLevel ("Menu");
 	}
 
