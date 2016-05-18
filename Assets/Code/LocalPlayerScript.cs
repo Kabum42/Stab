@@ -235,24 +235,26 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void updateUI() {
 
+		characterSpeed = baseSpeed;
+		crosshairHackTriclip.SetActive (true);
+		crosshairHackSkull.SetActive (false);
+
 		ClientScript.Player auxPlayer = playerOnCrosshair();
 
 		if (auxPlayer == null) {
-			crosshairHackTriclip.SetActive (true);
-			crosshairHackSkull.SetActive (false);
 			crosshairHackDot.GetComponent<Image>().color = new Color(1f, 1f, 1f);
 			textTargeted.SetActive(false);
 		}
 		else {
 			// SOMEONE ON THE CROSSHAIR
-			if (GlobalData.clientScript.myPlayer.hackingPlayerCode == auxPlayer.playerCode && Vector3.Distance (auxPlayer.cameraMockup.transform.position, personalCamera.transform.position) <= ClientScript.hackKillDistance) {
-				// HACKED PLAYER AND WITHIN KILL DISTANCE
-				crosshairHackTriclip.SetActive (false);
-				crosshairHackSkull.SetActive (true);
-			} else {
-				crosshairHackTriclip.SetActive (true);
-				crosshairHackSkull.SetActive (false);
-			}
+			if (GlobalData.clientScript.myPlayer.hackingPlayerCode == auxPlayer.playerCode) {
+				// ALREADY HACKED
+				characterSpeed = turboSpeed;
+				if (Vector3.Distance (auxPlayer.cameraMockup.transform.position, personalCamera.transform.position) <= ClientScript.hackKillDistance) {
+					crosshairHackTriclip.SetActive (false);
+					crosshairHackSkull.SetActive (true);
+				}
+			} 
 
 			crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 			textTargeted.SetActive(true);
