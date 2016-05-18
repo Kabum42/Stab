@@ -36,7 +36,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float notMoving = 0f;
 
 	public float blinkResource = 3f;
-	public float blinkDistance = 5f;
+	[HideInInspector] public static float blinkDistance = 3.5f;
 	public bool blinking = false;
 	public Vector3 blinkStart;
 	public Vector3 blinkEnd;
@@ -239,43 +239,57 @@ public class LocalPlayerScript : MonoBehaviour {
 		crosshairHackTriclip.SetActive (true);
 		crosshairHackSkull.SetActive (false);
 
-		ClientScript.Player auxPlayer = playerOnCrosshair();
+		if (GlobalData.clientScript != null) {
 
-		if (auxPlayer == null) {
+			ClientScript.Player crosshairPlayer = playerOnCrosshair();
 			crosshairHackDot.GetComponent<Image>().color = new Color(1f, 1f, 1f);
 			textTargeted.SetActive(false);
-		}
-		else {
-			// SOMEONE ON THE CROSSHAIR
-			if (GlobalData.clientScript.myPlayer.hackingPlayerCode == auxPlayer.playerCode) {
-				// ALREADY HACKED
+			ClientScript.Player hackedPlayer = null;
+			float distanceToHacked = float.MaxValue;
+			// BY DEFAULT DEACTIVATED
+			distanceText.SetActive (false);
+
+			if (GlobalData.clientScript.myPlayer.hackingPlayerCode != -1) {
+				// I'M HACKING SOMEONE
+				hackedPlayer = GlobalData.clientScript.PlayerByCode(GlobalData.clientScript.myPlayer.hackingPlayerCode);
+				distanceToHacked = Vector3.Distance(personalCamera.transform.position, hackedPlayer.cameraMockup.transform.position);
+			}
+				
+			List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, float.MaxValue, "bigCrosshair", false);
+
+			if (playersInside.Contains (hackedPlayer)) {
 				characterSpeed = turboSpeed;
-				if (Vector3.Distance (auxPlayer.cameraMockup.transform.position, personalCamera.transform.position) <= ClientScript.hackKillDistance) {
+				if (distanceToHacked <= ClientScript.hackKillDistance) {
 					crosshairHackTriclip.SetActive (false);
 					crosshairHackSkull.SetActive (true);
+					distanceText.SetActive (true);
+					distanceText.GetComponent<Text> ().text = "KILL";
+					crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
+					textTargeted.SetActive(true);
+					textTargeted.GetComponent<Text>().text = "<Player "+hackedPlayer.playerCode+">";
 				}
-			} 
-
-			crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
-			textTargeted.SetActive(true);
-			textTargeted.GetComponent<Text>().text = "<Player "+auxPlayer.playerCode+">";
-
-		}
-
-		// BY DEFAULT DEACTIVATED
-		distanceText.SetActive (false);
-
-		if (GlobalData.clientScript.myPlayer.hackingPlayerCode != -1) {
-			ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByCode (GlobalData.clientScript.myPlayer.hackingPlayerCode);
-			if (Vector3.Distance (hackedPlayer.cameraMockup.transform.position, personalCamera.transform.position) <= ClientScript.hackKillDistance) {
-				distanceText.SetActive (true);
-				distanceText.GetComponent<Text> ().text = "KILL";
-			} else {
-				distanceText.SetActive (true);
-				float number = (Vector3.Distance (hackedPlayer.cameraMockup.transform.position, personalCamera.transform.position) - ClientScript.hackKillDistance) * 10f;
-				string numberText = number.ToString ("0");
-				distanceText.GetComponent<Text> ().text = numberText;
 			}
+
+			if (crosshairPlayer != null && !textTargeted.activeInHierarchy) {
+				// SOMEONE ON THE CROSSHAIR && TEXTTARGETED IS NOT ACTIVE
+				crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
+				textTargeted.SetActive(true);
+				textTargeted.GetComponent<Text>().text = "<Player "+crosshairPlayer.playerCode+">";
+			}
+
+			if (hackedPlayer != null) {
+				if (distanceToHacked > ClientScript.hackKillDistance) {
+					distanceText.SetActive (true);
+					float number = (Vector3.Distance (hackedPlayer.cameraMockup.transform.position, personalCamera.transform.position) - ClientScript.hackKillDistance) * 10f;
+					string numberText = number.ToString ("0");
+					distanceText.GetComponent<Text> ().text = numberText;
+				} else if (!distanceText.activeInHierarchy) {
+					distanceText.SetActive (true);
+					distanceText.GetComponent<Text> ().text = "READY";
+				}
+			}
+
+
 		}
 
 	}
@@ -421,13 +435,34 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (GlobalData.clientScript != null) {
 
-				ClientScript.Player victimPlayer = playerOnCrosshair ();
+				bool usedHack = false;
+				ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByCode (GlobalData.clientScript.myPlayer.hackingPlayerCode);
 
-				if (victimPlayer != null) {
-					if (Network.isServer) {
-						GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, victimPlayer.playerCode);
-					} else {
-						GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, victimPlayer.playerCode);
+				if (hackedPlayer != null) {
+					// TRIES TO KILL HIM
+					List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, ClientScript.hackKillDistance, "bigCrosshair", false);
+
+					if (playersInside.Contains (hackedPlayer)) {
+						usedHack = true;
+						if (Network.isServer) {
+							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, hackedPlayer.playerCode);
+						} else {
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, hackedPlayer.playerCode);
+						}
+					}
+						
+				} 
+
+				if (!usedHack) {
+					// TRIES TO HACK_ SOMEONE
+					ClientScript.Player crosshairPlayer = playerOnCrosshair ();
+
+					if (crosshairPlayer != null) {
+						if (Network.isServer) {
+							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, crosshairPlayer.playerCode);
+						} else {
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, crosshairPlayer.playerCode);
+						}
 					}
 				}
 
@@ -530,11 +565,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 				if (blockingPoint.isNull == true) {
 					blinkEnd = blinkStart + personalCamera.transform.forward * blinkDistance;
-					//this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * blinkDistance);
 				} else {
 					float distanceToBlock = Vector3.Distance (blockingPoint.vector3, visualAvatar.transform.position + LocalPlayerScript.centerOfCamera);
 					blinkEnd = blinkStart + personalCamera.transform.forward * (distanceToBlock - colliderOffset);
-					//this.transform.GetComponent<Rigidbody> ().MovePosition (this.transform.GetComponent<Rigidbody> ().position + personalCamera.transform.forward * (distanceToBlock - colliderOffset));
 				}
 
 			}

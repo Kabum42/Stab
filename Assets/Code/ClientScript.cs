@@ -37,8 +37,8 @@ public class ClientScript : MonoBehaviour {
 
 	private Camera auxCamera;
 
-	public static float hackKillDistance = 5f;
-	public static float interceptKillDistance = 8f;
+	public static float hackKillDistance = 3f;
+	public static float interceptKillDistance = 6f;
 
 	// Use this for initialization
 	void Awake () {
