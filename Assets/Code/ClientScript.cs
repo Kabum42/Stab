@@ -18,7 +18,6 @@ public class ClientScript : MonoBehaviour {
 	private ChatManager chatManager;
 
 	private GameObject rankingBackground;
-	private GameObject textTargeted;
 	private GameObject textBig;
 	private float textBigAlpha = 0f;
 	[HideInInspector] public GameObject map;
@@ -39,22 +38,12 @@ public class ClientScript : MonoBehaviour {
 	private Camera auxCamera;
 
 	public static float hackKillDistance = 5f;
-	public static float interceptKillDistance = 10f;
+	public static float interceptKillDistance = 8f;
 
 	// Use this for initialization
 	void Awake () {
 
 		GlobalData.clientScript = this;
-	
-		chatManager = new ChatManager(GameObject.Find ("Canvas/ChatPanel/ScrollRect/AllChat"));
-
-		rankingBackground = GameObject.Find ("Canvas/RankingBackground");
-		rankingBackground.SetActive (false);
-
-		textTargeted = GameObject.Find ("Canvas/TextTargeted");
-		textTargeted.SetActive (false);
-
-		textBig = GameObject.Find ("Canvas/TextBig");
 
 		map = this.gameObject;
 
@@ -81,6 +70,12 @@ public class ClientScript : MonoBehaviour {
 		auxCameraHolder.name = "AuxiliarCamera";
 		auxCameraHolder.SetActive (false);
 
+		rankingBackground = localPlayer.rankingBackground;
+
+		textBig = localPlayer.canvas.transform.FindChild("TextBig").gameObject;
+
+		chatManager = new ChatManager(localPlayer.chatPanel);
+
 	}
 	
 	// Update is called once per frame
@@ -95,11 +90,11 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
+		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
 
 		checkIfActivateChat ();
 		updateChat ();
 		updateRanking ();
-		updateCanvas ();
 		if (!myPlayer.dead) {
 			updateMyInfoInOtherClients ();
 		}
@@ -140,36 +135,6 @@ public class ClientScript : MonoBehaviour {
 			LocalPlayerScript.RotateHead (player.visualAvatar, player.currentCameraEulerX);
 
 		}
-
-	}
-
-	void updateCanvas() {
-
-		Player auxPlayer = localPlayer.playerOnCrosshair();
-
-		if (auxPlayer == null) {
-			localPlayer.crosshairHackTriclip.SetActive (true);
-			localPlayer.crosshairHackSkull.SetActive (false);
-			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 1f, 1f);
-			textTargeted.SetActive(false);
-		}
-		else {
-
-			if (Vector3.Distance (auxPlayer.cameraMockup.transform.position, myPlayer.cameraMockup.transform.position) <= hackKillDistance && myPlayer.hackingPlayerCode == auxPlayer.playerCode) {
-				localPlayer.crosshairHackTriclip.SetActive (false);
-				localPlayer.crosshairHackSkull.SetActive (true);
-			} else {
-				localPlayer.crosshairHackTriclip.SetActive (true);
-				localPlayer.crosshairHackSkull.SetActive (false);
-			}
-
-			localPlayer.crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
-			textTargeted.SetActive(true);
-			textTargeted.GetComponent<Text>().text = "<Player "+auxPlayer.playerCode+">";
-
-		}
-
-		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
 
 	}
 
@@ -637,6 +602,31 @@ public class ClientScript : MonoBehaviour {
 			else
 				Debug.Log("Successfully diconnected from the server");
 
+		Disconnect ();
+	}
+
+	void OnFailedToConnect(NetworkConnectionError info) {
+
+		Debug.Log ("As a client could not connect for some reason");
+
+		Disconnect ();
+	}
+
+	void OnFailedToConnectToMasterServer(NetworkConnectionError info) {
+
+		Debug.Log ("Could not connect to master server");
+
+		Disconnect ();
+	}
+
+	void OnMasterServerEvent(MasterServerEvent msEvent) {
+		if (msEvent == MasterServerEvent.RegistrationFailedGameName || msEvent == MasterServerEvent.RegistrationFailedGameType || msEvent == MasterServerEvent.RegistrationFailedNoServer) {
+			Debug.Log ("Could not connect to master server");
+			Disconnect();
+		}
+	}
+
+	public static void Disconnect() {
 		Application.LoadLevel ("Menu");
 	}
 

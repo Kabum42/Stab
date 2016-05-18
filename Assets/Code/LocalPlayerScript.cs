@@ -43,8 +43,10 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public bool dead = false;
 
-	//public MeleeWeaponTrail sprintTrail;
+	[HideInInspector] public GameObject canvas;
 
+	[HideInInspector] public GameObject rankingBackground;
+	[HideInInspector] public GameObject chatPanel;
 	[HideInInspector] public GameObject crosshairHack;
 	[HideInInspector] public GameObject crosshairHackDot;
 	[HideInInspector] public GameObject crosshairHackTriclip;
@@ -58,14 +60,15 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public GameObject crosshairHackSkull;
 
 
-
 	private int nextHackCharge = 1;
 	public float hackResource = 3f;
 
 	private int nextInterceptCharge = 1;
     public float interceptResource = 3f;
 
+	public GameObject textTargeted;
 	public GameObject blinkText;
+	public GameObject distanceText;
 
 	//public AnimationCurve attackCameraDistance;
 
@@ -116,14 +119,12 @@ public class LocalPlayerScript : MonoBehaviour {
 		for (int i = 0; i < materials.Length; i++) {
 			materials[i].SetFloat ("_Cutoff", 1f);
 		}
-		//sprintTrail = visualAvatar.transform.FindChild ("Mesh/Trail").gameObject.GetComponent<MeleeWeaponTrail>();
 
-		crosshairHack = Instantiate (Resources.Load("Prefabs/CrosshairHack") as GameObject);
-		crosshairHack.transform.SetParent(GameObject.Find ("Canvas").transform);
-		crosshairHack.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0, 0);
-		crosshairHack.name = "CrosshairHack";
-		crosshairHack.GetComponent<RectTransform> ().localScale = new Vector3 (1f, 1f, 1f);
-        crosshairHack.SetActive(true);
+		canvas = Instantiate (Resources.Load("Prefabs/Canvas") as GameObject);
+		canvas.name = "Canvas";
+		Instantiate (Resources.Load("Prefabs/EventSystem") as GameObject).name = "EventSystem";
+
+		crosshairHack = canvas.transform.FindChild ("CrosshairHack").gameObject;
 
         crosshairHackDot = crosshairHack.transform.FindChild("Dot").gameObject;
         crosshairHackTriclip = crosshairHack.transform.FindChild("Triclip").gameObject;
@@ -175,19 +176,24 @@ public class LocalPlayerScript : MonoBehaviour {
 		crosshairHackSkull = crosshairHack.transform.FindChild("Skull").gameObject;
 		crosshairHackSkull.SetActive (false);
 
-        alertHacked = Instantiate(Resources.Load("Prefabs/Alert") as GameObject);
-        alertHacked.transform.SetParent(GameObject.Find("Canvas").transform);
-        alertHacked.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-        alertHacked.name = "Alert";
-        alertHacked.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
-        alertHacked.SetActive(true);
+		rankingBackground = canvas.transform.FindChild ("RankingBackground").gameObject;
+		rankingBackground.SetActive (false);
+
+		chatPanel = canvas.transform.FindChild ("ChatPanel").gameObject;
+		chatPanel.SetActive (false);
+
+		alertHacked = canvas.transform.FindChild ("Alert").gameObject;
         alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f);
 
-		blinkText = Instantiate (Resources.Load("Prefabs/ImpulseText") as GameObject);
-		blinkText.transform.SetParent(GameObject.Find ("Canvas").transform);
-		blinkText.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-64, 35);
-		blinkText.name = "ImpulseText";
-		blinkText.GetComponent<RectTransform> ().localScale = new Vector3 (1f, 1f, 1f);
+		blinkText = canvas.transform.FindChild ("ImpulseText").gameObject;
+
+		distanceText = canvas.transform.FindChild ("DistanceText").gameObject;
+		distanceText.SetActive (false);
+
+		textTargeted = canvas.transform.FindChild ("TextTargeted").gameObject;
+		textTargeted.SetActive (false);
+
+
 
 		lastPositionCursor = Input.mousePosition;
 
@@ -214,6 +220,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	void Update () {
 
 		if (!dead) {
+
+			updateUI ();
 			handleHack ();
 			handleIntercept();
 			handleCameraChanges ();
@@ -223,6 +231,51 @@ public class LocalPlayerScript : MonoBehaviour {
 			alertMockUp();
 		}
 	
+	}
+
+	void updateUI() {
+
+		ClientScript.Player auxPlayer = playerOnCrosshair();
+
+		if (auxPlayer == null) {
+			crosshairHackTriclip.SetActive (true);
+			crosshairHackSkull.SetActive (false);
+			crosshairHackDot.GetComponent<Image>().color = new Color(1f, 1f, 1f);
+			textTargeted.SetActive(false);
+		}
+		else {
+			// SOMEONE ON THE CROSSHAIR
+			if (GlobalData.clientScript.myPlayer.hackingPlayerCode == auxPlayer.playerCode && Vector3.Distance (auxPlayer.cameraMockup.transform.position, personalCamera.transform.position) <= ClientScript.hackKillDistance) {
+				// HACKED PLAYER AND WITHIN KILL DISTANCE
+				crosshairHackTriclip.SetActive (false);
+				crosshairHackSkull.SetActive (true);
+			} else {
+				crosshairHackTriclip.SetActive (true);
+				crosshairHackSkull.SetActive (false);
+			}
+
+			crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
+			textTargeted.SetActive(true);
+			textTargeted.GetComponent<Text>().text = "<Player "+auxPlayer.playerCode+">";
+
+		}
+
+		// BY DEFAULT DEACTIVATED
+		distanceText.SetActive (false);
+
+		if (GlobalData.clientScript.myPlayer.hackingPlayerCode != -1) {
+			ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByCode (GlobalData.clientScript.myPlayer.hackingPlayerCode);
+			if (Vector3.Distance (hackedPlayer.cameraMockup.transform.position, personalCamera.transform.position) <= ClientScript.hackKillDistance) {
+				distanceText.SetActive (true);
+				distanceText.GetComponent<Text> ().text = "KILL";
+			} else {
+				distanceText.SetActive (true);
+				float number = (Vector3.Distance (hackedPlayer.cameraMockup.transform.position, personalCamera.transform.position) - ClientScript.hackKillDistance) * 10f;
+				string numberText = number.ToString ("0");
+				distanceText.GetComponent<Text> ().text = numberText;
+			}
+		}
+
 	}
 
     void alertMockUp()
@@ -296,7 +349,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (GlobalData.clientScript != null) {
 
-				List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, float.MaxValue, "bigCrosshair", true);
+				List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, ClientScript.interceptKillDistance, "bigCrosshair", true);
 
 				foreach (ClientScript.Player player in playersInside) {
 					if (player.hackingPlayerCode == GlobalData.clientScript.myCode) {
@@ -501,10 +554,10 @@ public class LocalPlayerScript : MonoBehaviour {
 			blinkDirection.Normalize ();
 			Vector3 currentPosition = previousPosition + blinkDirection * Time.deltaTime * 80f;
 
-			if (Vector3.Distance (blinkEnd, currentPosition) > Vector3.Distance (blinkEnd, previousPosition)) {
+			if (Vector3.Distance (blinkStart, currentPosition) >= Vector3.Distance (blinkStart, blinkEnd)) {
 				// BLINKING HAS ENDED
 				blinking = false;
-
+				currentPosition = previousPosition;
 			}
 
 			this.transform.GetComponent<Rigidbody> ().MovePosition (currentPosition);
