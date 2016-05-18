@@ -759,6 +759,10 @@ public class ClientScript : MonoBehaviour {
 			player.hackingTimer = hackingTimerMax;
 		}
 
+		if (hackedPlayerCode == myCode && justHacked) {
+			localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+		}
+
 		player.hackingPlayerCode = hackedPlayerCode;
 
 	}

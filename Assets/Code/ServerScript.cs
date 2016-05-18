@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using UnityEngine.UI;
 
 public class ServerScript : MonoBehaviour {
 
@@ -155,6 +156,11 @@ public class ServerScript : MonoBehaviour {
 		foreach (ClientScript.Player player in clientScript.listPlayers) {
 
 			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, player.playerCode, player.hackingPlayerCode, player.justHacked);
+
+			if (player.justHacked && player.hackingPlayerCode == clientScript.myCode) {
+				clientScript.localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+			}
+
 			player.justHacked = false;
 
 		}

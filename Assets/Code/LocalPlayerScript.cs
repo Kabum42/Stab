@@ -88,7 +88,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private GameObject firstPersonObjects;
 	private GameObject armRight;
 
-    private GameObject alertHacked;
+    public GameObject alertHacked;
 
 	private bool lastTimeGrounded = true;
 	private static float footStepCooldownMax = 0.35f;
@@ -246,7 +246,6 @@ public class LocalPlayerScript : MonoBehaviour {
 			textTargeted.SetActive(false);
 			ClientScript.Player hackedPlayer = null;
 			float distanceToHacked = float.MaxValue;
-			// BY DEFAULT DEACTIVATED
 			distanceText.SetActive (false);
 
 			if (GlobalData.clientScript.myPlayer.hackingPlayerCode != -1) {
@@ -289,7 +288,6 @@ public class LocalPlayerScript : MonoBehaviour {
 				}
 			}
 
-
 		}
 
 	}
@@ -298,12 +296,6 @@ public class LocalPlayerScript : MonoBehaviour {
     {
 
         float cutoff = alertHacked.GetComponent<Image>().material.GetFloat("_Cutoff");
-
-        if (Input.GetKeyDown(KeyCode.Y) && cutoff == 1f)
-        {
-            cutoff -= Time.deltaTime;
-            alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", cutoff);
-        }
 
         float min = 0.1f;
 
@@ -487,8 +479,18 @@ public class LocalPlayerScript : MonoBehaviour {
 	public ClientScript.Player playerOnCrosshair() {
 
 		if (GlobalData.clientScript != null) {
-			ClientScript.Player auxPlayer = hackCapsule.firstLookingPlayer();
-			//ClientScript.Player auxPlayer = GlobalData.clientScript.firstLookingPlayer(GlobalData.clientScript.myPlayer);
+
+			ClientScript.Player auxPlayer = null;
+			ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByCode (GlobalData.clientScript.myPlayer.hackingPlayerCode);
+
+			if (hackedPlayer != null) {
+				List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, ClientScript.hackKillDistance, "bigCrosshair", false);
+				if (playersInside.Contains (hackedPlayer)) {
+					return hackedPlayer;
+				}
+			}
+
+			auxPlayer = hackCapsule.firstLookingPlayer();
 			return auxPlayer;
 		}
 		return null;
@@ -497,13 +499,21 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public Vector3Nullable firstLookingNonPlayer(float distance) {
 
+		return firstNonPlayer(personalCamera.transform.forward, distance);
+
+	}
+
+	public Vector3Nullable firstNonPlayer(Vector3 direction, float distance) {
+
+		direction.Normalize ();
+
 		Vector3Nullable vector3Nullable = new Vector3Nullable ();
 
 		RaycastHit[] hits;
 		if (distance >= 0f) {
-			hits = Physics.RaycastAll (this.transform.position + LocalPlayerScript.centerOfCamera, this.personalCamera.transform.forward, distance);
+			hits = Physics.RaycastAll (this.transform.position + LocalPlayerScript.centerOfCamera, direction, distance);
 		} else {
-			hits = Physics.RaycastAll (this.transform.position + LocalPlayerScript.centerOfCamera, this.personalCamera.transform.forward);
+			hits = Physics.RaycastAll (this.transform.position + LocalPlayerScript.centerOfCamera, direction);
 		}
 		Array.Sort (hits, delegate(RaycastHit r1, RaycastHit r2) { return r1.distance.CompareTo(r2.distance); });
 
@@ -561,13 +571,33 @@ public class LocalPlayerScript : MonoBehaviour {
 				blinkStart = this.transform.GetComponent<Rigidbody> ().position;
 
 				float colliderOffset = this.transform.GetComponent<CapsuleCollider> ().radius;
-				Vector3Nullable blockingPoint = firstLookingNonPlayer (blinkDistance + colliderOffset);
+
+				Vector3 direction = Vector3.zero;
+
+				if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.DownArrow)) {
+					direction += personalCamera.transform.forward;
+				}
+				if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow)) {
+					direction += -personalCamera.transform.forward;
+				}
+				if (Input.GetKey (KeyCode.D) || Input.GetKey (KeyCode.RightArrow)) {
+					direction += personalCamera.transform.right;
+				}
+				if (Input.GetKey (KeyCode.A) || Input.GetKey (KeyCode.LeftArrow)) {
+					direction += -personalCamera.transform.right;
+				}
+
+				if (direction == Vector3.zero) {
+					direction = personalCamera.transform.forward;
+				}
+
+				Vector3Nullable blockingPoint = firstNonPlayer (direction, blinkDistance + colliderOffset);
 
 				if (blockingPoint.isNull == true) {
-					blinkEnd = blinkStart + personalCamera.transform.forward * blinkDistance;
+					blinkEnd = blinkStart + direction * blinkDistance;
 				} else {
 					float distanceToBlock = Vector3.Distance (blockingPoint.vector3, visualAvatar.transform.position + LocalPlayerScript.centerOfCamera);
-					blinkEnd = blinkStart + personalCamera.transform.forward * (distanceToBlock - colliderOffset);
+					blinkEnd = blinkStart + direction * (distanceToBlock - colliderOffset);
 				}
 
 			}
