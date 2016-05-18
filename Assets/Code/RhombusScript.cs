@@ -93,6 +93,8 @@ public class RhombusScript : MonoBehaviour {
 	private List<PhysicalMatch> currentPhysicalMatches = new List<PhysicalMatch>();
 	private List<PhysicalMatch> toRecyclePhysicalMatches = new List<PhysicalMatch>();
 
+	private int scrollValue = 0;
+
 	// Use this for initialization
 	void Start () {
 
@@ -463,6 +465,7 @@ public class RhombusScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		handleScroll ();
 		handleRepositions ();
 
 		if (mode == "create") {
@@ -480,6 +483,12 @@ public class RhombusScript : MonoBehaviour {
 		if (!active && expandedAmount <= 0.01f) {
 			this.gameObject.SetActive (false);
 		}
+
+	}
+
+	void handleScroll() {
+
+		scrollValue = this.transform.parent.GetComponent<MenuBackBone> ().scrollValue;
 
 	}
 
@@ -684,17 +693,17 @@ public class RhombusScript : MonoBehaviour {
 					locked = false;
 				}
 
-				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
+				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow) || scrollValue == 1) {
 					MenuBackBone.SoundMoveSelected ();
 					currentLogicalMatchSelectedPosition--;
 					if (currentLogicalMatchSelectedPosition < 0) { currentLogicalMatchSelectedPosition = lMatchManager.Count - 1; }
-				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
+				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow) || scrollValue == -1) {
 					MenuBackBone.SoundMoveSelected ();
 					currentLogicalMatchSelectedPosition++;
 					if (currentLogicalMatchSelectedPosition > lMatchManager.Count - 1) { currentLogicalMatchSelectedPosition = 0; }
 				}
 
-				if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
+				if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow) || scrollValue == 1) {
 					if (lastKey != "up") {
 						lastKeyCooldown = 0.5f;
 					}
@@ -706,7 +715,7 @@ public class RhombusScript : MonoBehaviour {
 						currentLogicalMatchSelectedPosition--;
 						if (currentLogicalMatchSelectedPosition < 0) { currentLogicalMatchSelectedPosition = lMatchManager.Count - 1; }
 					}
-				} else if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow)) {
+				} else if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow) || scrollValue == -1) {
 					if (lastKey != "down") {
 						lastKeyCooldown = 0.5f;
 					}
@@ -722,7 +731,7 @@ public class RhombusScript : MonoBehaviour {
 					lastKey = "none";
 				}
 
-				if (Input.GetKeyDown (KeyCode.Return)) {
+				if (Input.GetKeyDown (KeyCode.Return) || Input.GetMouseButtonDown(0)) {
 					NetworkManager.JoinServer (NetworkManager.hostList[currentLogicalMatchSelected.hostListPosition]);
 				}
 
@@ -733,17 +742,17 @@ public class RhombusScript : MonoBehaviour {
 
 			} else {
 
-				if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
+				if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow) || scrollValue == 1) {
 					MenuBackBone.SoundMoveSelected ();
 					joinSelected--;
 					if (joinSelected < 0) { joinSelected = joinMenuOptions.Count - 1; }
-				} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow)) {
+				} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow) || scrollValue == -1) {
 					MenuBackBone.SoundMoveSelected ();
 					joinSelected++;
 					if (joinSelected > (joinMenuOptions.Count - 1)) { joinSelected = 0; }
 				}
 
-				if (Input.GetKeyDown (KeyCode.Return)) {
+				if (Input.GetKeyDown (KeyCode.Return) || Input.GetMouseButtonDown(0)) {
 
 					if (joinMenuOptions [joinSelected] == joinMenuSelect && lMatchManager.Count > 0) {
 						locked = true;
@@ -790,11 +799,11 @@ public class RhombusScript : MonoBehaviour {
 
 			} else if (createMenuOptions [createSelected] == createMenuMapTitle) {
 
-				if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow)) {
+				if (Input.GetKeyDown (KeyCode.A) || Input.GetKeyDown (KeyCode.LeftArrow) || scrollValue == 1) {
 					MenuBackBone.SoundMoveSelected ();
 					createMenuMapListCurrent--;
 					if (createMenuMapListCurrent < 0) { createMenuMapListCurrent = createMenuMapList.Count - 1; }
-				} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow)) {
+				} else if (Input.GetKeyDown (KeyCode.D) || Input.GetKeyDown (KeyCode.RightArrow) || scrollValue == -1) {
 					MenuBackBone.SoundMoveSelected ();
 					createMenuMapListCurrent++;
 					if (createMenuMapListCurrent > (createMenuMapList.Count - 1)) { createMenuMapListCurrent = 0; }
@@ -819,11 +828,11 @@ public class RhombusScript : MonoBehaviour {
 		} else {
 
 			if (active) {
-				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow)) {
+				if (Input.GetKeyDown (KeyCode.W) || Input.GetKeyDown (KeyCode.UpArrow) || scrollValue == 1) {
 					MenuBackBone.SoundMoveSelected ();
 					createSelected--;
 					if (createSelected < 0) { createSelected = createMenuOptions.Count - 1; }
-				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow)) {
+				} else if (Input.GetKeyDown (KeyCode.S) || Input.GetKeyDown (KeyCode.DownArrow) || scrollValue == -1) {
 					MenuBackBone.SoundMoveSelected ();
 					createSelected++;
 					if (createSelected > createMenuOptions.Count-1) { createSelected = 0; }
@@ -838,7 +847,7 @@ public class RhombusScript : MonoBehaviour {
 
 		}
 
-		if (Input.GetKeyDown (KeyCode.Return) && expandedAmount > 0f) {
+		if ((Input.GetKeyDown (KeyCode.Return) || Input.GetMouseButtonDown(0)) && expandedAmount > 0f) {
 
 			MenuBackBone.SoundSelection ();
 
@@ -868,7 +877,7 @@ public class RhombusScript : MonoBehaviour {
 
 		}
 
-		if (Input.GetKeyDown (KeyCode.Escape)) {
+		if (Input.GetKeyDown (KeyCode.Escape) || Input.GetMouseButtonDown(1)) {
 
 			if (locked) {
 				MenuBackBone.SoundSelection ();

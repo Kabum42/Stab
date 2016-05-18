@@ -37,8 +37,8 @@ public class ClientScript : MonoBehaviour {
 
 	private Camera auxCamera;
 
-	public static float hackKillDistance = 5f;
-	public static float interceptKillDistance = 8f;
+	public static float hackKillDistance = 3f;
+	public static float interceptKillDistance = 6f;
 
 	// Use this for initialization
 	void Awake () {
@@ -757,6 +757,10 @@ public class ClientScript : MonoBehaviour {
 
 		if (hackedPlayer != null && justHacked) {
 			player.hackingTimer = hackingTimerMax;
+		}
+
+		if (hackedPlayerCode == myCode && justHacked) {
+			localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
 		}
 
 		player.hackingPlayerCode = hackedPlayerCode;
