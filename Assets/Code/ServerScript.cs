@@ -168,7 +168,7 @@ public class ServerScript : MonoBehaviour {
 	}
 
 
-	public void hackAttack (int attackerCode, int victimCode) {
+	public void hackAttack (int attackerCode, int victimCode, bool isKilling) {
 
 		if (!clientScript.localPlayer.gameEnded) {
 
@@ -177,7 +177,7 @@ public class ServerScript : MonoBehaviour {
 
 			if (!attackerPlayer.dead && !victimPlayer.dead && victimPlayer.hackingPlayerCode != attackerCode) {
 				// IT'S POSSIBLE
-				if (attackerPlayer.hackingPlayerCode == victimPlayer.playerCode && Vector3.Distance(attackerPlayer.cameraMockup.transform.position, victimPlayer.cameraMockup.transform.position) <= ClientScript.hackKillDistance) {
+				if (isKilling) {
 					// IF WAS ALREADY HACKED AND WITHIN KILL DISTANCE, DIES
 					if (victimPlayer.immune <= 0f) {
 
@@ -191,7 +191,6 @@ public class ServerScript : MonoBehaviour {
 						sendRankingData ();
 
 					}
-
 				} else {
 					// IF WASN'T HACKED OR WITHIN KILL DISTANCE, THEN IT'S HACKED
 					attackerPlayer.hackingPlayerCode = victimPlayer.playerCode;

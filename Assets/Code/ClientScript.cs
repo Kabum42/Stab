@@ -761,7 +761,12 @@ public class ClientScript : MonoBehaviour {
 
 	[RPC]
 	void hackAttackRPC(int attackerCode, int victimCode) {
-		serverScript.hackAttack (attackerCode, victimCode);
+		serverScript.hackAttack (attackerCode, victimCode, false);
+	}
+
+	[RPC]
+	void hackAttackKillRPC(int attackerCode, int victimCode) {
+		serverScript.hackAttack (attackerCode, victimCode, true);
 	}
 
 	[RPC]

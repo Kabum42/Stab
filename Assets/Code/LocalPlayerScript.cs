@@ -437,21 +437,21 @@ public class LocalPlayerScript : MonoBehaviour {
 					if (playersInside.Contains (hackedPlayer)) {
 						usedHack = true;
 						if (Network.isServer) {
-							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, hackedPlayer.playerCode);
+							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, hackedPlayer.playerCode, true);
 						} else {
-							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, hackedPlayer.playerCode);
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackKillRPC", RPCMode.Server, GlobalData.clientScript.myCode, hackedPlayer.playerCode);
 						}
 					}
 						
 				} 
 
 				if (!usedHack) {
-					// TRIES TO HACK_ SOMEONE
+					// TRIES HACKING SOMEONE
 					ClientScript.Player crosshairPlayer = playerOnCrosshair ();
 
 					if (crosshairPlayer != null) {
 						if (Network.isServer) {
-							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, crosshairPlayer.playerCode);
+							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, crosshairPlayer.playerCode, false);
 						} else {
 							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, crosshairPlayer.playerCode);
 						}
