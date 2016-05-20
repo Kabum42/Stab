@@ -175,22 +175,19 @@ public class ServerScript : MonoBehaviour {
 			ClientScript.Player attackerPlayer = clientScript.PlayerByCode (attackerCode);
 			ClientScript.Player victimPlayer = clientScript.PlayerByCode (victimCode);
 
-			if (!attackerPlayer.dead && !victimPlayer.dead && victimPlayer.hackingPlayerCode != attackerCode) {
+			if (!attackerPlayer.dead && !victimPlayer.dead && victimPlayer.hackingPlayerCode != attackerCode && victimPlayer.immune <= 0f) {
 				// IT'S POSSIBLE
 				if (isKilling) {
 					// IF WAS ALREADY HACKED AND WITHIN KILL DISTANCE, DIES
-					if (victimPlayer.immune <= 0f) {
+					attackerPlayer.kills++;
+					attackerPlayer.hackingPlayerCode = -1;
+					GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, victimPlayer.playerCode);
 
-						attackerPlayer.kills++;
-						attackerPlayer.hackingPlayerCode = -1;
-						GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.playerCode, victimPlayer.playerCode);
+					victimPlayer.deadTime = 3f;
 
-						victimPlayer.deadTime = 3f;
+					sendHackData ();
+					sendRankingData ();
 
-						sendHackData ();
-						sendRankingData ();
-
-					}
 				} else {
 					// IF WASN'T HACKED OR WITHIN KILL DISTANCE, THEN IT'S HACKED
 					attackerPlayer.hackingPlayerCode = victimPlayer.playerCode;

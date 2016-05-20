@@ -39,6 +39,7 @@ public class ClientScript : MonoBehaviour {
 
 	public static float hackKillDistance = 3f;
 	public static float interceptKillDistance = 6f;
+	public static float immuneTimeAtRespawn = 3f;
 
 	private bool justRespawned = false;
 
@@ -780,12 +781,15 @@ public class ClientScript : MonoBehaviour {
 		Player player = PlayerByCode (playerCode);
 		Player hackedPlayer = PlayerByCode (hackedPlayerCode);
 
-		if (hackedPlayer != null && justHacked) {
-			player.hackingTimer = hackingTimerMax;
-		}
-
-		if (hackedPlayerCode == myCode && justHacked) {
-			localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+		if (hackedPlayer != null) {
+			player.immune = 0f;
+			if (justHacked) {
+				player.hackingTimer = hackingTimerMax;
+				if (hackedPlayerCode == myCode) {
+					// ALERT
+					localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+				}
+			}
 		}
 
 		player.hackingPlayerCode = hackedPlayerCode;
@@ -797,6 +801,8 @@ public class ClientScript : MonoBehaviour {
 	{
 		Player assassinPlayer = PlayerByCode (assassinCode);
 		Player victimPlayer = PlayerByCode (victimCode);
+
+		assassinPlayer.immune = 0f;
 
 		if (assassinCode == myCode) {
 			// YOU SLAYED VICTIMCODE
@@ -830,6 +836,7 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void respawnRPC(int playerCode, Vector3 position, Vector3 eulerAngles)
 	{
+		Player auxPlayer = PlayerByCode (playerCode);
 		if (playerCode == myCode) {
 			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			localPlayer.transform.position = position;
@@ -841,14 +848,14 @@ public class ClientScript : MonoBehaviour {
 			localPlayer.blinkResource = 3f;
 			justRespawned = true;
 		} else {
-			Player auxPlayer = PlayerByCode (playerCode);
 			auxPlayer.visualAvatar.transform.position = position;
 			auxPlayer.targetPosition = position;
 			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
 			auxPlayer.targetAvatarEulerY = eulerAngles.y;
 		}
-		PlayerByCode (playerCode).visualAvatar.GetComponent<RagdollScript> ().Disable ();
-		PlayerByCode (playerCode).dead = false;
+		auxPlayer.visualAvatar.GetComponent<RagdollScript> ().Disable ();
+		auxPlayer.immune = immuneTimeAtRespawn;
+		auxPlayer.dead = false;
 	}
 
 	[RPC]
