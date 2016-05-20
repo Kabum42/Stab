@@ -146,7 +146,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			float aux = (float)i / (float)num_hack_charges;
 			newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
 			Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
-			newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 225f;
+			newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 170f;
 			newCharge.name = "Charge_" + (i + 1);
 			newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
 			crosshairHackCharges.Add(newCharge);
@@ -165,7 +165,7 @@ public class LocalPlayerScript : MonoBehaviour {
             float aux = (float)i / (float)num_intercept_charges;
             newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
             Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
-            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 900f;
+            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 670f;
             newCharge.name = "Charge_" + (i + 1);
             newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
             crosshairHackInterceptCharges.Add(newCharge);
@@ -467,10 +467,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		crosshairHackTriclip.GetComponent<RectTransform> ().eulerAngles = crosshairHackSmall.GetComponent<RectTransform> ().eulerAngles;
 
 		if (hackResource >= 1f) {
-			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.2f, 0.2f, 0.2f), Time.deltaTime*10f);
+			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.5f, 0.5f, 0.5f), Time.deltaTime*10f);
 			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 1f), Time.deltaTime * 10f);
 		} else {
-			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.15f, 0.15f, 0.15f), Time.deltaTime*10f);
+			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.35f, 0.35f, 0.35f), Time.deltaTime*10f);
 			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 0.5f), Time.deltaTime * 10f);
 		}
 
