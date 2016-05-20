@@ -58,7 +58,9 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public List<GameObject> crosshairHackInterceptCharges = new List<GameObject>();
 	[HideInInspector] public List<GameObject> crosshairHackInterceptChargesFull = new List<GameObject>();
 	[HideInInspector] public GameObject crosshairHackSkull;
+	[HideInInspector] public GameObject inGameMenu;
 
+	[HideInInspector] public InGameMenuManager inGameMenuManager;
 
 	private int nextHackCharge = 1;
 	public float hackResource = 3f;
@@ -124,6 +126,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		canvas.name = "Canvas";
 		Instantiate (Resources.Load("Prefabs/EventSystem") as GameObject).name = "EventSystem";
 
+		inGameMenu = canvas.transform.FindChild ("InGameMenu").gameObject;
+		inGameMenu.SetActive (false);
+		inGameMenuManager = new InGameMenuManager (inGameMenu);
+
 		crosshairHack = canvas.transform.FindChild ("CrosshairHack").gameObject;
 
         crosshairHackDot = crosshairHack.transform.FindChild("Dot").gameObject;
@@ -146,7 +152,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			float aux = (float)i / (float)num_hack_charges;
 			newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
 			Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
-			newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 225f;
+			newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 170f;
 			newCharge.name = "Charge_" + (i + 1);
 			newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
 			crosshairHackCharges.Add(newCharge);
@@ -165,7 +171,7 @@ public class LocalPlayerScript : MonoBehaviour {
             float aux = (float)i / (float)num_intercept_charges;
             newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
             Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
-            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 900f;
+            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 670f;
             newCharge.name = "Charge_" + (i + 1);
             newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
             crosshairHackInterceptCharges.Add(newCharge);
@@ -219,18 +225,35 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (!dead) {
+		updateUI ();
+		alertMockUp();
 
-			updateUI ();
-			handleHack ();
-			handleIntercept();
-			handleCameraChanges ();
-			//adjustFirstPersonObjects ();
-			handleRegularInput();
+		if (inGameMenuManager.active) {
 
-			alertMockUp();
+			inGameMenuManager.Update (Time.deltaTime);
+
+		} else {
+			if (!dead) {
+				
+				handleHack ();
+				handleIntercept();
+				handleCameraChanges ();
+				//adjustFirstPersonObjects ();
+				handleRegularInput();
+
+			}
 		}
+
+
 	
+	}
+
+	void FixedUpdate() {
+
+		if (!inGameMenuManager.active && !dead) {
+			handleMovementInput ();
+		}
+
 	}
 
 	void updateUI() {
@@ -467,10 +490,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		crosshairHackTriclip.GetComponent<RectTransform> ().eulerAngles = crosshairHackSmall.GetComponent<RectTransform> ().eulerAngles;
 
 		if (hackResource >= 1f) {
-			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.2f, 0.2f, 0.2f), Time.deltaTime*10f);
+			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.5f, 0.5f, 0.5f), Time.deltaTime*10f);
 			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 1f), Time.deltaTime * 10f);
 		} else {
-			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.15f, 0.15f, 0.15f), Time.deltaTime*10f);
+			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.35f, 0.35f, 0.35f), Time.deltaTime*10f);
 			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 0.5f), Time.deltaTime * 10f);
 		}
 
@@ -561,6 +584,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		blinkText.GetComponent<Text> ().text = blinkResource.ToString ("0.#");
 
 		if (receiveInput) {
+
+			if (Input.GetKeyDown (KeyCode.Escape)) {
+				inGameMenuManager.active = true;
+			}
 
 			if (Input.GetKeyDown(KeyCode.LeftShift) && blinkResource >= 1f && !blinking) {
 
@@ -798,20 +825,6 @@ public class LocalPlayerScript : MonoBehaviour {
 		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 
 		lastPositionCursor = Input.mousePosition;
-
-	}
-
-	void FixedUpdate() {
-
-		if (!dead) {
-			handleMovementInput ();
-		}
-
-	}
-
-	void LateUpdate() {
-
-		//RotateHead (visualAvatar, personalCamera.transform.eulerAngles.x);
 
 	}
 

@@ -397,6 +397,7 @@ public class RhombusScript : MonoBehaviour {
 
 	private void addMatches() {
 
+		/*
 		int mockUps = 1000;
 
 		for (int i = 0; i < NetworkManager.hostList.Length + mockUps; i++) {
@@ -410,6 +411,13 @@ public class RhombusScript : MonoBehaviour {
                 lMatch.players = Random.Range(1, lMatch.maxPlayers);
 				lMatchManager.Add (lMatch);
 			}
+
+		}
+		*/
+
+		for (int i = 0; i < NetworkManager.hostList.Length; i++) {
+
+			lMatchManager.Add (GetLogicalMatch (ref NetworkManager.hostList [i], i));
 
 		}
 
@@ -1145,8 +1153,8 @@ public class RhombusScript : MonoBehaviour {
 		public bool Update() {
 
 			if (logicalMatch.pingTime == -1 && ping.isDone) {
-				//logicalMatch.pingTime = ping.time;
-				logicalMatch.pingTime = Random.Range(1, 500);
+				logicalMatch.pingTime = ping.time;
+				//logicalMatch.pingTime = Random.Range(1, 500);
 
 				int step = 40;
 				int quality = 10;

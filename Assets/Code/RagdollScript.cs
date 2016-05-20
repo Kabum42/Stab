@@ -84,6 +84,12 @@ public class RagdollScript : MonoBehaviour {
 			}
 		}
 
+
+		if (this.gameObject.layer != LayerMask.NameToLayer ("Ignore Raycast")) {
+			Hacks.SetLayerRecursively (this.gameObject, LayerMask.NameToLayer ("DeadPlayer"));
+		}
+
+
 	}
 
 	public void Disable() {
@@ -98,6 +104,12 @@ public class RagdollScript : MonoBehaviour {
 		}
 
 		animator.enabled = true;
+
+
+		if (this.gameObject.layer != LayerMask.NameToLayer ("Ignore Raycast")) {
+			Hacks.SetLayerRecursively (this.gameObject, LayerMask.NameToLayer ("Player"));
+		}
+
 
 	}
 

@@ -40,6 +40,14 @@ public static class Hacks {
         s.color = new Color(c.r, c.g, c.b, s.color.a);
     }
 
+	// COLOR ALPHA
+	public static Color ColorLerpAlpha(Color c, float alpha, float t) {
+
+		c = Color.Lerp (c, new Color (c.r, c.g, c.b, alpha), t);
+		return c;
+
+	}
+
 	// LERP VECTOR
 	public static Vector3 LerpVector3(Vector3 origin, Vector3 target, float delta) {
 

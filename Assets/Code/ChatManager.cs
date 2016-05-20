@@ -39,10 +39,10 @@ public class ChatManager {
 
 	public void Update() {
 
-		if (physicalChat.GetComponent<RectTransform> ().sizeDelta.y > 342.5f) {
-			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 60 + (physicalChat.GetComponent<RectTransform> ().sizeDelta.y - 342.5f)/(1f/0.35f));
+		if (physicalChat.GetComponent<RectTransform> ().sizeDelta.y > 600f) {
+			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 115f + (physicalChat.GetComponent<RectTransform> ().sizeDelta.y - 600f)/(1f/0.35f));
 		} else {
-			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 60);
+			physicalChat.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (physicalChat.GetComponent<RectTransform> ().anchoredPosition.x, 121f);
 		}
 
 	}
