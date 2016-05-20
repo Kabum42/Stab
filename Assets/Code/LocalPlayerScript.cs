@@ -58,7 +58,9 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public List<GameObject> crosshairHackInterceptCharges = new List<GameObject>();
 	[HideInInspector] public List<GameObject> crosshairHackInterceptChargesFull = new List<GameObject>();
 	[HideInInspector] public GameObject crosshairHackSkull;
+	[HideInInspector] public GameObject inGameMenu;
 
+	[HideInInspector] public InGameMenuManager inGameMenuManager;
 
 	private int nextHackCharge = 1;
 	public float hackResource = 3f;
@@ -123,6 +125,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		canvas = Instantiate (Resources.Load("Prefabs/Canvas") as GameObject);
 		canvas.name = "Canvas";
 		Instantiate (Resources.Load("Prefabs/EventSystem") as GameObject).name = "EventSystem";
+
+		inGameMenu = canvas.transform.FindChild ("InGameMenu").gameObject;
+		inGameMenu.SetActive (false);
+		inGameMenuManager = new InGameMenuManager (inGameMenu);
 
 		crosshairHack = canvas.transform.FindChild ("CrosshairHack").gameObject;
 
@@ -219,18 +225,35 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (!dead) {
+		updateUI ();
+		alertMockUp();
 
-			updateUI ();
-			handleHack ();
-			handleIntercept();
-			handleCameraChanges ();
-			//adjustFirstPersonObjects ();
-			handleRegularInput();
+		if (inGameMenuManager.active) {
 
-			alertMockUp();
+			inGameMenuManager.Update (Time.deltaTime);
+
+		} else {
+			if (!dead) {
+				
+				handleHack ();
+				handleIntercept();
+				handleCameraChanges ();
+				//adjustFirstPersonObjects ();
+				handleRegularInput();
+
+			}
 		}
+
+
 	
+	}
+
+	void FixedUpdate() {
+
+		if (!inGameMenuManager.active && !dead) {
+			handleMovementInput ();
+		}
+
 	}
 
 	void updateUI() {
@@ -562,6 +585,10 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (receiveInput) {
 
+			if (Input.GetKeyDown (KeyCode.Escape)) {
+				inGameMenuManager.active = true;
+			}
+
 			if (Input.GetKeyDown(KeyCode.LeftShift) && blinkResource >= 1f && !blinking) {
 
 				blinking = true;
@@ -798,20 +825,6 @@ public class LocalPlayerScript : MonoBehaviour {
 		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 
 		lastPositionCursor = Input.mousePosition;
-
-	}
-
-	void FixedUpdate() {
-
-		if (!dead) {
-			handleMovementInput ();
-		}
-
-	}
-
-	void LateUpdate() {
-
-		//RotateHead (visualAvatar, personalCamera.transform.eulerAngles.x);
 
 	}
 

@@ -122,10 +122,6 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		textBig.GetComponent<CanvasRenderer> ().SetAlpha (textBigAlpha);
-
-		if (Input.GetKeyDown (KeyCode.Escape)) {
-			Network.Disconnect ();
-		}
 	
 	}
 
