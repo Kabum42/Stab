@@ -206,7 +206,7 @@ public class InGameMenuManager {
 			option.assignedSemicircle.GetComponent<Image> ().color = option.circleColor;
 
 			foreach (Option child in option.children) {
-				child.assignedPhysicalOption.GetComponent<Text> ().color = option.circleColor;
+				child.assignedPhysicalOption.GetComponent<Text> ().color = Hacks.ColorLerpAlpha(child.color, option.circleColor.a, 1f);
 			}
 
 			if (option.circleColor.a <= 0f) {
@@ -255,7 +255,7 @@ public class InGameMenuManager {
 			Vector3 targetScale = physicalOptionSource.transform.localScale*0.5f;
 			Color targetColor = new Color (1f, 1f, 1f, 1f);
 
-			currentParentOption.color = Color.Lerp (currentParentOption.color, targetColor, Time.deltaTime * 5f);
+			currentParentOption.color = Hacks.ColorLerpAlpha (currentParentOption.color, currentParentOption.circleColor.a, Time.deltaTime * 5f);
 			currentParentOption.localScale = Vector3.Lerp (currentParentOption.localScale, targetScale, Time.deltaTime*10f);
 			currentParentOption.angle = Mathf.Lerp (currentParentOption.angle, 0f, Time.deltaTime * 10f);
 			//currentParentOption.distance = Mathf.Lerp (currentParentOption.distance, 470f, Time.deltaTime * 20f);
@@ -301,10 +301,9 @@ public class InGameMenuManager {
 
 				if (currentParentOption.selectedChild != index) {
 					targetScale *= 0.5f;
-					targetColor = new Color (0.75f, 0.75f, 0.75f, currentParentOption.circleColor.a);
 				}
 
-				option.color = Color.Lerp (option.color, targetColor, Time.deltaTime * 5f);
+				option.color = Hacks.ColorLerpAlpha (option.color, currentParentOption.circleColor.a, Time.deltaTime * 5f);
 				option.localScale = Vector3.Lerp (option.localScale, targetScale, Time.deltaTime*10f);
 				option.angle = Mathf.Lerp (option.angle, relativePosition * -separation, Time.deltaTime * 10f);
 				//option.distance = Mathf.Lerp (option.distance, 470f, Time.deltaTime * 20f);
@@ -503,8 +502,9 @@ public class InGameMenuManager {
 		public Vector2 circleAnchoredPosition = new Vector2(-480f, 0f);
 		public Vector3 circleLocalScale = new Vector3(2f, 2f, 2f);
 
-		private static Color selectedColor = new Color (230f/255f, 230f/255f, 90f/255f);
-		private static Color unselectedColor = new Color (1f, 1f, 1f);
+		private static Color chosenColor = new Color (230f/255f, 230f/255f, 90f/255f);
+		private static Color selectedColor = new Color (1f, 1f, 1f);
+		private static Color unselectedColor = new Color (0.65f, 0.65f, 0.65f);
 
 		public Option (string auxText, Action auxAction) {
 
@@ -515,23 +515,24 @@ public class InGameMenuManager {
 
 		public void Update(float deltaTime) {
 
+			color = new Color (unselectedColor.r, unselectedColor.g, unselectedColor.b, color.a);
+			if (parentOption != null && parentOption.children [parentOption.selectedChild] == this) {
+				color = new Color (selectedColor.r, selectedColor.g, selectedColor.b, color.a);
+			}
+
 			if (action == Action.FullScreenOn) {
 				
-				if (GlobalData.fullScreen) { color = new Color (selectedColor.r, selectedColor.g, selectedColor.b, color.a); }
-				else { color = new Color (unselectedColor.r, unselectedColor.g, unselectedColor.b, color.a); }
+				if (GlobalData.fullScreen) { color = new Color (chosenColor.r, chosenColor.g, chosenColor.b, color.a); }
 
 			} else if (action == Action.FullScreenOff) {
 				
-				if (!GlobalData.fullScreen) { color = new Color (selectedColor.r, selectedColor.g, selectedColor.b, color.a); }
-				else { color = new Color (unselectedColor.r, unselectedColor.g, unselectedColor.b, color.a); }
+				if (!GlobalData.fullScreen) { color = new Color (chosenColor.r, chosenColor.g, chosenColor.b, color.a); }
 
 			} else if (action == Action.ChangeResolution) {
 
 				string[] res = text.Split('x');
 				if (res [0] == "" + GlobalData.screenWidth && res [1] == "" + GlobalData.screenHeight) {
-					color = color = new Color (selectedColor.r, selectedColor.g, selectedColor.b, color.a);
-				} else {
-					color = new Color (unselectedColor.r, unselectedColor.g, unselectedColor.b, color.a);
+					color = color = new Color (chosenColor.r, chosenColor.g, chosenColor.b, color.a);
 				}
 
 			}
