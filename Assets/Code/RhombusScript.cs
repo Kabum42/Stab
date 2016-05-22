@@ -87,8 +87,6 @@ public class RhombusScript : MonoBehaviour {
 	private int currentLogicalMatchSelectedPosition = 0;
 	private LogicalMatch currentLogicalMatchSelected;
 	private List<PingMatch> unresolvedPingMatches = new List<PingMatch> ();
-    // HACK
-    // COULD BE A toRecyclePingMatches, THEN THEY WOULDN'T BE CREATED SO OFTEN
 
 	private List<PhysicalMatch> currentPhysicalMatches = new List<PhysicalMatch>();
 	private List<PhysicalMatch> toRecyclePhysicalMatches = new List<PhysicalMatch>();

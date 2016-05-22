@@ -19,6 +19,9 @@ public class InGameMenuManager {
 
 	private static float separation = 7f;
 
+	public int scrollValue = 0;
+	public float scrollCooldown = 0f;
+
 	// Use this for initialization
 	public InGameMenuManager(GameObject auxPhysicalInGameMenu) {
 		
@@ -29,18 +32,24 @@ public class InGameMenuManager {
 		semicircleSource.SetActive (false);
 
 		rootOption = new Option ("", Option.Action.None);
-		Option videoOption = new Option ("Video", Option.Action.None);
-		rootOption.AddChild (videoOption);
+		Option graphicsOption = new Option ("Graphics", Option.Action.None);
+		rootOption.AddChild (graphicsOption);
 		Option audioOption = new Option ("Audio", Option.Action.None);
 		rootOption.AddChild (audioOption);
 		rootOption.AddChild (new Option ("Exit", Option.Action.Exit));
 
-		videoOption.AddChild (new Option ("1920x1080", Option.Action.None));
-		videoOption.AddChild (new Option ("1080x720", Option.Action.None));
-		Option moreVideoOption = new Option ("More Options", Option.Action.None);
-		videoOption.AddChild (moreVideoOption);
+		Option fullScreenGraphicsOption = new Option ("Full Screen", Option.Action.None);
+		graphicsOption.AddChild (fullScreenGraphicsOption);
+		fullScreenGraphicsOption.AddChild (new Option ("On", Option.Action.FullScreenOn));
+		fullScreenGraphicsOption.AddChild (new Option ("Off", Option.Action.FullScreenOff));
 
-		moreVideoOption.AddChild(new Option ("The Game", Option.Action.None));
+		Option resolutionScreenGraphicsOption = new Option ("Resolution", Option.Action.None);
+		graphicsOption.AddChild (resolutionScreenGraphicsOption);
+		for (int i = 0; i < Screen.resolutions.Length; i++) {
+			resolutionScreenGraphicsOption.AddChild (new Option (Screen.resolutions[i].width + "x" + Screen.resolutions[i].height, Option.Action.ChangeResolution));
+		}
+
+		//moreVideoOption.AddChild(new Option ("The Game", Option.Action.None));
 
 		audioOption.AddChild (new Option ("On", Option.Action.None));
 		audioOption.AddChild (new Option ("Off", Option.Action.None));
@@ -53,6 +62,8 @@ public class InGameMenuManager {
 			physicalInGameMenu.SetActive (true);
 		}
 
+		handleScroll ();
+
 		if (status == "activating") {
 
 			if (currentParentOption == null) {
@@ -62,20 +73,20 @@ public class InGameMenuManager {
 				Deepen (rootOption);
 			}
 
-			if (physicalInGameMenu.GetComponent<Image> ().color.a > 0f && Input.GetKeyDown (KeyCode.Escape)) {
+			if (physicalInGameMenu.GetComponent<Image> ().color.a > 0f && Input.GetKeyDown (KeyCode.Escape) || Input.GetMouseButtonDown(1)) {
 				Emerge ();
 			}
 
 			physicalInGameMenu.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (physicalInGameMenu.GetComponent<Image> ().color, 0.5f, Time.deltaTime*5f);
 
-			if (Input.GetKeyDown (KeyCode.DownArrow) || Input.GetKeyDown (KeyCode.S)) {
+			if (Input.GetKeyDown (KeyCode.DownArrow) || Input.GetKeyDown (KeyCode.S) || scrollValue == -1) {
 
 				currentParentOption.selectedChild++;
 				if (currentParentOption.selectedChild >= currentParentOption.children.Count) {
 					currentParentOption.selectedChild = 0;
 				}
 
-			} else if (Input.GetKeyDown (KeyCode.UpArrow) || Input.GetKeyDown (KeyCode.W)) {
+			} else if (Input.GetKeyDown (KeyCode.UpArrow) || Input.GetKeyDown (KeyCode.W) || scrollValue == 1) {
 
 				currentParentOption.selectedChild--;
 				if (currentParentOption.selectedChild < 0) {
@@ -84,12 +95,39 @@ public class InGameMenuManager {
 
 			}
 
-			if (Input.GetKeyDown (KeyCode.Return)) {
+			if (Input.GetKeyDown (KeyCode.Return) || Input.GetMouseButtonDown(0)) {
 				if (currentParentOption.children [currentParentOption.selectedChild].children.Count > 0) {
+					
 					Deepen(currentParentOption.children [currentParentOption.selectedChild]);
+
 				} else if (currentParentOption.children [currentParentOption.selectedChild].action == Option.Action.Exit) {
+					
 					Network.Disconnect ();
+
+				} else if (currentParentOption.children [currentParentOption.selectedChild].action == Option.Action.FullScreenOn) {
+					
+					PlayerPrefs.SetInt ("FullScreen", 1);
+					GlobalData.fullScreen = true;
+					Screen.SetResolution (GlobalData.screenWidth, GlobalData.screenHeight, GlobalData.fullScreen);
+
+				} else if (currentParentOption.children [currentParentOption.selectedChild].action == Option.Action.FullScreenOff) {
+					
+					PlayerPrefs.SetInt ("FullScreen", 0);
+					GlobalData.fullScreen = false;
+					Screen.SetResolution (GlobalData.screenWidth, GlobalData.screenHeight, GlobalData.fullScreen);
+
+				} else if (currentParentOption.children [currentParentOption.selectedChild].action == Option.Action.ChangeResolution) {
+
+					GlobalData.screenWidth = Screen.resolutions [currentParentOption.selectedChild].width;
+					GlobalData.screenHeight = Screen.resolutions [currentParentOption.selectedChild].height;
+
+					PlayerPrefs.SetInt ("ScreenWidth", GlobalData.screenWidth);
+					PlayerPrefs.SetInt ("ScreenHeight", GlobalData.screenHeight);
+
+					Screen.SetResolution (GlobalData.screenWidth, GlobalData.screenHeight, GlobalData.fullScreen);
+
 				}
+
 			}
 
 		} else if (status == "deactivating") {
@@ -109,6 +147,8 @@ public class InGameMenuManager {
 		List<Option> toRemove = new List<Option>();
 
 		foreach (Option option in ancientOptions) {
+
+			option.Update (deltaTime);
 
 			int generation = 1;
 			Option auxOption = currentParentOption.parentOption;
@@ -145,6 +185,8 @@ public class InGameMenuManager {
 
 		// HANDLE NONBORNS
 		foreach (Option option in nonbornOptions) {
+
+			option.Update (deltaTime);
 
 			int generation = 1;
 			Option auxOption = option;
@@ -197,6 +239,8 @@ public class InGameMenuManager {
 		// REPOSITION CURRENTPARENT
 		if (currentParentOption != null) {
 
+			currentParentOption.Update (deltaTime);
+
 			currentParentOption.circleAnchoredPosition = Vector2.Lerp (currentParentOption.circleAnchoredPosition, new Vector2(-960f, 0f), Time.deltaTime*10f);
 			currentParentOption.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition = currentParentOption.circleAnchoredPosition;
 
@@ -245,6 +289,8 @@ public class InGameMenuManager {
 			// REPOSITION CURRENT CHILDREN
 			foreach (Option option in currentParentOption.children) {
 
+				option.Update (deltaTime);
+
 				int index = currentParentOption.children.IndexOf (option);
 				int relativePosition = index - currentParentOption.selectedChild;
 
@@ -279,6 +325,30 @@ public class InGameMenuManager {
 
 		}
 	
+	}
+
+	void handleScroll() {
+
+		if (Input.mouseScrollDelta.y == 0f) {
+			scrollCooldown = Mathf.Max (0f, scrollCooldown - Time.deltaTime);
+		} else {
+			scrollCooldown = 0.1f;
+		}
+
+		if (scrollCooldown <= 0f) {
+			scrollValue = 0;
+		}
+
+		if (scrollValue == 0) {
+			if (Input.mouseScrollDelta.y > 0.01f) {
+				scrollValue = 1;
+			} else if (Input.mouseScrollDelta.y < -0.01f) {
+				scrollValue = -1;
+			}
+		} else {
+			scrollValue = 2;
+		}
+
 	}
 
 	void Deepen(Option newRoot) {
@@ -433,10 +503,40 @@ public class InGameMenuManager {
 		public Vector2 circleAnchoredPosition = new Vector2(-480f, 0f);
 		public Vector3 circleLocalScale = new Vector3(2f, 2f, 2f);
 
+		private static Color selectedColor = new Color (230f/255f, 230f/255f, 90f/255f);
+		private static Color unselectedColor = new Color (1f, 1f, 1f);
+
 		public Option (string auxText, Action auxAction) {
 
 			text = auxText;
 			action = auxAction;
+
+		}
+
+		public void Update(float deltaTime) {
+
+			if (action == Action.FullScreenOn) {
+				
+				if (GlobalData.fullScreen) { color = new Color (selectedColor.r, selectedColor.g, selectedColor.b, color.a); }
+				else { color = new Color (unselectedColor.r, unselectedColor.g, unselectedColor.b, color.a); }
+
+			} else if (action == Action.FullScreenOff) {
+				
+				if (!GlobalData.fullScreen) { color = new Color (selectedColor.r, selectedColor.g, selectedColor.b, color.a); }
+				else { color = new Color (unselectedColor.r, unselectedColor.g, unselectedColor.b, color.a); }
+
+			} else if (action == Action.ChangeResolution) {
+
+				string[] res = text.Split('x');
+				if (res [0] == "" + GlobalData.screenWidth && res [1] == "" + GlobalData.screenHeight) {
+					color = color = new Color (selectedColor.r, selectedColor.g, selectedColor.b, color.a);
+				} else {
+					color = new Color (unselectedColor.r, unselectedColor.g, unselectedColor.b, color.a);
+				}
+
+			}
+
+
 
 		}
 
@@ -453,6 +553,9 @@ public class InGameMenuManager {
 		public enum Action
 		{
 			None,
+			FullScreenOn,
+			FullScreenOff,
+			ChangeResolution,
 			Exit
 		};
 

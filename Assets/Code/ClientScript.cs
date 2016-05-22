@@ -95,7 +95,10 @@ public class ClientScript : MonoBehaviour {
 		remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
 		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
 
-		checkIfActivateChat ();
+		if (!localPlayer.inGameMenuManager.active) {
+			checkIfActivateChat ();
+		}
+			
 		updateChat ();
 		updateRanking ();
 		if (!myPlayer.dead) {
@@ -508,12 +511,19 @@ public class ClientScript : MonoBehaviour {
 
 		}
 
+		if (Input.GetKeyDown (KeyCode.Escape) && !localPlayer.GetComponent<LocalPlayerScript> ().receiveInput) {
+
+			chatManager.chatInputField.GetComponent<InputField> ().text = "";
+			EventSystem.current.SetSelectedGameObject(null);
+			localPlayer.GetComponent<LocalPlayerScript> ().receiveInput = true;
+
+		}
+
 	}
 
 	void updateChat() {
 
-		if (Input.GetKeyDown(KeyCode.Return)
-			&& chatManager.lastTimeChatInputFocused) {
+		if (Input.GetKeyDown(KeyCode.Return) && chatManager.lastTimeChatInputFocused) {
 
 			if (chatManager.chatInputField.GetComponent<InputField> ().text != "") {
 
