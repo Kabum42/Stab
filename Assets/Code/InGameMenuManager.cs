@@ -7,13 +7,15 @@ public class InGameMenuManager {
 
 	public bool active = false;
 	private string status = "activating";
-	public GameObject physicalInGameMenu;
+	private GameObject physicalInGameMenu;
 	private GameObject physicalOptionSource;
 	private GameObject semicircleSource;
-	public Option rootOption;
+	private Option rootOption;
 	private Option currentParentOption;
-	public List<GameObject> physicalOptionsPool = new List<GameObject> ();
+	private List<GameObject> physicalOptionsPool = new List<GameObject> ();
 	public List<GameObject> semicirclesPool = new List<GameObject> ();
+	private List<Option> ancientOptions = new List<Option> ();
+	private List<Option> nonbornOptions = new List<Option> ();
 
 	private static float separation = 7f;
 
@@ -94,7 +96,7 @@ public class InGameMenuManager {
 
 			physicalInGameMenu.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (physicalInGameMenu.GetComponent<Image> ().color, 0f, Time.deltaTime*20f);
 
-			if (physicalInGameMenu.GetComponent<Image> ().color.a <= 0.05f) {
+			if (physicalInGameMenu.GetComponent<Image> ().color.a <= 0.05f && nonbornOptions.Count == 0) {
 				physicalInGameMenu.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (physicalInGameMenu.GetComponent<Image> ().color, 0f, 1f);
 				physicalInGameMenu.SetActive (false);
 				active = false;
@@ -103,11 +105,103 @@ public class InGameMenuManager {
 
 		}
 
+		// HANDLE ANCESTORS
+		List<Option> toRemove = new List<Option>();
+
+		foreach (Option option in ancientOptions) {
+
+			int generation = 1;
+			Option auxOption = currentParentOption.parentOption;
+
+			while (auxOption != option) {
+				auxOption = auxOption.parentOption;
+				generation++;
+			}
+
+			option.circleAnchoredPosition = Vector2.Lerp (option.circleAnchoredPosition, new Vector2(-960f -240f*generation, 0f), Time.deltaTime*10f);
+			option.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition = option.circleAnchoredPosition;
+
+			option.circleLocalScale = Vector3.Lerp (option.circleLocalScale, new Vector3(1f, 1f, 1f), Time.deltaTime*10);
+			option.assignedSemicircle.transform.localScale = option.circleLocalScale;
+
+			if (option.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition.x < -1195f) {
+				toRemove.Add (option);
+			}
+
+		}
+
+		foreach (Option option in toRemove) {
+			semicirclesPool.Add (option.assignedSemicircle);
+			option.assignedSemicircle.SetActive (false);
+			option.assignedSemicircle = null;
+
+			physicalOptionsPool.Add (option.assignedPhysicalOption);
+			option.assignedPhysicalOption.SetActive (false);
+			option.assignedPhysicalOption = null;
+
+			ancientOptions.Remove (option);
+		}
+		toRemove.Clear ();
+
+		// HANDLE NONBORNS
+		foreach (Option option in nonbornOptions) {
+
+			int generation = 1;
+			Option auxOption = option;
+
+			while (auxOption.parentOption != currentParentOption) {
+				auxOption = auxOption.parentOption;
+				generation++;
+			}
+
+			option.circleAnchoredPosition = Vector2.Lerp (option.circleAnchoredPosition, new Vector2(-960f +480f*generation, 0f), Time.deltaTime*15f);
+			option.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition = option.circleAnchoredPosition;
+
+			option.circleLocalScale = Vector3.Lerp (option.circleLocalScale, new Vector3(2f, 2f, 2f), Time.deltaTime*15f);
+			option.assignedSemicircle.transform.localScale = option.circleLocalScale;
+
+			option.circleColor = Hacks.ColorLerpAlpha (option.circleColor, -0.1f, Time.deltaTime*15f);
+			option.assignedSemicircle.GetComponent<Image> ().color = option.circleColor;
+
+			foreach (Option child in option.children) {
+				child.assignedPhysicalOption.GetComponent<Text> ().color = option.circleColor;
+			}
+
+			if (option.circleColor.a <= 0f) {
+				toRemove.Add (option);
+			}
+
+		}
+
+		foreach (Option option in toRemove) {
+			semicirclesPool.Add (option.assignedSemicircle);
+
+
+			foreach (Option child in option.children) {
+				if (child.assignedPhysicalOption != null) {
+					child.assignedPhysicalOption.transform.SetParent (option.assignedSemicircle.transform.parent);
+					child.assignedPhysicalOption.SetActive (false);
+					physicalOptionsPool.Add (child.assignedPhysicalOption);
+					child.assignedPhysicalOption = null;
+				}
+			}
+
+			//option.parentOption.assignedPhysicalOption.transform.SetParent (option.parentOption.assignedSemicircle.transform);
+
+			option.assignedSemicircle.SetActive (false);
+			option.assignedSemicircle = null;
+			nonbornOptions.Remove (option);
+		}
+		toRemove.Clear ();
+
 		// REPOSITION CURRENTPARENT
 		if (currentParentOption != null) {
 
-			currentParentOption.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition = Vector2.Lerp(currentParentOption.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition, new Vector2(-960f, 0f), Time.deltaTime*10f);
-			currentParentOption.assignedSemicircle.transform.localScale = Vector3.Lerp (currentParentOption.assignedSemicircle.transform.localScale, new Vector3(1f, 1f, 1f), Time.deltaTime*10f);
+			currentParentOption.circleAnchoredPosition = Vector2.Lerp (currentParentOption.circleAnchoredPosition, new Vector2(-960f, 0f), Time.deltaTime*10f);
+			currentParentOption.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition = currentParentOption.circleAnchoredPosition;
+
+			currentParentOption.circleLocalScale = Vector3.Lerp (currentParentOption.circleLocalScale, new Vector3(1f, 1f, 1f), Time.deltaTime*10f);
+			currentParentOption.assignedSemicircle.transform.localScale = currentParentOption.circleLocalScale;
 
 			currentParentOption.circleColor = Hacks.ColorLerpAlpha(currentParentOption.circleColor, 1f, Time.deltaTime*10f);
 			currentParentOption.assignedSemicircle.GetComponent<Image> ().color = currentParentOption.circleColor;
@@ -120,7 +214,7 @@ public class InGameMenuManager {
 			currentParentOption.color = Color.Lerp (currentParentOption.color, targetColor, Time.deltaTime * 5f);
 			currentParentOption.localScale = Vector3.Lerp (currentParentOption.localScale, targetScale, Time.deltaTime*10f);
 			currentParentOption.angle = Mathf.Lerp (currentParentOption.angle, 0f, Time.deltaTime * 10f);
-			currentParentOption.distance = Mathf.Lerp (currentParentOption.distance, 230f, Time.deltaTime * 20f);
+			//currentParentOption.distance = Mathf.Lerp (currentParentOption.distance, 470f, Time.deltaTime * 20f);
 
 			currentParentOption.localEulerAngles = new Vector3 (0f, 0f, currentParentOption.angle);
 
@@ -128,9 +222,23 @@ public class InGameMenuManager {
 			currentParentOption.assignedPhysicalOption.transform.localEulerAngles = currentParentOption.localEulerAngles;
 			currentParentOption.assignedPhysicalOption.GetComponent<Text> ().color = currentParentOption.color;
 
-			currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f - currentParentOption.assignedSemicircle.GetComponent<RectTransform>().sizeDelta.x/2f, 0f);
-			Vector2 right = new Vector2 (currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().right.x, currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().right.y);
-			currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().anchoredPosition = currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().anchoredPosition + right*(currentParentOption.distance + currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().sizeDelta.x/2f * currentParentOption.assignedPhysicalOption.transform.localScale.x);
+			Vector2 right;
+
+			if (currentParentOption.parentOption != null && currentParentOption.parentOption.assignedSemicircle != null) {
+				Transform auxParent = currentParentOption.assignedPhysicalOption.transform.parent;
+				currentParentOption.assignedPhysicalOption.transform.SetParent (currentParentOption.parentOption.assignedSemicircle.transform);
+
+				currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f - currentParentOption.parentOption.assignedSemicircle.GetComponent<RectTransform> ().sizeDelta.x / 2f, 0f);
+				right = new Vector2 (currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().right.x, currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().right.y);
+				currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().anchoredPosition = currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().anchoredPosition + right * (currentParentOption.distance + currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().sizeDelta.x / 2f * currentParentOption.assignedPhysicalOption.transform.localScale.x);
+			
+				currentParentOption.assignedPhysicalOption.transform.SetParent (auxParent);
+			} 
+			 else {
+				currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f - currentParentOption.assignedSemicircle.GetComponent<RectTransform> ().sizeDelta.x / 2f, 0f) + new Vector2(1f, 0f) * (230f + currentParentOption.assignedPhysicalOption.GetComponent<RectTransform> ().sizeDelta.x / 2f * currentParentOption.assignedPhysicalOption.transform.localScale.x);
+			}
+
+
 
 			currentParentOption.position = currentParentOption.assignedPhysicalOption.transform.position;
 
@@ -153,7 +261,7 @@ public class InGameMenuManager {
 				option.color = Color.Lerp (option.color, targetColor, Time.deltaTime * 5f);
 				option.localScale = Vector3.Lerp (option.localScale, targetScale, Time.deltaTime*10f);
 				option.angle = Mathf.Lerp (option.angle, relativePosition * -separation, Time.deltaTime * 10f);
-				option.distance = Mathf.Lerp (option.distance, 460f, Time.deltaTime * 20f);
+				//option.distance = Mathf.Lerp (option.distance, 470f, Time.deltaTime * 20f);
 
 				option.localEulerAngles = new Vector3 (0f, 0f, option.angle);
 
@@ -177,10 +285,12 @@ public class InGameMenuManager {
 
 		// STORE UNUSED
 		if (currentParentOption != null) {
+
+			currentParentOption.assignedPhysicalOption.transform.SetParent (currentParentOption.assignedSemicircle.transform);
 			
-			physicalOptionsPool.Add (currentParentOption.assignedPhysicalOption);
-			currentParentOption.assignedPhysicalOption.SetActive (false);
-			currentParentOption.assignedPhysicalOption = null;
+			//physicalOptionsPool.Add (currentParentOption.assignedPhysicalOption);
+			//currentParentOption.assignedPhysicalOption.SetActive (false);
+			//currentParentOption.assignedPhysicalOption = null;
 
 			foreach (Option option in currentParentOption.children) {
 
@@ -195,12 +305,18 @@ public class InGameMenuManager {
 		}
 
 		// CHANGE CURRENTPARENT
+		if (currentParentOption != null) {
+			ancientOptions.Add(currentParentOption);
+		}
 		currentParentOption = newRoot;
+		nonbornOptions.Remove (currentParentOption);
 
 		// ASSIGN UNUSED
 		if (currentParentOption.assignedSemicircle == null) {
 			currentParentOption.assignedSemicircle = GetSemicircle ();
 		}
+			
+		currentParentOption.assignedPhysicalOption.transform.SetParent (currentParentOption.assignedSemicircle.transform);
 
 		foreach (Option option in currentParentOption.children) {
 
@@ -211,8 +327,8 @@ public class InGameMenuManager {
 
 		}
 			
-		currentParentOption.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-480f, 0f);
-		currentParentOption.assignedSemicircle.transform.localScale = new Vector3(2f, 2f, 2f);
+		//currentParentOption.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-480f, 0f);
+		//currentParentOption.assignedSemicircle.transform.localScale = new Vector3(2f, 2f, 2f);
 
 		currentParentOption.circleColor = new Color (1f, 1f, 1f, 0f);
 		currentParentOption.assignedSemicircle.GetComponent<Image> ().color = currentParentOption.circleColor;
@@ -225,27 +341,31 @@ public class InGameMenuManager {
 			status = "deactivating";
 		}
 
-		foreach (Option option in currentParentOption.children) {
-
-			physicalOptionsPool.Add (option.assignedPhysicalOption);
-			option.assignedPhysicalOption.SetActive (false);
-			option.assignedPhysicalOption = null;
-
-		}
-
+		// CHANGE CURRENTPARENT
+		nonbornOptions.Add(currentParentOption);
 		currentParentOption = currentParentOption.parentOption;
+		ancientOptions.Remove (currentParentOption);
+
+
 
 		if (currentParentOption != null) {
+
+			// ASSIGN UNUSED
+			if (currentParentOption.assignedSemicircle == null) {
+				currentParentOption.assignedSemicircle = GetSemicircle ();
+			}
 
 			if (currentParentOption.assignedPhysicalOption == null) {
 				currentParentOption.assignedPhysicalOption = GetPhysicalOption ();
 			}
+			currentParentOption.assignedPhysicalOption.transform.SetParent (currentParentOption.assignedSemicircle.transform);
 
 			foreach (Option option in currentParentOption.children) {
 
 				if (option.assignedPhysicalOption == null) {
 					option.assignedPhysicalOption = GetPhysicalOption ();
 				}
+				option.assignedPhysicalOption.transform.SetParent (currentParentOption.assignedSemicircle.transform);
 
 			}
 		}
@@ -306,10 +426,12 @@ public class InGameMenuManager {
 		public Vector3 localScale = new Vector3 (0.3f, 0.3f, 0.3f);
 		public Vector3 position = new Vector3(0f, 0f, 0f);
 		public Color color = new Color (1f, 1f, 1f, 0f);
-		public float distance = 460f;
+		public float distance = 470f;
 
 		public GameObject assignedSemicircle = null;
 		public Color circleColor = new Color (1f, 1f, 1f, 0f);
+		public Vector2 circleAnchoredPosition = new Vector2(-480f, 0f);
+		public Vector3 circleLocalScale = new Vector3(2f, 2f, 2f);
 
 		public Option (string auxText, Action auxAction) {
 
