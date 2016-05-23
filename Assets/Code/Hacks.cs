@@ -272,5 +272,15 @@ public static class Hacks {
 		}
 	}
 
+	public static float GetMedianVolume(AudioSource audio) {
+		float[] spectrum = audio.GetSpectrumData(1024, 0, FFTWindow.BlackmanHarris);
+		float median_volume = 0f;
+		for (int i = 0; i < spectrum.Length; i++) {
+			median_volume += spectrum[i];
+		}
+		median_volume = median_volume / spectrum.Length;
+		return median_volume;
+	}
+
 
 }
