@@ -211,6 +211,7 @@ public static class Hacks {
 		// Code to execute after the delay
 		Cursor.visible = false;
 		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.SetCursor (null, Vector2.zero, CursorMode.Auto);
 	}
 
 	// TEXTURE2D

@@ -103,6 +103,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		Cursor.visible = false;
 		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.SetCursor (null, Vector2.zero, CursorMode.Auto);
 
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
 		personalCamera.transform.localPosition = centerOfCamera;
