@@ -12,6 +12,8 @@ public static class GlobalData {
 	public static bool fullScreen;
 	public static int screenWidth;
 	public static int screenHeight;
+	public static float mouseSensitivity;
+	public static int vsync = 1;
 
     // Use this for initialization
     public static void Start () {
@@ -38,8 +40,11 @@ public static class GlobalData {
 			screenWidth = PlayerPrefs.GetInt ("ScreenWidth");
 			screenHeight = PlayerPrefs.GetInt ("ScreenHeight");
 
-
 			Screen.SetResolution (screenWidth, screenHeight, fullScreen);
+
+			mouseSensitivity = PlayerPrefs.GetFloat ("MouseSensitivity");
+
+			vsync = PlayerPrefs.GetInt ("VSync");
 
         }
 
@@ -57,6 +62,14 @@ public static class GlobalData {
 
 		if (!PlayerPrefs.HasKey ("ScreenHeight")) {
 			PlayerPrefs.SetInt ("ScreenHeight", Screen.resolutions[Screen.resolutions.Length -1].height);
+		}
+
+		if (!PlayerPrefs.HasKey ("MouseSensitivity")) {
+			PlayerPrefs.SetFloat ("MouseSensitivity", 0.5f);
+		}
+
+		if (!PlayerPrefs.HasKey ("VSync")) {
+			PlayerPrefs.SetInt ("VSync", 1);
 		}
 
 	}

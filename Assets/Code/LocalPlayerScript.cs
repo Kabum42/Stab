@@ -19,8 +19,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	//public static Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
     //public static Vector3 centerOfCamera = new Vector3(0f, 1.4f, 0f);
 	private Vector3 lastPositionCursor;
-	private float sensitivityX = 10f;
-	private float sensitivityY = 5f;
 
 	private static float baseSpeed = 5f;
 	private float turboSpeed = baseSpeed*(1.5f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
@@ -104,6 +102,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		Cursor.visible = false;
 		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.SetCursor (null, Vector2.zero, CursorMode.Auto);
 
 		personalCamera = this.gameObject.transform.FindChild ("PersonalCamera").gameObject;
 		personalCamera.transform.localPosition = centerOfCamera;
@@ -225,6 +224,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+
+		fillResources ();
 		updateUI ();
 		alertMockUp();
 
@@ -253,6 +254,28 @@ public class LocalPlayerScript : MonoBehaviour {
 		if (!inGameMenuManager.active && !dead) {
 			handleMovementInput ();
 		}
+
+	}
+
+	void fillResources() {
+
+		// HACK_RESOURCE
+		if (hackResource < 3f)
+		{
+			hackResource += Time.deltaTime;
+			if (hackResource >= 3f) { hackResource = 3f; }
+		}
+
+		// INTERCEPT
+		if (interceptResource < 3f)
+		{
+			interceptResource += Time.deltaTime*(1f/2f);
+			if (interceptResource >= 3f) { interceptResource = 3f; }
+		}
+
+		// BLINK
+		blinkResource = Mathf.Min (3f, blinkResource + Time.deltaTime*(1f/4f));
+		blinkText.GetComponent<Text> ().text = blinkResource.ToString ("0.#");
 
 	}
 
@@ -313,6 +336,67 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		}
 
+		// HACK_
+		updateUIHack();
+
+		// INTERCEPT
+		updateUIIntercept();
+
+	}
+
+	void updateUIHack() {
+		// TODAS VACIAS
+		for (int i = 0; i < crosshairHackCharges.Count; i++)
+		{
+			crosshairHackChargesFull[i].SetActive(false);
+		}
+
+		float auxResource = hackResource;
+		int auxNext = nextHackCharge;
+
+		// SE LLENAN LAS QUE TOCAN
+		while (auxResource >= 1f)
+		{
+			crosshairHackChargesFull[auxNext].SetActive(true);
+			auxResource -= 1f;
+			auxNext++;
+			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
+		}
+
+		crosshairHackSmallOldZ = Mathf.Lerp (crosshairHackSmallOldZ, crosshairHackSmallTargetZ, Time.deltaTime * 5f);
+		crosshairHackSmall.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackSmallOldZ);
+		crosshairHackTriclip.GetComponent<RectTransform> ().eulerAngles = crosshairHackSmall.GetComponent<RectTransform> ().eulerAngles;
+
+		if (hackResource >= 1f) {
+			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.5f, 0.5f, 0.5f), Time.deltaTime*10f);
+			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 1f), Time.deltaTime * 10f);
+		} else {
+			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.35f, 0.35f, 0.35f), Time.deltaTime*10f);
+			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 0.5f), Time.deltaTime * 10f);
+		}
+	}
+
+	void updateUIIntercept() {
+		// TODAS VACIAS
+		for (int i = 0; i < crosshairHackInterceptCharges.Count; i++)
+		{
+			crosshairHackInterceptChargesFull[i].SetActive(false);
+		}
+
+		float auxResource = interceptResource;
+		int auxNext = nextInterceptCharge;
+
+		// SE LLENAN LAS QUE TOCAN
+		while (auxResource >= 1f)
+		{
+			crosshairHackInterceptChargesFull[auxNext].SetActive(true);
+			auxResource -= 1f;
+			auxNext++;
+			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
+		}
+
+		crosshairHackBigOldZ = Mathf.Lerp (crosshairHackBigOldZ, crosshairHackBigTargetZ, Time.deltaTime * 5f);
+		crosshairHackBig.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackBigOldZ);
 	}
 
     void alertMockUp()
@@ -332,30 +416,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
     void handleIntercept()
     {
-
-        if (interceptResource < 3f)
-        {
-            interceptResource += Time.deltaTime*(1f/2f);
-            if (interceptResource >= 3f) { interceptResource = 3f; }
-        }
-
-        // TODAS VACIAS
-        for (int i = 0; i < crosshairHackInterceptCharges.Count; i++)
-        {
-            crosshairHackInterceptChargesFull[i].SetActive(false);
-        }
-
-        float auxResource = interceptResource;
-        int auxNext = nextInterceptCharge;
-
-        // SE LLENAN LAS QUE TOCAN
-        while (auxResource >= 1f)
-        {
-            crosshairHackInterceptChargesFull[auxNext].SetActive(true);
-            auxResource -= 1f;
-            auxNext++;
-            if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
-        }
 
         // RIGHT CLICK
         if (Input.GetMouseButtonDown(1) && interceptResource >= 1f)
@@ -397,37 +457,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
         }
 
-		crosshairHackBigOldZ = Mathf.Lerp (crosshairHackBigOldZ, crosshairHackBigTargetZ, Time.deltaTime * 5f);
-        crosshairHackBig.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackBigOldZ);
-
     }
 
 	void handleHack() {
-
-		if (hackResource < 3f)
-		{
-			hackResource += Time.deltaTime;
-			if (hackResource >= 3f) { hackResource = 3f; }
-		}
-
-		// TODAS VACIAS
-		for (int i = 0; i < crosshairHackCharges.Count; i++)
-		{
-			crosshairHackChargesFull[i].SetActive(false);
-		}
-
-		float auxResource = hackResource;
-		int auxNext = nextHackCharge;
-
-		// SE LLENAN LAS QUE TOCAN
-		while (auxResource >= 1f)
-		{
-			crosshairHackChargesFull[auxNext].SetActive(true);
-			auxResource -= 1f;
-			auxNext++;
-			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
-		}
-
 
 		// LEFT CLICK
 		if (Input.GetMouseButtonDown (0) && hackResource >= 1f) {
@@ -483,18 +515,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			}
 
-		}
-
-		crosshairHackSmallOldZ = Mathf.Lerp (crosshairHackSmallOldZ, crosshairHackSmallTargetZ, Time.deltaTime * 5f);
-		crosshairHackSmall.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackSmallOldZ);
-		crosshairHackTriclip.GetComponent<RectTransform> ().eulerAngles = crosshairHackSmall.GetComponent<RectTransform> ().eulerAngles;
-
-		if (hackResource >= 1f) {
-			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.5f, 0.5f, 0.5f), Time.deltaTime*10f);
-			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 1f), Time.deltaTime * 10f);
-		} else {
-			crosshairHackTriclip.GetComponent<RectTransform> ().localScale = Vector3.Lerp(crosshairHackTriclip.GetComponent<RectTransform> ().localScale, new Vector3 (0.35f, 0.35f, 0.35f), Time.deltaTime*10f);
-			crosshairHackTriclip.GetComponent<Image> ().color = Color.Lerp (crosshairHackTriclip.GetComponent<Image> ().color, new Color (1f, 1f, 1f, 0.5f), Time.deltaTime * 10f);
 		}
 
 	}
@@ -579,9 +599,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	}
 
 	void handleRegularInput() {
-
-		blinkResource = Mathf.Min (3f, blinkResource + Time.deltaTime*(1f/4f));
-		blinkText.GetComponent<Text> ().text = blinkResource.ToString ("0.#");
 
 		if (receiveInput) {
 
@@ -794,8 +811,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleCameraChanges() {
 
-
-		cameraValueY += (Input.GetAxis("Mouse Y"))*sensitivityY;
+		// 0.75f IS A CONSTANT TO MAKE SENSITIVITY AS CLOSE TO CS:GO ONE AS POSSIBLE, MORE STANDARD FOR PLAYERS
+		cameraValueY += (Input.GetAxisRaw("Mouse Y"))*GlobalData.mouseSensitivity*0.75f;
 
 
 		//cameraValueY = Mathf.Clamp (cameraValueY, -60f, 60f);
@@ -820,7 +837,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 
 		float changeX = 0f;
-		changeX = (Input.GetAxis("Mouse X"))*sensitivityX; 
+		changeX = (Input.GetAxisRaw("Mouse X"))*GlobalData.mouseSensitivity*0.75f; 
 
 		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 

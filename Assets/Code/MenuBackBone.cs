@@ -42,6 +42,7 @@ public class MenuBackBone : MonoBehaviour {
 
 		Cursor.visible = false;
 		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.SetCursor (null, Vector2.zero, CursorMode.Auto);
 
 		rhombus.gameObject.SetActive (false);
         pB = GameObject.Find("PositronicBrain").GetComponent<PositronicBrain>();
