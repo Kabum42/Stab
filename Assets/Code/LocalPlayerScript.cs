@@ -19,7 +19,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	//public static Vector3 centerOfCamera = new Vector3 (0.4f, 1.4f, 0f);
     //public static Vector3 centerOfCamera = new Vector3(0f, 1.4f, 0f);
 	private Vector3 lastPositionCursor;
-	public static float sensitivity = 1.00f;
 
 	private static float baseSpeed = 5f;
 	private float turboSpeed = baseSpeed*(1.5f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
@@ -795,7 +794,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	void handleCameraChanges() {
 
 		// 0.75f IS A CONSTANT TO MAKE SENSITIVITY AS CLOSE TO CS:GO ONE AS POSSIBLE, MORE STANDARD FOR PLAYERS
-		cameraValueY += (Input.GetAxisRaw("Mouse Y"))*sensitivity*0.75f;
+		cameraValueY += (Input.GetAxisRaw("Mouse Y"))*GlobalData.mouseSensitivity*0.75f;
 
 
 		//cameraValueY = Mathf.Clamp (cameraValueY, -60f, 60f);
@@ -820,7 +819,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 
 		float changeX = 0f;
-		changeX = (Input.GetAxisRaw("Mouse X"))*sensitivity*0.75f; 
+		changeX = (Input.GetAxisRaw("Mouse X"))*GlobalData.mouseSensitivity*0.75f; 
 
 		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 

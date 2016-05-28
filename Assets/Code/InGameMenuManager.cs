@@ -10,10 +10,12 @@ public class InGameMenuManager {
 	private GameObject physicalInGameMenu;
 	private GameObject physicalOptionSource;
 	private GameObject semicircleSource;
+	private GameObject handleSource;
 	private Option rootOption;
 	private Option currentParentOption;
 	private List<GameObject> physicalOptionsPool = new List<GameObject> ();
 	public List<GameObject> semicirclesPool = new List<GameObject> ();
+	public List<GameObject> handlesPool = new List<GameObject> ();
 	private List<Option> ancientOptions = new List<Option> ();
 	private List<Option> nonbornOptions = new List<Option> ();
 
@@ -30,12 +32,16 @@ public class InGameMenuManager {
 		physicalOptionSource.SetActive (false);
 		semicircleSource = physicalInGameMenu.transform.FindChild ("SemicircleSource").gameObject;
 		semicircleSource.SetActive (false);
+		handleSource = physicalInGameMenu.transform.FindChild ("HandleSource").gameObject;
+		handleSource.SetActive (false);
 
 		rootOption = new Option ("", Option.Action.None);
 		Option graphicsOption = new Option ("Graphics", Option.Action.None);
 		rootOption.AddChild (graphicsOption);
 		Option audioOption = new Option ("Audio", Option.Action.None);
 		rootOption.AddChild (audioOption);
+		Option controlsOption = new Option ("Controls", Option.Action.None);
+		rootOption.AddChild (controlsOption);
 		rootOption.AddChild (new Option ("Exit", Option.Action.Exit));
 
 		Option fullScreenGraphicsOption = new Option ("Full Screen", Option.Action.None);
@@ -49,10 +55,10 @@ public class InGameMenuManager {
 			resolutionScreenGraphicsOption.AddChild (new Option (Screen.resolutions[i].width + "x" + Screen.resolutions[i].height, Option.Action.ChangeResolution));
 		}
 
-		//moreVideoOption.AddChild(new Option ("The Game", Option.Action.None));
-
 		audioOption.AddChild (new Option ("On", Option.Action.None));
 		audioOption.AddChild (new Option ("Off", Option.Action.None));
+
+		controlsOption.AddChild (new Option ("Mouse", Option.Action.MouseSensitivity));
 
 	}
 	// Update is called once per frame
@@ -91,6 +97,49 @@ public class InGameMenuManager {
 				currentParentOption.selectedChild--;
 				if (currentParentOption.selectedChild < 0) {
 					currentParentOption.selectedChild = currentParentOption.children.Count - 1;
+				}
+
+			}
+
+			if (currentParentOption != null && currentParentOption.children.Count > 0 && currentParentOption.children [currentParentOption.selectedChild].handle != null) {
+
+				bool handleKeyPressed = false;
+				float speed = (1f / 200f);
+				float thresholdTime = 0.3f;
+				float accelerationTime = 3f;
+
+				if (currentParentOption.children [currentParentOption.selectedChild].handle.keyPressed >= thresholdTime) { 
+					float fastSpeed = (1f/2f);
+					float value = (currentParentOption.children [currentParentOption.selectedChild].handle.keyPressed - thresholdTime) / accelerationTime;
+					float aux = Mathf.Min (1f, value);
+					speed = Mathf.Lerp (speed, fastSpeed, aux);
+				}
+
+				if (Input.GetKey (KeyCode.A) || Input.GetKey (KeyCode.LeftArrow)) {
+
+					handleKeyPressed = true;
+					currentParentOption.children [currentParentOption.selectedChild].handle.relativeValue -= Time.deltaTime * speed;
+					currentParentOption.children [currentParentOption.selectedChild].handle.changedValue = true;
+					if (currentParentOption.children [currentParentOption.selectedChild].handle.relativeValue < 0f) {
+						currentParentOption.children [currentParentOption.selectedChild].handle.relativeValue = 0f;
+					}
+
+				}
+				if (Input.GetKey (KeyCode.D) || Input.GetKey (KeyCode.RightArrow)) {
+
+					handleKeyPressed = true;
+					currentParentOption.children [currentParentOption.selectedChild].handle.relativeValue += Time.deltaTime * speed;
+					currentParentOption.children [currentParentOption.selectedChild].handle.changedValue = true;
+					if (currentParentOption.children [currentParentOption.selectedChild].handle.relativeValue > 1f) {
+						currentParentOption.children [currentParentOption.selectedChild].handle.relativeValue = 1f;
+					}
+
+				}
+
+				if (handleKeyPressed) {
+					currentParentOption.children [currentParentOption.selectedChild].handle.keyPressed += Time.deltaTime;
+				} else {
+					currentParentOption.children [currentParentOption.selectedChild].handle.keyPressed = 0f;
 				}
 
 			}
@@ -206,7 +255,9 @@ public class InGameMenuManager {
 			option.assignedSemicircle.GetComponent<Image> ().color = option.circleColor;
 
 			foreach (Option child in option.children) {
-				child.assignedPhysicalOption.GetComponent<Text> ().color = Hacks.ColorLerpAlpha(child.color, option.circleColor.a, 1f);
+				child.color = Hacks.ColorLerpAlpha (child.color, option.circleColor.a, 1f);;
+				child.assignedPhysicalOption.GetComponent<Text> ().color = child.color;
+				child.Update (deltaTime);
 			}
 
 			if (option.circleColor.a <= 0f) {
@@ -216,8 +267,8 @@ public class InGameMenuManager {
 		}
 
 		foreach (Option option in toRemove) {
+			
 			semicirclesPool.Add (option.assignedSemicircle);
-
 
 			foreach (Option child in option.children) {
 				if (child.assignedPhysicalOption != null) {
@@ -225,6 +276,13 @@ public class InGameMenuManager {
 					child.assignedPhysicalOption.SetActive (false);
 					physicalOptionsPool.Add (child.assignedPhysicalOption);
 					child.assignedPhysicalOption = null;
+				}
+
+				if (child.handle != null && child.handle.assignedPhysicalHandle != null) {
+					child.handle.assignedPhysicalHandle.transform.SetParent (option.assignedSemicircle.transform.parent);
+					child.handle.assignedPhysicalHandle.SetActive (false);
+					handlesPool.Add (child.handle.assignedPhysicalHandle);
+					child.handle.assignedPhysicalHandle = null;
 				}
 			}
 
@@ -394,6 +452,14 @@ public class InGameMenuManager {
 				option.assignedPhysicalOption.transform.SetParent (currentParentOption.assignedSemicircle.transform);
 			}
 
+			if (option.handle != null && option.handle.assignedPhysicalHandle == null) {
+				option.handle.assignedPhysicalHandle = GetHandle ();
+				option.handle.assignedPhysicalHandle.transform.SetParent (option.assignedPhysicalOption.transform);
+				option.handle.assignedPhysicalHandle.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-1150f, 0f);
+				option.handle.assignedPhysicalHandle.transform.localEulerAngles = new Vector3 (0f, 0f, 0f);
+				option.handle.assignedPhysicalHandle.transform.localScale = new Vector3 (1f / 0.3f, 1f / 0.3f, 1f / 0.3f);
+			}
+
 		}
 			
 		//currentParentOption.assignedSemicircle.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (-480f, 0f);
@@ -481,6 +547,26 @@ public class InGameMenuManager {
 
 	}
 
+	GameObject GetHandle() {
+
+		GameObject handle;
+
+		if (handlesPool.Count > 0) {
+			handle = handlesPool [0];
+			handlesPool.RemoveAt (0);
+			handle.SetActive (true);
+		} else {
+			handle = MonoBehaviour.Instantiate (handleSource);
+			handle.transform.SetParent (physicalInGameMenu.transform);
+			handle.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, 0f);
+			handle.transform.localScale = handleSource.transform.localScale;
+			handle.SetActive (true);
+		}
+
+		return handle;
+
+	}
+
 	public class Option {
 
 		public Option parentOption;
@@ -488,6 +574,7 @@ public class InGameMenuManager {
 		public Action action;
 		public List<Option> children = new List<Option> ();
 		public int selectedChild = 0;
+		public Handle handle = null;
 
 		public GameObject assignedPhysicalOption = null;
 		public float angle = 0f;
@@ -510,6 +597,16 @@ public class InGameMenuManager {
 
 			text = auxText;
 			action = auxAction;
+
+			if (action == Action.MouseSensitivity) {
+				Option handleOption = new Option("", Action.Handle);
+				AddChild(handleOption);
+				handleOption.handle.setValue(PlayerPrefs.GetFloat ("MouseSensitivity"));
+			}
+
+			if (action == Action.Handle) {
+				handle = new Handle(this, "multiply", 0.01f, 100f);
+			}
 
 		}
 
@@ -537,7 +634,19 @@ public class InGameMenuManager {
 
 			}
 
+			if (handle != null) {
+				
+				handle.Update ();
 
+				if (handle.changedValue) {
+					handle.changedValue = false;
+					if (parentOption.action == Action.MouseSensitivity) {
+						GlobalData.mouseSensitivity = handle.getValue ();
+						PlayerPrefs.SetFloat ("MouseSensitivity", GlobalData.mouseSensitivity);
+					}
+				}
+
+			}
 
 		}
 
@@ -557,8 +666,87 @@ public class InGameMenuManager {
 			FullScreenOn,
 			FullScreenOff,
 			ChangeResolution,
+			Handle,
+			MouseSensitivity,
 			Exit
 		};
+
+	}
+
+	public class Handle {
+
+		private Option parentOption;
+		public bool changedValue = false;
+		public float relativeValue = 0.5f;
+		public float keyPressed = 0f;
+		private string type;
+		private float min = 0.01f;
+		private float max = 100f;
+
+		public GameObject assignedPhysicalHandle = null;
+
+		public Handle(Option auxParentOption, string auxType, float auxMin, float auxMax) {
+
+			parentOption = auxParentOption;
+			type = auxType;
+			min = auxMin;
+			max = auxMax;
+
+		}
+
+		public void Update() {
+
+			if (assignedPhysicalHandle != null) {
+
+				GameObject point = assignedPhysicalHandle.transform.FindChild ("Point").gameObject;
+
+				float relativePosition = relativeValue - 0.5f;
+				float absolutePosition = relativePosition * assignedPhysicalHandle.GetComponent<RectTransform> ().sizeDelta.x;
+
+				point.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (absolutePosition, 0f);
+
+				GameObject text = point.transform.FindChild ("Text").gameObject;
+				text.GetComponent<Text> ().text = "" + getValue ().ToString("0.00");
+
+				assignedPhysicalHandle.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (assignedPhysicalHandle.GetComponent<Image> ().color, parentOption.color.a, 1f);
+				point.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (point.GetComponent<Image> ().color, parentOption.color.a, 1f);
+				text.GetComponent<Text> ().color = Hacks.ColorLerpAlpha (text.GetComponent<Text> ().color, parentOption.color.a, 1f);
+
+			}
+
+		}
+
+		public float getValue() {
+
+			float value = 0f;
+
+			if (type == "multiply") {
+
+				float maxMultiplier = max / min;
+				float midMultiplier = Mathf.Sqrt (maxMultiplier);
+				float midValue = min * midMultiplier;
+
+				float currentMultiplier = Mathf.Pow (midMultiplier, (relativeValue -0.5f)*2f);
+
+				value = midValue*currentMultiplier;
+
+			}
+
+			return value;
+		}
+
+		public void setValue(float absoluteValue) {
+
+			float maxMultiplier = max / min;
+			float midMultiplier = Mathf.Sqrt (maxMultiplier);
+			float midValue = min * midMultiplier;
+
+			absoluteValue /= midValue;
+			relativeValue = Mathf.Log (absoluteValue, midMultiplier);
+
+			relativeValue = (relativeValue / 2f) + 0.5f;
+
+		}
 
 	}
 
