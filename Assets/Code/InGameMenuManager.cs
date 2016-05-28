@@ -55,6 +55,11 @@ public class InGameMenuManager {
 			resolutionScreenGraphicsOption.AddChild (new Option (Screen.resolutions[i].width + "x" + Screen.resolutions[i].height, Option.Action.ChangeResolution));
 		}
 
+		Option vsyncGraphicsOption = new Option ("VSync", Option.Action.None);
+		graphicsOption.AddChild (vsyncGraphicsOption);
+		vsyncGraphicsOption.AddChild (new Option ("On", Option.Action.VSyncOn));
+		vsyncGraphicsOption.AddChild (new Option ("Off", Option.Action.VSyncOff));
+
 		audioOption.AddChild (new Option ("On", Option.Action.None));
 		audioOption.AddChild (new Option ("Off", Option.Action.None));
 
@@ -174,6 +179,18 @@ public class InGameMenuManager {
 					PlayerPrefs.SetInt ("ScreenHeight", GlobalData.screenHeight);
 
 					Screen.SetResolution (GlobalData.screenWidth, GlobalData.screenHeight, GlobalData.fullScreen);
+
+				} else if (currentParentOption.children [currentParentOption.selectedChild].action == Option.Action.VSyncOn) {
+
+					PlayerPrefs.SetInt ("VSync", 1);
+					GlobalData.vsync = 1;
+					QualitySettings.vSyncCount = GlobalData.vsync;
+
+				} else if (currentParentOption.children [currentParentOption.selectedChild].action == Option.Action.VSyncOff) {
+
+					PlayerPrefs.SetInt ("VSync", 0);
+					GlobalData.vsync = 0;
+					QualitySettings.vSyncCount = GlobalData.vsync;
 
 				}
 
@@ -632,6 +649,14 @@ public class InGameMenuManager {
 					color = color = new Color (chosenColor.r, chosenColor.g, chosenColor.b, color.a);
 				}
 
+			} else if (action == Action.VSyncOn) {
+
+				if (GlobalData.vsync == 1) { color = new Color (chosenColor.r, chosenColor.g, chosenColor.b, color.a); }
+
+			} else if (action == Action.VSyncOff) {
+
+				if (GlobalData.vsync == 0) { color = new Color (chosenColor.r, chosenColor.g, chosenColor.b, color.a); }
+
 			}
 
 			if (handle != null) {
@@ -668,6 +693,8 @@ public class InGameMenuManager {
 			ChangeResolution,
 			Handle,
 			MouseSensitivity,
+			VSyncOn,
+			VSyncOff,
 			Exit
 		};
 

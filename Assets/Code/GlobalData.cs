@@ -13,6 +13,7 @@ public static class GlobalData {
 	public static int screenWidth;
 	public static int screenHeight;
 	public static float mouseSensitivity;
+	public static int vsync = 1;
 
     // Use this for initialization
     public static void Start () {
@@ -43,6 +44,8 @@ public static class GlobalData {
 
 			mouseSensitivity = PlayerPrefs.GetFloat ("MouseSensitivity");
 
+			vsync = PlayerPrefs.GetInt ("VSync");
+
         }
 
 	}
@@ -63,6 +66,10 @@ public static class GlobalData {
 
 		if (!PlayerPrefs.HasKey ("MouseSensitivity")) {
 			PlayerPrefs.SetFloat ("MouseSensitivity", 0.5f);
+		}
+
+		if (!PlayerPrefs.HasKey ("VSync")) {
+			PlayerPrefs.SetInt ("VSync", 1);
 		}
 
 	}
