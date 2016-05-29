@@ -28,6 +28,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public GameObject visualAvatar;
 	public GameObject materialCarrier;
+	private GameObject pelvis;
 
 	public bool receiveInput = true;
 
@@ -96,6 +97,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	public bool gameEnded = false;
 
+	private Material[] materials;
+
 	void Awake () {
 
 		GlobalData.Start ();
@@ -114,9 +117,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		visualAvatar.name = "VisualAvatar";
 		Hacks.SetLayerRecursively (this.gameObject, LayerMask.NameToLayer ("Ignore Raycast"));
 		materialCarrier = visualAvatar.transform.FindChild ("Mesh").gameObject;
+		pelvis = visualAvatar.transform.FindChild ("Armature/Pelvis").gameObject;
 		//materialCarrier.layer = LayerMask.NameToLayer ("DontRender");
 		// THIS IS TO HIDE THE MAIN CHARACTER BUT STILL RENDER IT SO ALL ANIMATION AND PHYSICS UPDATES TAKE IT INTO ACCOUNT
-		Material[] materials = materialCarrier.GetComponent<SkinnedMeshRenderer>().materials;
+		materials = materialCarrier.GetComponent<SkinnedMeshRenderer>().materials;
 		for (int i = 0; i < materials.Length; i++) {
 			materials[i].SetFloat ("_Cutoff", 1f);
 		}
@@ -224,6 +228,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		handleDeadCamera ();
 
 		fillResources ();
 		updateUI ();
@@ -238,12 +243,13 @@ public class LocalPlayerScript : MonoBehaviour {
 				
 				handleHack ();
 				handleIntercept();
-				handleCameraChanges ();
 				//adjustFirstPersonObjects ();
 				handleRegularInput();
 
 			}
+			handleCameraChanges ();
 		}
+
 
 
 	
@@ -253,6 +259,34 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (!inGameMenuManager.active && !dead) {
 			handleMovementInput ();
+		}
+
+	}
+
+	void handleDeadCamera() {
+
+		if ( GlobalData.clientScript != null && GlobalData.clientScript.myPlayer.dead) {
+
+			cameraDistance = Mathf.Lerp (cameraDistance, 3f, Time.deltaTime * 5f);
+
+			if (materials [0].GetFloat ("_Cutoff") == 1f) {
+				visualAvatar.transform.SetParent (null);
+				for (int i = 0; i < materials.Length; i++) {
+					materials[i].SetFloat ("_Cutoff", 0f);
+				}
+			}
+
+			this.transform.position = pelvis.transform.position;
+
+		} else if (cameraDistance != 0f) {
+
+			cameraDistance = 0f;
+			visualAvatar.transform.SetParent (this.transform);
+			visualAvatar.transform.localPosition = Vector3.zero;
+			for (int i = 0; i < materials.Length; i++) {
+				materials[i].SetFloat ("_Cutoff", 1f);
+			}
+
 		}
 
 	}
@@ -823,8 +857,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		personalCamera.transform.localEulerAngles = new Vector3 (-compoundValueY, compoundValueX, personalCamera.transform.localEulerAngles.z);
 
-
-		personalCamera.transform.localPosition = Vector3.Lerp(personalCamera.transform.localPosition, centerOfCamera, Time.deltaTime*5f);
+		personalCamera.transform.localPosition = centerOfCamera;
 
 		RaycastHit hit;
 		Vector3 direction = -personalCamera.transform.forward;
@@ -832,7 +865,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			personalCamera.transform.position = hit.point;
 		}
 		else {
-			personalCamera.transform.position = personalCamera.transform.position +(-personalCamera.transform.forward*cameraDistance);
+			personalCamera.transform.position = personalCamera.transform.position +(direction*cameraDistance);
 		}
 
 
