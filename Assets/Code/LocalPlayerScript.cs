@@ -283,6 +283,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			cameraDistance = 0f;
 			visualAvatar.transform.SetParent (this.transform);
 			visualAvatar.transform.localPosition = Vector3.zero;
+			visualAvatar.transform.localEulerAngles = Vector3.zero;
 			for (int i = 0; i < materials.Length; i++) {
 				materials[i].SetFloat ("_Cutoff", 1f);
 			}
