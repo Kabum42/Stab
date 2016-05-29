@@ -91,7 +91,7 @@ public class ClientScript : MonoBehaviour {
 		} else if (chatManager.lastChatPannelInteraction < chatManager.chatPannelInteractionThreshold) {
 			chatManager.lastChatPannelInteraction += Time.deltaTime;
 		}
-
+			
 		remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
 		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
 
@@ -844,6 +844,7 @@ public class ClientScript : MonoBehaviour {
 	{
 		Player auxPlayer = PlayerByCode (playerCode);
 		if (playerCode == myCode) {
+			localPlayer.respawn ();
 			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			localPlayer.transform.position = position;
 			localPlayer.transform.eulerAngles = eulerAngles;

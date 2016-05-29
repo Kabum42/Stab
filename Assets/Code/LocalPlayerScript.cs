@@ -58,6 +58,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public List<GameObject> crosshairHackInterceptChargesFull = new List<GameObject>();
 	[HideInInspector] public GameObject crosshairHackSkull;
 	[HideInInspector] public GameObject inGameMenu;
+	[HideInInspector] public GameObject fade;
 
 	[HideInInspector] public InGameMenuManager inGameMenuManager;
 
@@ -202,6 +203,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		textTargeted = canvas.transform.FindChild ("TextTargeted").gameObject;
 		textTargeted.SetActive (false);
 
+		fade = canvas.transform.FindChild ("Fade").gameObject;
+		if (GlobalData.clientScript != null) {
+			fade.GetComponent<Image> ().color = new Color (0f, 0f, 0f, 1f);
+		}
 
 
 		lastPositionCursor = Input.mousePosition;
@@ -265,7 +270,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleDeadCamera() {
 
-		if ( GlobalData.clientScript != null && GlobalData.clientScript.myPlayer.dead) {
+		if (GlobalData.clientScript != null && GlobalData.clientScript.myPlayer.dead) {
 
 			cameraDistance = Mathf.Lerp (cameraDistance, 3f, Time.deltaTime * 5f);
 
@@ -278,16 +283,22 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			this.transform.position = pelvis.transform.position;
 
-		} else if (cameraDistance != 0f) {
+		}
 
-			cameraDistance = 0f;
-			visualAvatar.transform.SetParent (this.transform);
-			visualAvatar.transform.localPosition = Vector3.zero;
-			visualAvatar.transform.localEulerAngles = Vector3.zero;
-			for (int i = 0; i < materials.Length; i++) {
-				materials[i].SetFloat ("_Cutoff", 1f);
-			}
+	}
 
+	public void respawn() {
+		
+		cameraDistance = 0f;
+		visualAvatar.transform.SetParent (this.transform);
+		visualAvatar.transform.localPosition = Vector3.zero;
+		visualAvatar.transform.localEulerAngles = Vector3.zero;
+		for (int i = 0; i < materials.Length; i++) {
+			materials[i].SetFloat ("_Cutoff", 1f);
+		}
+
+		if (fade != null && fade.GetComponent<Image> ().color.a == 1f) {
+			fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, 0f, Time.deltaTime * 10f);
 		}
 
 	}
@@ -319,6 +330,15 @@ public class LocalPlayerScript : MonoBehaviour {
 		characterSpeed = baseSpeed;
 		crosshairHackTriclip.SetActive (true);
 		crosshairHackSkull.SetActive (false);
+
+		if (fade != null) {
+			if (fade.GetComponent<Image> ().color.a > 0.01f) {
+				fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, 0f, Time.deltaTime * 10f);
+			} else {
+				Destroy (fade);
+				fade = null;
+			}
+		}
 
 		if (GlobalData.clientScript != null) {
 
