@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class MenuBackBone : MonoBehaviour {
 
@@ -27,11 +28,17 @@ public class MenuBackBone : MonoBehaviour {
 	public int scrollValue = 0;
 	public float scrollCooldown = 0f;
 
+	[HideInInspector] public GameObject fade;
+
 	// Use this for initialization
 	void Start () {
 
 		GlobalData.Start ();
 		GlobalData.loadedMenuScene = true;
+
+		fade = GameObject.Find ("Canvas/Fade");
+		fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, GlobalData.fadeAlphaTarget, 1f);
+		GlobalData.fadeAlphaTarget = 0f;
 
 		menuMusic = this.gameObject.AddComponent<AudioSource> ();
 		menuMusic.clip = Resources.Load("Sound/Music/Ossuary_6_Air") as AudioClip;
@@ -169,6 +176,8 @@ public class MenuBackBone : MonoBehaviour {
 		else { speedTransition = 10f; }
 
 		this.transform.position = Vector3.Lerp (this.transform.position, targetPosition, Time.deltaTime * speedTransition);
+
+		fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, GlobalData.fadeAlphaTarget, Time.deltaTime * 15f);
 	
 	}
 

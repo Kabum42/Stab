@@ -43,6 +43,8 @@ public class ClientScript : MonoBehaviour {
 
 	private bool justRespawned = false;
 
+	private bool disconnecting = false;
+
 	// Use this for initialization
 	void Awake () {
 
@@ -65,6 +67,7 @@ public class ClientScript : MonoBehaviour {
 			serverScript.initialize (this);
 		} else {
 			Destroy(map.transform.FindChild ("RespawnPoints").gameObject);
+			GetComponent<NetworkView> ().RPC ("sayHi", RPCMode.Others, myCode);
 		}
 
 		GameObject auxCameraHolder = new GameObject ();
@@ -91,7 +94,7 @@ public class ClientScript : MonoBehaviour {
 		} else if (chatManager.lastChatPannelInteraction < chatManager.chatPannelInteractionThreshold) {
 			chatManager.lastChatPannelInteraction += Time.deltaTime;
 		}
-
+			
 		remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
 		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
 
@@ -125,6 +128,12 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		textBig.GetComponent<CanvasRenderer> ().SetAlpha (textBigAlpha);
+
+		if (disconnecting) {
+			if (Mathf.Abs (localPlayer.fade.GetComponent<Image> ().color.a - GlobalData.fadeAlphaTarget) < 0.01f) {
+				Application.LoadLevel ("Menu");
+			}
+		}
 	
 	}
 
@@ -354,15 +363,13 @@ public class ClientScript : MonoBehaviour {
 
 			currentUpdateCooldown = 0f;
 
-			if (localPlayer != null && GetComponent<NetworkView> () != null) {
-
-				GameObject localVisualAvatar = localPlayer.GetComponent<LocalPlayerScript> ().visualAvatar;
+			if (localPlayer != null && GetComponent<NetworkView> () != null && !localPlayer.firstRespawn) {
 
 				if (justRespawned) {
 					justRespawned = false;
-					GetComponent<NetworkView> ().RPC ("updatePlayerInstantRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position);
+					GetComponent<NetworkView> ().RPC ("updatePlayerInstantRPC", RPCMode.Others, myCode, localPlayer.visualAvatar.transform.position);
 				} else {
-					GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localVisualAvatar.transform.position, localVisualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
+					GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
 				}
 
 			}
@@ -640,11 +647,33 @@ public class ClientScript : MonoBehaviour {
 		}
 	}
 
-	public static void Disconnect() {
-		Application.LoadLevel ("Menu");
+	public void Disconnect() {
+		GlobalData.fadeAlphaTarget = 1f;
+		disconnecting = true;
 	}
 
 	// CLIENT RPCs
+	[RPC]
+	void sayHi(int playerCode) {
+
+		if (Network.isServer) {
+			Player auxPlayer = PlayerByCode (playerCode);
+			if (auxPlayer == null) {
+				// LE ASIGNAMOS UN SITIO DONDE APARECER
+				serverScript.respawn(playerCode);
+				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
+				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, remainingSeconds);
+			}
+		}
+
+		if (playerCode != myCode) {
+			chatManager.Add(new ChatMessage("System", "Player " + playerCode + " has joined the game."));
+			chatManager.Write ();
+			chatManager.lastChatPannelInteraction = 0f;
+		}
+
+	}
+
 	[RPC]
 	void updatePlayerRPC(int playerCode, Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation)
 	{
@@ -680,13 +709,6 @@ public class ClientScript : MonoBehaviour {
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
 				serverScript.sendRankingData();
-				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
-				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, playerCode, remainingSeconds);
-				// LE ASIGNAMOS UN SITIO DONDE APARECER
-				serverScript.respawn(playerCode);
-				// AVISAMOS AL RESTO DE JUGADORES DE QUE SE HA UNIDO UN NUEVO JUGADOR
-				GetComponent<NetworkView>().RPC("joinedPlayerRPC", RPCMode.All, playerCode);
-
 			}
 
 		}
@@ -719,22 +741,9 @@ public class ClientScript : MonoBehaviour {
 
 	// SERVER RPCs
 	[RPC]
-	void sendRemainingSecondsRPC(int playerCode, float auxRemainingSeconds)
+	void sendRemainingSecondsRPC(float auxRemainingSeconds)
 	{
-		if (playerCode == myCode) {
-			remainingSeconds = auxRemainingSeconds;
-		}
-	}
-
-	[RPC]
-	void joinedPlayerRPC(int playerCode) {
-
-		if (playerCode != myCode) {
-			chatManager.Add(new ChatMessage("System", "Player " + playerCode + " has joined the game."));
-			chatManager.Write ();
-			chatManager.lastChatPannelInteraction = 0f;
-		}
-
+		remainingSeconds = auxRemainingSeconds;
 	}
 
 	[RPC]
@@ -844,6 +853,7 @@ public class ClientScript : MonoBehaviour {
 	{
 		Player auxPlayer = PlayerByCode (playerCode);
 		if (playerCode == myCode) {
+			localPlayer.respawn ();
 			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			localPlayer.transform.position = position;
 			localPlayer.transform.eulerAngles = eulerAngles;

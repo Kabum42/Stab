@@ -10,6 +10,10 @@ public class Asuka : MonoBehaviour {
 
 	[HideInInspector] public Material eyeMaterial;
 
+	public int currentLetter = 0;
+	public string targetText = "";
+	public float showingThought = 0f;
+
 	// Use this for initialization
 	void Start () {
 
@@ -18,6 +22,7 @@ public class Asuka : MonoBehaviour {
 		textComponent = (Instantiate(Resources.Load ("Prefabs/AsukaText") as GameObject)).GetComponent<Text> ();
 		textComponent.gameObject.transform.SetParent (GameObject.Find ("Canvas").transform);
 		textComponent.gameObject.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, 70f);
+		textComponent.gameObject.GetComponent<RectTransform> ().localPosition = new Vector3 (textComponent.gameObject.GetComponent<RectTransform> ().localPosition.x, textComponent.gameObject.GetComponent<RectTransform> ().localPosition.y, 0f);
 		textComponent.gameObject.transform.localScale = new Vector3 (0.3f, 0.3f, 0.3f);
 		textComponent.text = "";
 
@@ -44,13 +49,39 @@ public class Asuka : MonoBehaviour {
 		Color finalColor = Color.Lerp (eyeMaterial.GetColor ("_EmissionColor"), targetEyeEmissionColor, Time.deltaTime * 10f);
 		eyeMaterial.SetColor ("_EmissionColor", targetEyeEmissionColor);
 
-		//eyeRenderer.material.color = targetEyeEmissionColor;
+		if (audioSource.isPlaying) {
+			
+			float relativeAudioTime = audioSource.time / audioSource.clip.length;
+			currentLetter = (int) Mathf.Min(targetText.Length, relativeAudioTime * targetText.Length);
+			string textToShow = targetText.Substring (0, currentLetter);
 
-		if (currentThought != null && !audioSource.isPlaying) {
+			if (currentLetter != targetText.Length) {
+				Color auxColor = Hacks.ColorLerpAlpha (textComponent.color, 0.5f, 1f);
+				textToShow += "<color=#" + Hacks.ColorToHexString(auxColor) + ">" + getRandomChar () + "</color>";
+			}
+
+			textComponent.text = textToShow;
+
+		} else if (currentThought != null && !audioSource.isPlaying) {
+			
+			showingThought = 0.5f;
+			textComponent.text = targetText;
 			currentThought = null;
-			textComponent.text = "";
+
+		} else if (currentThought == null && showingThought > 0f) {
+			
+			showingThought = Mathf.Max (0f, showingThought - Time.deltaTime);
+			if (showingThought == 0f) {
+				textComponent.text = "";
+			}
+
 		}
 	
+	}
+
+	string getRandomChar() {
+		char c = (char) Random.Range(0, 255);
+		return c.ToString ();
 	}
 
 	public class Thought {
@@ -70,7 +101,14 @@ public class Asuka : MonoBehaviour {
 		public void Play() {
 
 			asuka.currentThought = this;
-			asuka.textComponent.text = this.text;
+			asuka.currentLetter = 0;
+			asuka.targetText = this.text;
+
+			asuka.textComponent.gameObject.GetComponent<RectTransform> ().anchoredPosition = new Vector2 (asuka.textComponent.gameObject.GetComponent<RectTransform> ().sizeDelta.x/2f * asuka.textComponent.gameObject.GetComponent<RectTransform> ().localScale.x, asuka.textComponent.gameObject.GetComponent<RectTransform> ().anchoredPosition.y);
+			asuka.textComponent.text = asuka.targetText;
+			asuka.textComponent.gameObject.GetComponent<RectTransform> ().anchoredPosition = asuka.textComponent.gameObject.GetComponent<RectTransform> ().anchoredPosition + new Vector2 (-asuka.textComponent.preferredWidth/2f * asuka.textComponent.gameObject.GetComponent<RectTransform> ().localScale.x, 0f);
+			asuka.textComponent.text = "";
+
 			asuka.audioSource.clip = Resources.Load ("Sound/Asuka/" + audioPath) as AudioClip;
 			asuka.audioSource.Play ();
 

@@ -283,5 +283,19 @@ public static class Hacks {
 		return median_volume;
 	}
 
+	public static string ColorToHexString(Color color) {
+
+		string hexString = "";
+
+		int r = (int) Mathf.Min(255, (color.r * 255f));
+		int g = (int) Mathf.Min(255, (color.g * 255f));
+		int b = (int) Mathf.Min(255, (color.b * 255f));
+		int a = (int) Mathf.Min(255, (color.a * 255f));
+
+		hexString = r.ToString ("X2") + g.ToString ("X2") + b.ToString ("X2") + a.ToString ("X2");
+
+		return hexString;
+
+	}
 
 }

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class RhombusScript : MonoBehaviour {
 
@@ -93,8 +94,13 @@ public class RhombusScript : MonoBehaviour {
 
 	private int scrollValue = 0;
 
+	private string selectedOption = "none";
+	private GameObject fade;
+
 	// Use this for initialization
 	void Start () {
+
+		fade = GameObject.Find ("Canvas/Fade");
 
 		backboneLink = new Neuron(this);
 		backboneLink.root.name = "Neuron_backboneLink";
@@ -347,12 +353,6 @@ public class RhombusScript : MonoBehaviour {
 
 	void OnConnectedToServer() {
 
-		foreach(PingMatch pingMatch in unresolvedPingMatches)
-		{
-			pingMatch.Cancel();
-		}
-		unresolvedPingMatches.Clear ();
-		
 		Application.LoadLevel ("Basic");
 
 	}
@@ -474,21 +474,49 @@ public class RhombusScript : MonoBehaviour {
 		handleScroll ();
 		handleRepositions ();
 
-		if (mode == "create") {
+		if (selectedOption != "none") {
 
-			updateCreate ();
+			if (fade.GetComponent<Image> ().color.a < 0.99f) {
+				// FADING
 
-		} else if (mode == "join") {
+			} else {
 
-			updateJoin ();
+				if (selectedOption == "create") {
+
+					selectedOption = "done";
+					NetworkManager.StartServer (createMenuNameTextString, 10);
+					Application.LoadLevel ("Basic");
+
+				} else if (selectedOption == "join") {
+
+					selectedOption = "done";
+					NetworkManager.JoinServer (NetworkManager.hostList [currentLogicalMatchSelected.hostListPosition]);
+
+				}
+
+			}
+
+		} else {
+
+			if (mode == "create") {
+
+				updateCreate ();
+
+			} else if (mode == "join") {
+
+				updateJoin ();
+
+			}
+
+			menuSelectedNeuron.Update ();
+
+			if (!active && expandedAmount <= 0.01f) {
+				this.gameObject.SetActive (false);
+			}
 
 		}
 
-		menuSelectedNeuron.Update ();
 
-		if (!active && expandedAmount <= 0.01f) {
-			this.gameObject.SetActive (false);
-		}
 
 	}
 
@@ -738,7 +766,13 @@ public class RhombusScript : MonoBehaviour {
 				}
 
 				if (Input.GetKeyDown (KeyCode.Return) || Input.GetMouseButtonDown(0)) {
-					NetworkManager.JoinServer (NetworkManager.hostList[currentLogicalMatchSelected.hostListPosition]);
+					foreach(PingMatch pingMatch in unresolvedPingMatches)
+					{
+						pingMatch.Cancel();
+					}
+					unresolvedPingMatches.Clear ();
+					selectedOption = "join";
+					GlobalData.fadeAlphaTarget = 1f;
 				}
 
 				if (currentLogicalMatchSelected.physicalMatch != null) {
@@ -872,8 +906,8 @@ public class RhombusScript : MonoBehaviour {
 				else if (createMenuOptions[createSelected] == createMenuGoTitle) {
 					if (createMenuNameTextString.Length != 0) {
 						// Start match
-						NetworkManager.StartServer (createMenuNameTextString, 10);
-						Application.LoadLevel ("Basic");
+						selectedOption = "create";
+						GlobalData.fadeAlphaTarget = 1f;
 					} else {
 						locked = true;
 						createSelected = 0;
