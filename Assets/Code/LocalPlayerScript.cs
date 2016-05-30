@@ -100,7 +100,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	private Material[] materials;
 
-	private bool firstRespawn = true;
+	[HideInInspector] public bool firstRespawn = true;
 
 	void Awake () {
 
