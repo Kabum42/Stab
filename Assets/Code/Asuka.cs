@@ -49,6 +49,7 @@ public class Asuka : MonoBehaviour {
 		Color finalColor = Color.Lerp (eyeMaterial.GetColor ("_EmissionColor"), targetEyeEmissionColor, Time.deltaTime * 10f);
 		eyeMaterial.SetColor ("_EmissionColor", targetEyeEmissionColor);
 
+
 		if (audioSource.isPlaying) {
 			
 			float relativeAudioTime = audioSource.time / audioSource.clip.length;
@@ -68,19 +69,19 @@ public class Asuka : MonoBehaviour {
 			textComponent.text = targetText;
 			currentThought = null;
 
-		} else if (currentThought == null && showingThought > 0f) {
+		}  else if (currentThought == null && showingThought > 0f) {
 			
 			showingThought = Mathf.Max (0f, showingThought - Time.deltaTime);
 			if (showingThought == 0f) {
 				textComponent.text = "";
 			}
 
-		}
+		} 
 	
 	}
 
 	string getRandomChar() {
-		char c = (char) Random.Range(0, 255);
+		char c = (char) Random.Range(33, 1300);
 		return c.ToString ();
 	}
 
