@@ -298,7 +298,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		}
 
 		if (fade != null && fade.GetComponent<Image> ().color.a == 1f) {
-			fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, 0f, Time.deltaTime * 10f);
+			fade.GetComponent<Image> ().color = new Color (0f, 0f, 0f, 1f - 0.01f);
 		}
 
 	}
@@ -331,9 +331,9 @@ public class LocalPlayerScript : MonoBehaviour {
 		crosshairHackTriclip.SetActive (true);
 		crosshairHackSkull.SetActive (false);
 
-		if (fade != null) {
+		if (fade != null && fade.GetComponent<Image> ().color.a < 1f) {
 			if (fade.GetComponent<Image> ().color.a > 0.01f) {
-				fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, 0f, Time.deltaTime * 10f);
+				fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, 0f, Time.deltaTime * 15f);
 			} else {
 				Destroy (fade);
 				fade = null;
