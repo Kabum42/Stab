@@ -100,6 +100,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	private Material[] materials;
 
+	private bool firstRespawn = true;
+
 	void Awake () {
 
 		GlobalData.Start ();
@@ -205,7 +207,11 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		fade = canvas.transform.FindChild ("Fade").gameObject;
 		if (GlobalData.clientScript != null) {
-			fade.GetComponent<Image> ().color = new Color (0f, 0f, 0f, 1f);
+			fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, GlobalData.fadeAlphaTarget, 1f);
+			GlobalData.fadeAlphaTarget = 0f;
+		} else {
+			GlobalData.fadeAlphaTarget = 0f;
+			fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, GlobalData.fadeAlphaTarget, 1f);
 		}
 
 
@@ -254,9 +260,6 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 			handleCameraChanges ();
 		}
-
-
-
 	
 	}
 
@@ -297,8 +300,8 @@ public class LocalPlayerScript : MonoBehaviour {
 			materials[i].SetFloat ("_Cutoff", 1f);
 		}
 
-		if (fade != null && fade.GetComponent<Image> ().color.a == 1f) {
-			fade.GetComponent<Image> ().color = new Color (0f, 0f, 0f, 1f - 0.01f);
+		if (firstRespawn) {
+			firstRespawn = false;
 		}
 
 	}
@@ -331,13 +334,8 @@ public class LocalPlayerScript : MonoBehaviour {
 		crosshairHackTriclip.SetActive (true);
 		crosshairHackSkull.SetActive (false);
 
-		if (fade != null && fade.GetComponent<Image> ().color.a < 1f) {
-			if (fade.GetComponent<Image> ().color.a > 0.01f) {
-				fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, 0f, Time.deltaTime * 15f);
-			} else {
-				Destroy (fade);
-				fade = null;
-			}
+		if (!firstRespawn) {
+			fade.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (fade.GetComponent<Image> ().color, GlobalData.fadeAlphaTarget, Time.deltaTime * 15f);
 		}
 
 		if (GlobalData.clientScript != null) {

@@ -43,6 +43,8 @@ public class ClientScript : MonoBehaviour {
 
 	private bool justRespawned = false;
 
+	private bool disconnecting = false;
+
 	// Use this for initialization
 	void Awake () {
 
@@ -125,6 +127,12 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		textBig.GetComponent<CanvasRenderer> ().SetAlpha (textBigAlpha);
+
+		if (disconnecting) {
+			if (Mathf.Abs (localPlayer.fade.GetComponent<Image> ().color.a - GlobalData.fadeAlphaTarget) < 0.01f) {
+				Application.LoadLevel ("Menu");
+			}
+		}
 	
 	}
 
@@ -640,8 +648,9 @@ public class ClientScript : MonoBehaviour {
 		}
 	}
 
-	public static void Disconnect() {
-		Application.LoadLevel ("Menu");
+	public void Disconnect() {
+		GlobalData.fadeAlphaTarget = 1f;
+		disconnecting = true;
 	}
 
 	// CLIENT RPCs

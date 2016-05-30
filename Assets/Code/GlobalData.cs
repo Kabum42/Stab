@@ -7,6 +7,7 @@ public static class GlobalData {
     public static bool started = false;
 	public static float crossfadeAnimation = 0.15f;
 	public static ClientScript clientScript = null;
+	public static float fadeAlphaTarget = 1f;
 	//public static float crossfadeAnimation = 0.05f;
 
 	public static bool fullScreen;
