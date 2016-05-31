@@ -224,6 +224,12 @@ public class ServerScript : MonoBehaviour {
 	}
 
 	// NETWORK RELATED
+	void OnPlayerConnected(NetworkPlayer player) {
+		if (clientScript.lockedRemainingSeconds) {
+			clientScript.lockedRemainingSeconds = false;
+		}
+	}
+
 	void OnPlayerDisconnected(NetworkPlayer player) {
 		Debug.Log("Clean up after player " + player);
 		Network.RemoveRPCs(player);

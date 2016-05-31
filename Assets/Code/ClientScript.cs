@@ -14,6 +14,7 @@ public class ClientScript : MonoBehaviour {
 	private float currentUpdateCooldown = 0f;
 
 	[HideInInspector] public float remainingSeconds = (8f)*(60f); // 8 MINUTES
+	[HideInInspector] public bool lockedRemainingSeconds = false;
 
 	private ChatManager chatManager;
 
@@ -65,6 +66,7 @@ public class ClientScript : MonoBehaviour {
 		if (Network.isServer) {
 			serverScript = gameObject.AddComponent<ServerScript> ();
 			serverScript.initialize (this);
+			lockedRemainingSeconds = true;
 		} else {
 			Destroy(map.transform.FindChild ("RespawnPoints").gameObject);
 			GetComponent<NetworkView> ().RPC ("sayHi", RPCMode.Others, myCode);
@@ -94,8 +96,10 @@ public class ClientScript : MonoBehaviour {
 		} else if (chatManager.lastChatPannelInteraction < chatManager.chatPannelInteractionThreshold) {
 			chatManager.lastChatPannelInteraction += Time.deltaTime;
 		}
-			
-		remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
+
+		if (!lockedRemainingSeconds) {
+			remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
+		}
 		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
 
 		if (!localPlayer.inGameMenuManager.active) {
@@ -111,20 +115,19 @@ public class ClientScript : MonoBehaviour {
 		updateHacking ();
 
 		if (remainingSeconds <= 0f) {
-			localPlayer.gameEnded = true;
-
 			if (winnerCode == -1) {
 				if (Network.isServer) { 
+					localPlayer.gameEnded = true;
 					sortList ();
 					GetComponent<NetworkView> ().RPC ("winnerRPC", RPCMode.All, listPlayers[0].playerCode);
 				}
 			} else if (winnerCode == myCode) {
 				textBig.GetComponent<Text>().text = "<color=#44FF44>CONGRATULATIONS!</color> YOU WON";
+				textBigAlpha = 1f;
 			} else {
 				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+winnerCode+"</color> HAS WON";
+				textBigAlpha = 1f;
 			}
-
-			textBigAlpha = 1f;
 		}
 
 		textBig.GetComponent<CanvasRenderer> ().SetAlpha (textBigAlpha);
@@ -878,6 +881,7 @@ public class ClientScript : MonoBehaviour {
 	void winnerRPC(int playerCode)
 	{
 		winnerCode = playerCode;
+		localPlayer.gameEnded = true;
 	}
 
 	// CLASSES

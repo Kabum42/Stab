@@ -41,7 +41,7 @@ public class Asuka : MonoBehaviour {
 
 		if (audioSource.isPlaying) {
 			targetEyeEmissionColor = new Color (0f, 0.87f, 1f);
-			float median_volume = Hacks.GetMedianVolume (audioSource) * 300f;
+			float median_volume = Hacks.GetMedianVolume (audioSource) * 500f;
 			median_volume = Mathf.Min (0.3f, median_volume);
 			targetEyeEmissionColor *= median_volume;
 		}
