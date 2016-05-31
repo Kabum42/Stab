@@ -27,6 +27,7 @@ public class ClientScript : MonoBehaviour {
 	[HideInInspector] public int myCode;
 	public Player myPlayer;
 	public List<Player> listPlayers = new List<Player>();
+	private List<GameObject> visualAvatarsPool = new List<GameObject> ();
 
 	private static float slowSpeed = 1f/(1f);
 	private static float hackingSpeed = 1f/(0.25f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
@@ -616,6 +617,21 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
+	private GameObject GetVisualAvatar() {
+
+		GameObject visualAvatar;
+
+		if (visualAvatarsPool.Count > 0) {
+			visualAvatar = visualAvatarsPool [0];
+			visualAvatarsPool.RemoveAt (0);
+		} else {
+			visualAvatar = Instantiate (Resources.Load ("Prefabs/BOT") as GameObject);
+		}
+
+		return visualAvatar;
+
+	}
+
 	// NETWORK RELATED
 	void OnDisconnectedFromServer(NetworkDisconnection info) {
 		if (Network.isServer)
@@ -752,20 +768,16 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void removePlayerRPC(int playerCode) {
 
-		foreach (Player player in listPlayers) {
+		Player player = PlayerByCode (playerCode);
+		if (player != null) {
+			player.visualAvatar.SetActive (false);
+			visualAvatarsPool.Add (player.visualAvatar);
 
-			if (player.playerCode == playerCode) {
+			listPlayers.Remove (player);
 
-				Destroy(player.visualAvatar);
-				listPlayers.Remove (player);
-
-				chatManager.Add(new ChatMessage("System", "Player "+playerCode+" has left the game."));
-				chatManager.Write ();
-				chatManager.lastChatPannelInteraction = 0f;
-
-				break;
-			}
-
+			chatManager.Add(new ChatMessage("System", "Player "+playerCode+" has left the game."));
+			chatManager.Write ();
+			chatManager.lastChatPannelInteraction = 0f;
 		}
 
 	}
@@ -855,6 +867,7 @@ public class ClientScript : MonoBehaviour {
 	void respawnRPC(int playerCode, Vector3 position, Vector3 eulerAngles)
 	{
 		Player auxPlayer = PlayerByCode (playerCode);
+
 		if (playerCode == myCode) {
 			localPlayer.respawn ();
 			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
@@ -866,15 +879,19 @@ public class ClientScript : MonoBehaviour {
 			localPlayer.interceptResource = 3f;
 			localPlayer.blinkResource = 3f;
 			justRespawned = true;
-		} else {
+		} else if (auxPlayer != null) {
 			auxPlayer.visualAvatar.transform.position = position;
 			auxPlayer.targetPosition = position;
 			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
 			auxPlayer.targetAvatarEulerY = eulerAngles.y;
 		}
-		auxPlayer.visualAvatar.GetComponent<RagdollScript> ().Disable ();
-		auxPlayer.immune = immuneTimeAtRespawn;
-		auxPlayer.dead = false;
+
+		if (auxPlayer != null) {
+			auxPlayer.visualAvatar.GetComponent<RagdollScript> ().Disable ();
+			auxPlayer.immune = immuneTimeAtRespawn;
+			auxPlayer.dead = false;
+		}
+
 	}
 
 	[RPC]
@@ -911,7 +928,7 @@ public class ClientScript : MonoBehaviour {
 
 		public Player(int auxPlayerCode) {
 
-			visualAvatar = Instantiate (Resources.Load("Prefabs/BOT") as GameObject);
+			visualAvatar = GlobalData.clientScript.GetVisualAvatar();
 			Initialize(auxPlayerCode, visualAvatar);
 
 		}
@@ -926,6 +943,7 @@ public class ClientScript : MonoBehaviour {
 
 			playerCode = auxPlayerCode;
 			this.visualAvatar = visualAvatar;
+			visualAvatar.SetActive (true);
 			visualAvatar.name = "VisualAvatar "+playerCode;
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
 			visualMaterials = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().materials;
