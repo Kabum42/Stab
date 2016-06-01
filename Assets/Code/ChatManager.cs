@@ -35,6 +35,8 @@ public class ChatManager {
 			listMessages.RemoveAt(0);
 		}
 
+		Write ();
+
 	}
 
 	public void Update() {

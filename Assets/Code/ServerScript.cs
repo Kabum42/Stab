@@ -14,6 +14,8 @@ public class ServerScript : MonoBehaviour {
 	public float currentHackDataCooldown = 0f;
 	public static int hackDataUpdatesPerSecond = 15;
 
+	public List<string> bannedIPs = new List<string>();
+
 	// Use this for initialization
 	void Start () {
 
@@ -225,9 +227,15 @@ public class ServerScript : MonoBehaviour {
 
 	// NETWORK RELATED
 	void OnPlayerConnected(NetworkPlayer player) {
-		if (clientScript.lockedRemainingSeconds) {
-			clientScript.lockedRemainingSeconds = false;
+
+		if (bannedIPs.Contains (player.ipAddress)) {
+			Network.CloseConnection (player, true);
+		} else {
+			if (clientScript.lockedRemainingSeconds) {
+				clientScript.lockedRemainingSeconds = false;
+			}
 		}
+
 	}
 
 	void OnPlayerDisconnected(NetworkPlayer player) {
