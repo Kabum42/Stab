@@ -433,7 +433,7 @@ public class ClientScript : MonoBehaviour {
 
 	void updateRanking() {
 
-		if (Input.GetKey (KeyCode.Tab)) {
+		if (Input.GetKey (KeyCode.Tab) && (localPlayer.inputMode == LocalPlayerScript.InputMode.Playing)) {
 
 			string auxPlayers = "Player\n\n";
 			string auxKills = "Kills\n\n";

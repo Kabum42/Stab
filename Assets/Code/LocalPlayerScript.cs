@@ -270,8 +270,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void handleInput() {
 
-		checkIfActivateChat ();
-
 		if (inputMode == InputMode.Playing) {
 
 			if (!dead) {
@@ -292,6 +290,11 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		}
 
+		if (GlobalData.clientScript != null) {
+			checkIfActivateChat ();
+		}
+		chatManager.lastTimeChatInputFocused = chatManager.chatInputField.GetComponent<InputField> ().isFocused;
+
 	}
 
 	void checkIfActivateChat() {
@@ -301,8 +304,9 @@ public class LocalPlayerScript : MonoBehaviour {
 		} else if (chatManager.lastChatPannelInteraction < chatManager.chatPannelInteractionThreshold) {
 			chatManager.lastChatPannelInteraction += Time.deltaTime;
 		}
+			
 
-		if (Input.GetKeyDown (KeyCode.Return) && inputMode == LocalPlayerScript.InputMode.Playing) {
+		if (Input.GetKeyDown (KeyCode.Return) && inputMode == LocalPlayerScript.InputMode.Playing && !chatManager.lastTimeChatInputFocused) {
 
 			chatManager.chatPanel.SetActive(true);
 			chatManager.lastChatPannelInteraction = 0f;
@@ -338,7 +342,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 
 			EventSystem.current.SetSelectedGameObject(null);
-			inputMode = LocalPlayerScript.InputMode.Playing;
+			inputMode = InputMode.Playing;
 
 		}
 
@@ -347,8 +351,6 @@ public class LocalPlayerScript : MonoBehaviour {
 			EventSystem.current.SetSelectedGameObject(chatManager.chatInputField);
 			StartCoroutine(CaretToEnd());
 		}
-
-		chatManager.lastTimeChatInputFocused = chatManager.chatInputField.GetComponent<InputField> ().isFocused;
 
 		// THIS IS TO ADJUST THE HEIGHT
 		chatManager.Update ();
