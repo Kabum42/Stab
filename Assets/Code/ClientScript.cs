@@ -577,16 +577,12 @@ public class ClientScript : MonoBehaviour {
 				
 				if (Network.isServer) {
 					if (stringArray.Length > 1) {
-						int code = -1;
-						if (!int.TryParse (stringArray [1], out code)) {
-							code = -1;
-						}
-						Player player = PlayerByCode (code);
+						Player player = PlayerByName (stringArray[1]);
 						if (player != null) {
 							if (player == myPlayer) {
 								chatManager.Add (new ChatMessage ("System", "You can't kick yourself."));
 							} else {
-								NetworkPlayer networkPlayer = NetworkPlayerByCode (code);
+								NetworkPlayer networkPlayer = NetworkPlayerByName (stringArray[1]);
 								serverScript.bannedIPs.Add (networkPlayer.ipAddress);
 								Network.CloseConnection(networkPlayer, true);
 								chatManager.Add (new ChatMessage ("System", stringArray [1] + " was kicked."));
@@ -658,10 +654,42 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
+	public NetworkPlayer NetworkPlayerByName(string playerName) {
+
+		Player auxPlayer = PlayerByName (playerName);
+
+		if (auxPlayer == myPlayer) {
+			return Network.player;
+		}
+
+		if (auxPlayer != null) {
+			for (int i = 0; i < Network.connections.Length; i++) {
+				if (Int32.Parse(Network.connections[i].ToString()) == auxPlayer.playerCode) {
+					return Network.connections[i];
+				}
+			}
+		}
+
+		return new NetworkPlayer();
+
+	}
+
 	public Player PlayerByCode(int playerCode) {
 
 		foreach (Player player in listPlayers) {
 			if (player.playerCode == playerCode) {
+				return player;
+			}
+		}
+
+		return null;
+
+	}
+
+	public Player PlayerByName(string playerName) {
+
+		foreach (Player player in listPlayers) {
+			if (player.name == playerName) {
 				return player;
 			}
 		}
@@ -954,6 +982,7 @@ public class ClientScript : MonoBehaviour {
 	// CLASSES
 	public class Player {
 
+		public string name;
 		public int playerCode;
 		public GameObject visualAvatar;
 		public GameObject cameraMockup;
@@ -991,6 +1020,7 @@ public class ClientScript : MonoBehaviour {
 
 		public void Initialize (int auxPlayerCode, GameObject visualAvatar) {
 
+			name = "Player" + auxPlayerCode;
 			playerCode = auxPlayerCode;
 			this.visualAvatar = visualAvatar;
 			visualAvatar.SetActive (true);
