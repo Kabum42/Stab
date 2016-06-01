@@ -539,7 +539,10 @@ public class ClientScript : MonoBehaviour {
 			if (chatManager.chatInputField.GetComponent<InputField> ().text != "") {
 
 				string info = chatManager.chatInputField.GetComponent<InputField> ().text;
-				GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, myCode, info);
+				if (!hasCommands (info)) {
+					GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, myCode, info);
+				}
+
 				chatManager.chatInputField.GetComponent<InputField> ().text = "";
 
 			}
@@ -560,6 +563,56 @@ public class ClientScript : MonoBehaviour {
 
 		// THIS IS TO ADJUST THE HEIGHT
 		chatManager.Update ();
+
+	}
+
+	bool hasCommands(string text) {
+
+		bool result = false;
+
+		if (text.Substring (0, 1) == "/") {
+			result = true;
+			string[] stringArray = text.Split (' ');
+			if (stringArray [0] == "/kick") {
+				
+				if (Network.isServer) {
+					if (stringArray.Length > 1) {
+						int code = -1;
+						if (!int.TryParse (stringArray [1], out code)) {
+							code = -1;
+						}
+						Player player = PlayerByCode (code);
+						if (player != null) {
+							if (player == myPlayer) {
+								chatManager.Add (new ChatMessage ("System", "You can't kick yourself."));
+							} else {
+								NetworkPlayer networkPlayer = NetworkPlayerByCode (code);
+								serverScript.bannedIPs.Add (networkPlayer.ipAddress);
+								Network.CloseConnection(networkPlayer, true);
+								chatManager.Add (new ChatMessage ("System", stringArray [1] + " was kicked."));
+							}
+						} else {
+							chatManager.Add (new ChatMessage ("System", stringArray [1] + " was not found."));
+						}
+					} else {
+						chatManager.Add (new ChatMessage ("System", "You must write a player's name after writing /kick"));
+					}
+				} else {
+					chatManager.Add (new ChatMessage ("System", "Only the server can kick players."));
+				}
+
+			} else if (stringArray [0] == "/help") {
+				
+				chatManager.Add(new ChatMessage("System", "\"/kick PlayerName\" to kick a player."));
+
+			} else {
+				
+				chatManager.Add(new ChatMessage("System", "Invalid command. Type /help for a list of commands."));
+
+			}
+		}
+
+		return result;
 
 	}
 
@@ -601,7 +654,7 @@ public class ClientScript : MonoBehaviour {
 			}
 		}
 
-		return Network.connections[0];
+		return new NetworkPlayer();
 
 	}
 
@@ -687,7 +740,6 @@ public class ClientScript : MonoBehaviour {
 
 		if (playerCode != myCode) {
 			chatManager.Add(new ChatMessage("System", "Player " + playerCode + " has joined the game."));
-			chatManager.Write ();
 			chatManager.lastChatPannelInteraction = 0f;
 		}
 
@@ -754,7 +806,6 @@ public class ClientScript : MonoBehaviour {
 		if (playerCode == myCode) { owner = "You"; }
 
 		chatManager.Add (new ChatMessage (owner, text));
-		chatManager.Write ();
 		chatManager.lastChatPannelInteraction = 0f;
 	}
 
@@ -776,7 +827,6 @@ public class ClientScript : MonoBehaviour {
 			listPlayers.Remove (player);
 
 			chatManager.Add(new ChatMessage("System", "Player "+playerCode+" has left the game."));
-			chatManager.Write ();
 			chatManager.lastChatPannelInteraction = 0f;
 		}
 
