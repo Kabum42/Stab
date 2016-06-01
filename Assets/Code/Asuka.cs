@@ -41,13 +41,14 @@ public class Asuka : MonoBehaviour {
 
 		if (audioSource.isPlaying) {
 			targetEyeEmissionColor = new Color (0f, 0.87f, 1f);
-			float median_volume = Hacks.GetMedianVolume (audioSource) * 300f;
+			float median_volume = Hacks.GetMedianVolume (audioSource) * 500f;
 			median_volume = Mathf.Min (0.3f, median_volume);
 			targetEyeEmissionColor *= median_volume;
 		}
 
 		Color finalColor = Color.Lerp (eyeMaterial.GetColor ("_EmissionColor"), targetEyeEmissionColor, Time.deltaTime * 10f);
 		eyeMaterial.SetColor ("_EmissionColor", targetEyeEmissionColor);
+
 
 		if (audioSource.isPlaying) {
 			
@@ -68,19 +69,19 @@ public class Asuka : MonoBehaviour {
 			textComponent.text = targetText;
 			currentThought = null;
 
-		} else if (currentThought == null && showingThought > 0f) {
+		}  else if (currentThought == null && showingThought > 0f) {
 			
 			showingThought = Mathf.Max (0f, showingThought - Time.deltaTime);
 			if (showingThought == 0f) {
 				textComponent.text = "";
 			}
 
-		}
+		} 
 	
 	}
 
 	string getRandomChar() {
-		char c = (char) Random.Range(0, 255);
+		char c = (char) Random.Range(33, 1300);
 		return c.ToString ();
 	}
 
