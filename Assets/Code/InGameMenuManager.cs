@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class InGameMenuManager {
 
-	public bool active = false;
+	private LocalPlayerScript localPlayerScript;
 	private string status = "activating";
 	private GameObject physicalInGameMenu;
 	private GameObject physicalOptionSource;
@@ -25,8 +25,9 @@ public class InGameMenuManager {
 	public float scrollCooldown = 0f;
 
 	// Use this for initialization
-	public InGameMenuManager(GameObject auxPhysicalInGameMenu) {
-		
+	public InGameMenuManager(LocalPlayerScript auxLocalPlayerScript, GameObject auxPhysicalInGameMenu) {
+
+		localPlayerScript = auxLocalPlayerScript;
 		physicalInGameMenu = auxPhysicalInGameMenu;
 		physicalOptionSource = physicalInGameMenu.transform.FindChild ("OptionSource").gameObject;
 		physicalOptionSource.SetActive (false);
@@ -84,7 +85,7 @@ public class InGameMenuManager {
 				Deepen (rootOption);
 			}
 
-			if (physicalInGameMenu.GetComponent<Image> ().color.a > 0f && Input.GetKeyDown (KeyCode.Escape) || Input.GetMouseButtonDown(1)) {
+			if (physicalInGameMenu.GetComponent<Image> ().color.a > 0f && (Input.GetKeyDown (KeyCode.Escape) || Input.GetMouseButtonDown(1))) {
 				Emerge ();
 			}
 
@@ -203,7 +204,7 @@ public class InGameMenuManager {
 			if (physicalInGameMenu.GetComponent<Image> ().color.a <= 0.05f && nonbornOptions.Count == 0) {
 				physicalInGameMenu.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (physicalInGameMenu.GetComponent<Image> ().color, 0f, 1f);
 				physicalInGameMenu.SetActive (false);
-				active = false;
+				localPlayerScript.inputMode = LocalPlayerScript.InputMode.Playing;
 				status = "activating";
 			}
 

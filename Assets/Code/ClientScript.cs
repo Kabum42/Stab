@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using System;
 using System.Linq;
 
@@ -15,8 +14,6 @@ public class ClientScript : MonoBehaviour {
 
 	[HideInInspector] public float remainingSeconds = (8f)*(60f); // 8 MINUTES
 	[HideInInspector] public bool lockedRemainingSeconds = false;
-
-	private ChatManager chatManager;
 
 	private GameObject rankingBackground;
 	private GameObject textBig;
@@ -83,31 +80,16 @@ public class ClientScript : MonoBehaviour {
 
 		textBig = localPlayer.canvas.transform.FindChild("TextBig").gameObject;
 
-		chatManager = new ChatManager(localPlayer.chatPanel);
-
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
-		localPlayer.dead = myPlayer.dead;
-
-		if (EventSystem.current.currentSelectedGameObject == chatManager.chatInputField) {
-			chatManager.lastChatPannelInteraction = 0f;
-		} else if (chatManager.lastChatPannelInteraction < chatManager.chatPannelInteractionThreshold) {
-			chatManager.lastChatPannelInteraction += Time.deltaTime;
-		}
-
 		if (!lockedRemainingSeconds) {
 			remainingSeconds = Mathf.Max(0f, remainingSeconds - Time.deltaTime);
 		}
 		textBigAlpha = (Mathf.Max(0f, textBigAlpha - Time.deltaTime * (1f/5f)));
-
-		if (!localPlayer.inGameMenuManager.active) {
-			checkIfActivateChat ();
-		}
 			
-		updateChat ();
 		updateRanking ();
 		if (!myPlayer.dead) {
 			updateMyInfoInOtherClients ();
@@ -489,7 +471,7 @@ public class ClientScript : MonoBehaviour {
 			rankingBackground.transform.FindChild("TimeBackground/TextTime").GetComponent<Text> ().text = auxTime;
 
 			rankingBackground.SetActive (true);
-			chatManager.chatPanel.SetActive(false);
+			localPlayer.chatManager.chatPanel.SetActive(false);
 			textBig.SetActive (false);
 
 		} else {
@@ -498,71 +480,13 @@ public class ClientScript : MonoBehaviour {
 			textBig.SetActive (true);
 
 			// SHOW CHAT PANEL
-			if (chatManager.lastChatPannelInteraction >= chatManager.chatPannelInteractionThreshold) {
-					chatManager.chatPanel.SetActive (false);
+			if (localPlayer.chatManager.lastChatPannelInteraction >= localPlayer.chatManager.chatPannelInteractionThreshold) {
+				localPlayer.chatManager.chatPanel.SetActive (false);
 			} else {
-					chatManager.chatPanel.SetActive (true);
+				localPlayer.chatManager.chatPanel.SetActive (true);
 			}
 
 		}
-
-	}
-
-	void checkIfActivateChat() {
-
-		if (Input.GetKeyDown (KeyCode.Return) && localPlayer.GetComponent<LocalPlayerScript> ().receiveInput) {
-
-			chatManager.chatPanel.SetActive(true);
-			chatManager.lastChatPannelInteraction = 0f;
-
-			localPlayer.GetComponent<LocalPlayerScript> ().receiveInput = false;
-
-			EventSystem.current.SetSelectedGameObject(chatManager.chatInputField, null);
-			chatManager.chatInputField.GetComponent<InputField> ().OnPointerClick(new PointerEventData(EventSystem.current));
-
-		}
-
-		if (Input.GetKeyDown (KeyCode.Escape) && !localPlayer.GetComponent<LocalPlayerScript> ().receiveInput) {
-
-			chatManager.chatInputField.GetComponent<InputField> ().text = "";
-			EventSystem.current.SetSelectedGameObject(null);
-			localPlayer.GetComponent<LocalPlayerScript> ().receiveInput = true;
-
-		}
-
-	}
-
-	void updateChat() {
-
-		if (Input.GetKeyDown(KeyCode.Return) && chatManager.lastTimeChatInputFocused) {
-
-			if (chatManager.chatInputField.GetComponent<InputField> ().text != "") {
-
-				string info = chatManager.chatInputField.GetComponent<InputField> ().text;
-				if (!hasCommands (info)) {
-					GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, myCode, info);
-				}
-
-				chatManager.chatInputField.GetComponent<InputField> ().text = "";
-
-			}
-
-			EventSystem.current.SetSelectedGameObject(null);
-			localPlayer.GetComponent<LocalPlayerScript> ().receiveInput = true;
-
-		}
-
-		if (localPlayer.GetComponent<LocalPlayerScript> ().receiveInput == false &&
-			EventSystem.current.currentSelectedGameObject != chatManager.chatInputField) {
-			// ESTO ES PARA EVITAR BUGS EN LOS QUE DEJAS DE TENER FOCUSEADO EL JUEGO
-			EventSystem.current.SetSelectedGameObject(chatManager.chatInputField);
-			StartCoroutine(CaretToEnd());
-		}
-			
-		chatManager.lastTimeChatInputFocused = chatManager.chatInputField.GetComponent<InputField> ().isFocused;
-
-		// THIS IS TO ADJUST THE HEIGHT
-		chatManager.Update ();
 
 	}
 
@@ -580,30 +504,30 @@ public class ClientScript : MonoBehaviour {
 						Player player = PlayerByName (stringArray[1]);
 						if (player != null) {
 							if (player == myPlayer) {
-								chatManager.Add (new ChatMessage ("System", "You can't kick yourself."));
+								localPlayer.chatManager.Add (new ChatMessage ("System", "You can't kick yourself."));
 							} else {
 								NetworkPlayer networkPlayer = NetworkPlayerByName (stringArray[1]);
 								serverScript.bannedIPs.Add (networkPlayer.ipAddress);
 								Network.CloseConnection(networkPlayer, true);
-								chatManager.Add (new ChatMessage ("System", stringArray [1] + " was kicked."));
+								localPlayer.chatManager.Add (new ChatMessage ("System", stringArray [1] + " was kicked."));
 							}
 						} else {
-							chatManager.Add (new ChatMessage ("System", stringArray [1] + " was not found."));
+							localPlayer.chatManager.Add (new ChatMessage ("System", stringArray [1] + " was not found."));
 						}
 					} else {
-						chatManager.Add (new ChatMessage ("System", "You must write a player's name after writing /kick"));
+						localPlayer.chatManager.Add (new ChatMessage ("System", "You must write a player's name after writing /kick"));
 					}
 				} else {
-					chatManager.Add (new ChatMessage ("System", "Only the server can kick players."));
+					localPlayer.chatManager.Add (new ChatMessage ("System", "Only the server can kick players."));
 				}
 
 			} else if (stringArray [0] == "/help") {
 				
-				chatManager.Add(new ChatMessage("System", "\"/kick PlayerName\" to kick a player."));
+				localPlayer.chatManager.Add(new ChatMessage("System", "\"/kick PlayerName\" to kick a player."));
 
 			} else {
 				
-				chatManager.Add(new ChatMessage("System", "Invalid command. Type /help for a list of commands."));
+				localPlayer.chatManager.Add(new ChatMessage("System", "Invalid command. Type /help for a list of commands."));
 
 			}
 		}
@@ -612,31 +536,13 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
-	private IEnumerator CaretToEnd() {
-		// Doing a WateForSeconds(0f) forces to be executed next frame
-		yield return new WaitForSeconds(0f);
-		chatManager.chatInputField.GetComponent<InputField> ().MoveTextEnd (true);
-	}
+	public void writeInChat(string info) {
 
-	/*
-	private IEnumerator TargetDetected() {
-
-		int aux = UnityEngine.Random.Range (1, 6);
-		AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/BeepHeart/BeepHeart_"+aux.ToString("00"));
-		audio.volume = 0.25f;
-		audio.pitch = UnityEngine.Random.Range (0.80f, 0.85f);
-		audio.Play ();
-
-		yield return new WaitForSeconds(0.15f);
-
-		aux = UnityEngine.Random.Range (1, 6);
-		audio = Hacks.GetAudioSource ("Sound/Effects/BeepHeart/BeepHeart_"+aux.ToString("00"));
-		audio.volume = 0.25f;
-		audio.pitch = UnityEngine.Random.Range (0.90f, 0.95f);
-		audio.Play ();
+		if (!hasCommands (info)) {
+			GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, myCode, info);
+		}
 
 	}
-	*/
 
 	public NetworkPlayer NetworkPlayerByCode(int playerCode) {
 
@@ -767,8 +673,7 @@ public class ClientScript : MonoBehaviour {
 		}
 
 		if (playerCode != myCode) {
-			chatManager.Add(new ChatMessage("System", "Player " + playerCode + " has joined the game."));
-			chatManager.lastChatPannelInteraction = 0f;
+			localPlayer.chatManager.Add(new ChatMessage("System", "Player " + playerCode + " has joined the game."));
 		}
 
 	}
@@ -833,8 +738,7 @@ public class ClientScript : MonoBehaviour {
 		string owner = "Player " + playerCode;
 		if (playerCode == myCode) { owner = "You"; }
 
-		chatManager.Add (new ChatMessage (owner, text));
-		chatManager.lastChatPannelInteraction = 0f;
+		localPlayer.chatManager.Add (new ChatMessage (owner, text));
 	}
 
 	// SERVER RPCs
@@ -854,8 +758,7 @@ public class ClientScript : MonoBehaviour {
 
 			listPlayers.Remove (player);
 
-			chatManager.Add(new ChatMessage("System", "Player "+playerCode+" has left the game."));
-			chatManager.lastChatPannelInteraction = 0f;
+			localPlayer.chatManager.Add(new ChatMessage("System", "Player "+playerCode+" has left the game."));
 		}
 
 	}
