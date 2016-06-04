@@ -98,8 +98,6 @@ public class LocalPlayerScript : MonoBehaviour {
 	private static float footStepCooldownMax = 0.35f;
 	private float footStepCooldown = footStepCooldownMax/2f;
 
-	public bool gameEnded = false;
-
 	private Material[] materials;
 
 	[HideInInspector] public bool firstRespawn = true;
@@ -439,9 +437,9 @@ public class LocalPlayerScript : MonoBehaviour {
 			float distanceToHacked = float.MaxValue;
 			distanceText.SetActive (false);
 
-			if (GlobalData.clientScript.myPlayer.hackingPlayerCode != -1) {
+			if (GlobalData.clientScript.myPlayer.hackingNetworkPlayer != GlobalData.clientScript.myPlayer.networkPlayer) {
 				// I'M HACKING SOMEONE
-				hackedPlayer = GlobalData.clientScript.PlayerByCode(GlobalData.clientScript.myPlayer.hackingPlayerCode);
+				hackedPlayer = GlobalData.clientScript.PlayerByNetworkPlayer(GlobalData.clientScript.myPlayer.hackingNetworkPlayer);
 				distanceToHacked = Vector3.Distance(personalCamera.transform.position, hackedPlayer.cameraMockup.transform.position);
 			}
 				
@@ -456,7 +454,7 @@ public class LocalPlayerScript : MonoBehaviour {
 					distanceText.GetComponent<Text> ().text = "KILL";
 					crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 					textTargeted.SetActive(true);
-					textTargeted.GetComponent<Text>().text = "<Player "+hackedPlayer.playerCode+">";
+					textTargeted.GetComponent<Text>().text = "<Player "+hackedPlayer.networkPlayer.ToString()+">";
 				}
 			}
 
@@ -464,7 +462,7 @@ public class LocalPlayerScript : MonoBehaviour {
 				// SOMEONE ON THE CROSSHAIR && TEXTTARGETED IS NOT ACTIVE
 				crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 				textTargeted.SetActive(true);
-				textTargeted.GetComponent<Text>().text = "<Player "+crosshairPlayer.playerCode+">";
+				textTargeted.GetComponent<Text>().text = "<Player "+crosshairPlayer.networkPlayer.ToString()+">";
 			}
 
 			if (hackedPlayer != null) {
@@ -588,11 +586,11 @@ public class LocalPlayerScript : MonoBehaviour {
 				List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, ClientScript.interceptKillDistance, "bigCrosshair", true);
 
 				foreach (ClientScript.Player player in playersInside) {
-					if (player.hackingPlayerCode == GlobalData.clientScript.myCode) {
+					if (player.hackingNetworkPlayer == GlobalData.clientScript.myPlayer.networkPlayer) {
 						if (Network.isServer) {
-							GlobalData.clientScript.serverScript.interceptAttack (GlobalData.clientScript.myCode, player.playerCode);
+							GlobalData.clientScript.serverScript.interceptAttack (GlobalData.clientScript.myPlayer.networkPlayer, player.networkPlayer);
 						} else {
-							GlobalData.clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, player.playerCode);
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, player.networkPlayer);
 						}
 					}
 				}
@@ -628,7 +626,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			if (GlobalData.clientScript != null) {
 
 				bool usedHack = false;
-				ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByCode (GlobalData.clientScript.myPlayer.hackingPlayerCode);
+				ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByNetworkPlayer (GlobalData.clientScript.myPlayer.hackingNetworkPlayer);
 
 				if (hackedPlayer != null) {
 					// TRIES TO KILL HIM
@@ -637,9 +635,9 @@ public class LocalPlayerScript : MonoBehaviour {
 					if (playersInside.Contains (hackedPlayer)) {
 						usedHack = true;
 						if (Network.isServer) {
-							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, hackedPlayer.playerCode, true);
+							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myPlayer.networkPlayer, hackedPlayer.networkPlayer, true);
 						} else {
-							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackKillRPC", RPCMode.Server, GlobalData.clientScript.myCode, hackedPlayer.playerCode);
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackKillRPC", RPCMode.Server, hackedPlayer.networkPlayer);
 						}
 					}
 						
@@ -651,9 +649,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 					if (crosshairPlayer != null) {
 						if (Network.isServer) {
-							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, crosshairPlayer.playerCode, false);
+							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myPlayer.networkPlayer, crosshairPlayer.networkPlayer, false);
 						} else {
-							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, crosshairPlayer.playerCode);
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, crosshairPlayer.networkPlayer);
 						}
 					}
 				}
@@ -669,7 +667,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		if (GlobalData.clientScript != null) {
 
 			ClientScript.Player auxPlayer = null;
-			ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByCode (GlobalData.clientScript.myPlayer.hackingPlayerCode);
+			ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByNetworkPlayer (GlobalData.clientScript.myPlayer.hackingNetworkPlayer);
 
 			if (hackedPlayer != null) {
 				List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, ClientScript.hackKillDistance, "bigCrosshair", false);
@@ -790,6 +788,11 @@ public class LocalPlayerScript : MonoBehaviour {
 					float distanceToBlock = Vector3.Distance (blockingPoint.vector3, visualAvatar.transform.position + LocalPlayerScript.centerOfCamera);
 					blinkEnd = blinkStart + direction * (distanceToBlock - colliderOffset);
 				}
+
+				//AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/blink");
+				//audio.pitch = 1f;
+				//audio.volume = 1f;
+				//audio.Play ();
 
 			}
 

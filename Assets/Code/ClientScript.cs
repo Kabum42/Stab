@@ -21,7 +21,6 @@ public class ClientScript : MonoBehaviour {
 	[HideInInspector] public GameObject map;
 
 	[HideInInspector] public LocalPlayerScript localPlayer;
-	[HideInInspector] public int myCode;
 	public Player myPlayer;
 	public List<Player> listPlayers = new List<Player>();
 	private List<GameObject> visualAvatarsPool = new List<GameObject> ();
@@ -30,7 +29,8 @@ public class ClientScript : MonoBehaviour {
 	private static float hackingSpeed = 1f/(0.25f); // EL SEGUNDO NUMERO ES CUANTO TARDA EN TIEMPO REAL EN LLEGAR A 1
 	private static float fastSpeed = 1f/(0.05f);
 
-	private int winnerCode = -1;
+	public bool gameEnded = false;
+	private Player winnerPlayer;
 
 	public static float hackingTimerMax = 5f;
 
@@ -54,8 +54,7 @@ public class ClientScript : MonoBehaviour {
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
 
 		// YOU JOIN AS PLAYER
-		myCode = Int32.Parse(Network.player.ToString ());
-		myPlayer = new Player(myCode, localPlayer.visualAvatar);
+		myPlayer = new Player(Network.player, localPlayer.visualAvatar);
 		localPlayer.visualAvatar.GetComponent<PlayerMarker>().player = myPlayer;
 
 		listPlayers.Add(myPlayer);
@@ -67,7 +66,7 @@ public class ClientScript : MonoBehaviour {
 			lockedRemainingSeconds = true;
 		} else {
 			Destroy(map.transform.FindChild ("RespawnPoints").gameObject);
-			GetComponent<NetworkView> ().RPC ("sayHi", RPCMode.Others, myCode);
+			GetComponent<NetworkView> ().RPC ("sayHi", RPCMode.Others);
 		}
 
 		GameObject auxCameraHolder = new GameObject ();
@@ -98,17 +97,17 @@ public class ClientScript : MonoBehaviour {
 		updateHacking ();
 
 		if (remainingSeconds <= 0f) {
-			if (winnerCode == -1) {
-				if (Network.isServer) { 
-					localPlayer.gameEnded = true;
+			if (!gameEnded) {
+				if (Network.isServer) {
+					gameEnded = true;
 					sortList ();
-					GetComponent<NetworkView> ().RPC ("winnerRPC", RPCMode.All, listPlayers[0].playerCode);
+					GetComponent<NetworkView> ().RPC ("winnerRPC", RPCMode.All, listPlayers[0].networkPlayer);
 				}
-			} else if (winnerCode == myCode) {
+			} else if (winnerPlayer.networkPlayer == Network.player) {
 				textBig.GetComponent<Text>().text = "<color=#44FF44>CONGRATULATIONS!</color> YOU WON";
 				textBigAlpha = 1f;
 			} else {
-				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+winnerCode+"</color> HAS WON";
+				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+winnerPlayer.ToString()+"</color> HAS WON";
 				textBigAlpha = 1f;
 			}
 		}
@@ -151,9 +150,9 @@ public class ClientScript : MonoBehaviour {
 
 			}
 
-			if (player.hackingTimer <= 0f || player.hackingPlayerCode == -1) {
+			if (player.hackingTimer <= 0f || player.hackingNetworkPlayer == player.networkPlayer) {
 
-				player.hackingPlayerCode = -1;
+				player.hackingNetworkPlayer = player.networkPlayer;
 				player.hackingTimer = 0f;
 
 				if (player == myPlayer) {
@@ -184,7 +183,7 @@ public class ClientScript : MonoBehaviour {
 				if (pM != null) {
 					// DOESN'T MATTER WHO, IT COLLIDED WITH A PLAYER
 					Player auxPlayer = pM.player;
-					if (!(auxPlayer.hackingPlayerCode == p1.playerCode) && !auxPlayer.dead) {
+					if (!(auxPlayer.hackingNetworkPlayer == p1.networkPlayer) && !auxPlayer.dead) {
 						// YOU CAN SEE IT
 						return auxPlayer;
 					}
@@ -242,7 +241,7 @@ public class ClientScript : MonoBehaviour {
 
 		foreach (Player player in listPlayers) {
 
-			if (player != p1 && (invisibleAllowed || player.hackingPlayerCode != p1.playerCode) && !player.dead) {
+			if (player != p1 && (invisibleAllowed || player.hackingNetworkPlayer != p1.networkPlayer) && !player.dead) {
 
 				bool IsInside = false;
 
@@ -297,7 +296,7 @@ public class ClientScript : MonoBehaviour {
 
 		foreach (Player player in listPlayers) {
 
-			if (player != p1 && (invisibleAllowed || player.hackingPlayerCode != p1.playerCode) && !player.dead) {
+			if (player != p1 && (invisibleAllowed || player.hackingNetworkPlayer != p1.networkPlayer) && !player.dead) {
 
 				bool IsInside = false;
 
@@ -353,9 +352,9 @@ public class ClientScript : MonoBehaviour {
 
 				if (justRespawned) {
 					justRespawned = false;
-					GetComponent<NetworkView> ().RPC ("updatePlayerInstantRPC", RPCMode.Others, myCode, localPlayer.visualAvatar.transform.position);
+					GetComponent<NetworkView> ().RPC ("updatePlayerInstantRPC", RPCMode.Others, localPlayer.visualAvatar.transform.position);
 				} else {
-					GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, myCode, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
+					GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
 				}
 
 			}
@@ -379,7 +378,7 @@ public class ClientScript : MonoBehaviour {
 
 		foreach (Player player in listPlayers) {
 
-			if (player.playerCode != myCode) {
+			if (player != myPlayer) {
 
 				player.visualAvatar.transform.position = Vector3.Lerp (player.visualAvatar.transform.position, player.targetPosition, Time.deltaTime * 10f);
 				player.visualAvatar.transform.eulerAngles = Hacks.LerpVector3Angle (player.visualAvatar.transform.eulerAngles, new Vector3(0f, player.targetAvatarEulerY, 0f), Time.deltaTime * 10f);
@@ -392,12 +391,12 @@ public class ClientScript : MonoBehaviour {
 				float b = 1f;
 				float a = 1f;
 
-				if (myPlayer.hackingPlayerCode == player.playerCode) {
+				if (myPlayer.hackingNetworkPlayer == player.networkPlayer) {
 					g = 0f;
 					b = 0f;
 				}
 
-				if (player.hackingPlayerCode == myCode) {
+				if (player.hackingNetworkPlayer == Network.player) {
 					a = 0f;
 				}
 
@@ -427,7 +426,7 @@ public class ClientScript : MonoBehaviour {
 		// FIRST CRITERION :  KILLS, FROM BIGGER TO SMALLER
 		// SECOND CRITERION :  LASTKILLREMAININGSECONDS, FROM SMALLER TO BIGGER
 		// THIRD CRITERION :  PLAYERCODE, JUST TO HAVE A UNIQUE ARBITRARY PARAMETER TO ORDER THEM IF THERE'S A DRAW
-		listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.lastKillRemainingSeconds).ThenBy(o=>o.playerCode).ToList();
+		listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.lastKillRemainingSeconds).ThenBy(o=>int.Parse(o.networkPlayer.ToString())).ToList();
 
 	}
 
@@ -448,11 +447,11 @@ public class ClientScript : MonoBehaviour {
 			int i = 0;
 			foreach (Player player in listPlayers) {
 
-				if (player.playerCode == myCode) {
-					auxPlayers += "<color=#D7D520>" + "Player"+player.playerCode + "</color>";
+				if (player.networkPlayer == Network.player) {
+					auxPlayers += "<color=#D7D520>" + "Player"+player.networkPlayer.ToString() + "</color>";
 				}
 				else {
-					auxPlayers += "Player"+player.playerCode;
+					auxPlayers += "Player"+player.networkPlayer.ToString();
 				}
 				auxKills += "<color=#FF8C8CFF>"+ player.kills + "</color>";
 				auxPings += player.ping +"";
@@ -539,24 +538,8 @@ public class ClientScript : MonoBehaviour {
 	public void writeInChat(string info) {
 
 		if (!hasCommands (info)) {
-			GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, myCode, info);
+			GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, info);
 		}
-
-	}
-
-	public NetworkPlayer NetworkPlayerByCode(int playerCode) {
-
-		if (myCode == playerCode) {
-			return Network.player;
-		}
-
-		for (int i = 0; i < Network.connections.Length; i++) {
-			if (Int32.Parse(Network.connections[i].ToString()) == playerCode) {
-				return Network.connections[i];
-			}
-		}
-
-		return new NetworkPlayer();
 
 	}
 
@@ -564,26 +547,18 @@ public class ClientScript : MonoBehaviour {
 
 		Player auxPlayer = PlayerByName (playerName);
 
-		if (auxPlayer == myPlayer) {
-			return Network.player;
-		}
-
 		if (auxPlayer != null) {
-			for (int i = 0; i < Network.connections.Length; i++) {
-				if (Int32.Parse(Network.connections[i].ToString()) == auxPlayer.playerCode) {
-					return Network.connections[i];
-				}
-			}
+			return auxPlayer.networkPlayer;
 		}
 
 		return new NetworkPlayer();
 
 	}
 
-	public Player PlayerByCode(int playerCode) {
+	public Player PlayerByName(string playerName) {
 
 		foreach (Player player in listPlayers) {
-			if (player.playerCode == playerCode) {
+			if (player.name == playerName) {
 				return player;
 			}
 		}
@@ -592,10 +567,10 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
-	public Player PlayerByName(string playerName) {
+	public Player PlayerByNetworkPlayer(NetworkPlayer nPlayer) {
 
 		foreach (Player player in listPlayers) {
-			if (player.name == playerName) {
+			if (player.networkPlayer == nPlayer) {
 				return player;
 			}
 		}
@@ -660,55 +635,51 @@ public class ClientScript : MonoBehaviour {
 
 	// CLIENT RPCs
 	[RPC]
-	void sayHi(int playerCode) {
+	void sayHi(NetworkMessageInfo info) {
 
 		if (Network.isServer) {
-			Player auxPlayer = PlayerByCode (playerCode);
+			Player auxPlayer = PlayerByNetworkPlayer(info.sender);
 			if (auxPlayer == null) {
 				// LE ASIGNAMOS UN SITIO DONDE APARECER
-				serverScript.respawn(playerCode);
+				serverScript.respawn(info.sender);
 				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
 				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, remainingSeconds);
 			}
 		}
 
-		if (playerCode != myCode) {
-			localPlayer.chatManager.Add(new ChatMessage("System", "Player " + playerCode + " has joined the game."));
+		if (info.sender != Network.player) {
+			localPlayer.chatManager.Add(new ChatMessage("System", "Player " + info.sender.ToString() + " has joined the game."));
 		}
 
 	}
 
 	[RPC]
-	void updatePlayerRPC(int playerCode, Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation)
+	void updatePlayerRPC(Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation, NetworkMessageInfo info)
 	{
 		bool foundPlayer = false;
 
-		foreach (Player player in listPlayers) {
-			
-			if (player.playerCode == playerCode) {
-				if (!player.dead) {
-					player.targetPosition = position;
-					player.targetAvatarEulerY = avatarEulerY;
-					player.cameraForward = cameraForward;
-					player.targetCameraEulerX = cameraEulerX;
-					player.SmartCrossfade(currentAnimation);
-				}
-				foundPlayer = true;
-				break;
+		Player player = PlayerByNetworkPlayer (info.sender);
+
+		if (player != null) {
+
+			if (!player.dead) {
+				player.targetPosition = position;
+				player.targetAvatarEulerY = avatarEulerY;
+				player.cameraForward = cameraForward;
+				player.targetCameraEulerX = cameraEulerX;
+				player.SmartCrossfade(currentAnimation);
 			}
 
-		}
+		} else {
 
-		if (!foundPlayer) {
-
-			Player aux = new Player(playerCode);
-			listPlayers.Add(aux);
-			aux.visualAvatar.transform.position = position;
-			aux.visualAvatar.transform.eulerAngles = new Vector3(0f, avatarEulerY, 0f);
-			aux.targetPosition = position;
-			aux.targetAvatarEulerY = avatarEulerY;
-			aux.SmartCrossfade(currentAnimation);
-			aux.currentCameraEulerX = cameraEulerX;
+			player = new Player(info.sender);
+			listPlayers.Add(player);
+			player.visualAvatar.transform.position = position;
+			player.visualAvatar.transform.eulerAngles = new Vector3(0f, avatarEulerY, 0f);
+			player.targetPosition = position;
+			player.targetAvatarEulerY = avatarEulerY;
+			player.SmartCrossfade(currentAnimation);
+			player.currentCameraEulerX = cameraEulerX;
 
 			if (Network.isServer) {
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
@@ -720,11 +691,11 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updatePlayerInstantRPC(int playerCode, Vector3 position)
+	void updatePlayerInstantRPC(Vector3 position, NetworkMessageInfo info)
 	{
-		bool foundPlayer = false;
 
-		Player player = PlayerByCode (playerCode);
+		Player player = PlayerByNetworkPlayer (info.sender);
+
 		if (player != null) {
 			player.visualAvatar.transform.position = position;
 			player.targetPosition = position;
@@ -733,12 +704,16 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void addChatMessageRPC(int playerCode, string text)
+	void addChatMessageRPC(string text, NetworkMessageInfo info)
 	{
-		string owner = "Player " + playerCode;
-		if (playerCode == myCode) { owner = "You"; }
+		Player player = PlayerByNetworkPlayer (info.sender);
+		if (player != null) {
+			string owner = "Player " + player.networkPlayer.ToString();
+			if (player == myPlayer) { owner = "You"; }
 
-		localPlayer.chatManager.Add (new ChatMessage (owner, text));
+			localPlayer.chatManager.Add (new ChatMessage (owner, text));
+		}
+
 	}
 
 	// SERVER RPCs
@@ -749,86 +724,90 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void removePlayerRPC(int playerCode) {
+	void removePlayerRPC(NetworkPlayer networkPlayer) {
 
-		Player player = PlayerByCode (playerCode);
+		Player player = PlayerByNetworkPlayer (networkPlayer);
+
 		if (player != null) {
 			player.visualAvatar.SetActive (false);
 			visualAvatarsPool.Add (player.visualAvatar);
 
 			listPlayers.Remove (player);
 
-			localPlayer.chatManager.Add(new ChatMessage("System", "Player "+playerCode+" has left the game."));
+			localPlayer.chatManager.Add(new ChatMessage("System", "Player "+player.networkPlayer.ToString()+" has left the game."));
 		}
 
 	}
 
 	[RPC]
-	void updateRankingRPC(int playerCode, int kills, int ping)
+	void updateRankingRPC(NetworkPlayer networkPlayer, int kills, int ping)
 	{
-		Player player = PlayerByCode (playerCode);
-		player.kills = kills;
-		player.ping = ping;
+		Player player = PlayerByNetworkPlayer (networkPlayer);
+		if (player != null) {
+			player.kills = kills;
+			player.ping = ping;
+		}
 	}
 
 	[RPC]
-	void hackAttackRPC(int attackerCode, int victimCode) {
-		serverScript.hackAttack (attackerCode, victimCode, false);
+	void hackAttackRPC(NetworkPlayer victimNetworkPlayer, NetworkMessageInfo info) {
+		serverScript.hackAttack (info.sender, victimNetworkPlayer, false);
 	}
 
 	[RPC]
-	void hackAttackKillRPC(int attackerCode, int victimCode) {
-		serverScript.hackAttack (attackerCode, victimCode, true);
+	void hackAttackKillRPC(NetworkPlayer victimNetworkPlayer, NetworkMessageInfo info) {
+		serverScript.hackAttack (info.sender,victimNetworkPlayer, true);
 	}
 
 	[RPC]
-	void interceptAttackRPC(int attackerCode, int victimCode) {
-		serverScript.interceptAttack (attackerCode, victimCode);
+	void interceptAttackRPC(NetworkPlayer victimNetworkPlayer, NetworkMessageInfo info) {
+		serverScript.interceptAttack (info.sender, victimNetworkPlayer);
 	}
 
 	[RPC]
-	void updateHackDataRPC(int playerCode, int hackedPlayerCode, bool justHacked)
+	void updateHackDataRPC(NetworkPlayer networkPlayer, NetworkPlayer hackedNetWorkPlayer, bool justHacked)
 	{
-		Player player = PlayerByCode (playerCode);
-		Player hackedPlayer = PlayerByCode (hackedPlayerCode);
+		Player player = PlayerByNetworkPlayer (networkPlayer);
+		Player hackedPlayer = PlayerByNetworkPlayer (hackedNetWorkPlayer);
 
 		if (hackedPlayer != null) {
 			player.immune = 0f;
 			if (justHacked) {
 				player.hackingTimer = hackingTimerMax;
-				if (hackedPlayerCode == myCode) {
+				if (hackedNetWorkPlayer == Network.player) {
 					// ALERT
 					localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
 				}
 			}
 		}
 
-		player.hackingPlayerCode = hackedPlayerCode;
+		player.hackingNetworkPlayer = hackedNetWorkPlayer;
 
 	}
 
 	[RPC]
-	void killRPC(int assassinCode, int victimCode)
+	void killRPC(NetworkPlayer assassinNetworkPlayer, NetworkPlayer victimNetworkPlayer)
 	{
-		Player assassinPlayer = PlayerByCode (assassinCode);
-		Player victimPlayer = PlayerByCode (victimCode);
+		Player assassinPlayer = PlayerByNetworkPlayer (assassinNetworkPlayer);
+		Player victimPlayer = PlayerByNetworkPlayer (victimNetworkPlayer);
 
 		assassinPlayer.immune = 0f;
 
-		if (assassinCode == myCode) {
+		if (assassinPlayer == myPlayer) {
 			// YOU SLAYED VICTIMCODE
 			textBigAlpha = 1f;
-			textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimCode+"</color>";
-		} else if (victimCode == myCode) {
+			textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimPlayer.networkPlayer.ToString()+"</color>";
+		} else if (victimPlayer == myPlayer) {
 			// SLAYED BY ASSASSINCODE
 			textBigAlpha = 1f;
-			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinCode+"</color>";
+			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinPlayer.networkPlayer.ToString()+"</color>";
 		}
 		assassinPlayer.lastKillRemainingSeconds = remainingSeconds;
 
 		victimPlayer.dead = true;
 		victimPlayer.visualAvatar.GetComponent<RagdollScript> ().Enable ();
-		victimPlayer.hackingPlayerCode = -1;
+		// HACKING ITSELF REPRESENTS HACKING NO ONE
+		victimPlayer.hackingNetworkPlayer = victimPlayer.networkPlayer;
 
         if (victimPlayer != myPlayer)
         {
@@ -845,11 +824,11 @@ public class ClientScript : MonoBehaviour {
 		
 
 	[RPC]
-	void respawnRPC(int playerCode, Vector3 position, Vector3 eulerAngles)
+	void respawnRPC(NetworkPlayer networkPlayer, Vector3 position, Vector3 eulerAngles)
 	{
-		Player auxPlayer = PlayerByCode (playerCode);
+		Player player = PlayerByNetworkPlayer (networkPlayer);
 
-		if (playerCode == myCode) {
+		if (player == myPlayer) {
 			localPlayer.respawn ();
 			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
 			localPlayer.transform.position = position;
@@ -860,33 +839,34 @@ public class ClientScript : MonoBehaviour {
 			localPlayer.interceptResource = 3f;
 			localPlayer.blinkResource = 3f;
 			justRespawned = true;
-		} else if (auxPlayer != null) {
-			auxPlayer.visualAvatar.transform.position = position;
-			auxPlayer.targetPosition = position;
-			auxPlayer.visualAvatar.transform.eulerAngles = eulerAngles;
-			auxPlayer.targetAvatarEulerY = eulerAngles.y;
+		} else if (player != null) {
+			player.visualAvatar.transform.position = position;
+			player.targetPosition = position;
+			player.visualAvatar.transform.eulerAngles = eulerAngles;
+			player.targetAvatarEulerY = eulerAngles.y;
 		}
 
-		if (auxPlayer != null) {
-			auxPlayer.visualAvatar.GetComponent<RagdollScript> ().Disable ();
-			auxPlayer.immune = immuneTimeAtRespawn;
-			auxPlayer.dead = false;
+		if (player != null) {
+			player.visualAvatar.GetComponent<RagdollScript> ().Disable ();
+			player.immune = immuneTimeAtRespawn;
+			player.dead = false;
 		}
 
 	}
 
 	[RPC]
-	void winnerRPC(int playerCode)
+	void winnerRPC(NetworkPlayer auxWinnerPlayer)
 	{
-		winnerCode = playerCode;
-		localPlayer.gameEnded = true;
+		winnerPlayer = PlayerByNetworkPlayer(auxWinnerPlayer);
+		gameEnded = true;
 	}
 
 	// CLASSES
 	public class Player {
 
 		public string name;
-		public int playerCode;
+		//public int playerCode;
+		public NetworkPlayer networkPlayer;
 		public GameObject visualAvatar;
 		public GameObject cameraMockup;
 		public GameObject[] vitalPoints;
@@ -898,7 +878,7 @@ public class ClientScript : MonoBehaviour {
 		public int kills = 0;
 		public float lastKillRemainingSeconds = float.MaxValue;
 		public int ping = 0;
-		public int hackingPlayerCode = -1;
+		public NetworkPlayer hackingNetworkPlayer;
 		public float hackingTimer = 0f;
 		public bool justHacked = false;
 
@@ -908,26 +888,27 @@ public class ClientScript : MonoBehaviour {
 		public float targetCameraEulerX;
 		public float currentCameraEulerX;
 
-		public Player(int auxPlayerCode) {
+		public Player(NetworkPlayer auxNetworPlayer) {
 
 			visualAvatar = GlobalData.clientScript.GetVisualAvatar();
-			Initialize(auxPlayerCode, visualAvatar);
+			Initialize(auxNetworPlayer, visualAvatar);
 
 		}
 
-		public Player(int auxPlayerCode, GameObject visualAvatar) {
+		public Player(NetworkPlayer auxNetworkPlayer, GameObject visualAvatar) {
 
-			Initialize(auxPlayerCode, visualAvatar);
+			Initialize(auxNetworkPlayer, visualAvatar);
 
 		}
 
-		public void Initialize (int auxPlayerCode, GameObject visualAvatar) {
+		public void Initialize (NetworkPlayer auxNetworkPlayer, GameObject visualAvatar) {
 
-			name = "Player" + auxPlayerCode;
-			playerCode = auxPlayerCode;
+			name = "Player" + auxNetworkPlayer.ToString ();
+			networkPlayer = auxNetworkPlayer;
+			hackingNetworkPlayer = networkPlayer;
 			this.visualAvatar = visualAvatar;
 			visualAvatar.SetActive (true);
-			visualAvatar.name = "VisualAvatar "+playerCode;
+			visualAvatar.name = "VisualAvatar "+ networkPlayer.ToString();
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
 			visualMaterials = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().materials;
 
