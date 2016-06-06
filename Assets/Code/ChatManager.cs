@@ -36,6 +36,7 @@ public class ChatManager {
 		}
 
 		Write ();
+		lastChatPannelInteraction = 0f;
 
 	}
 

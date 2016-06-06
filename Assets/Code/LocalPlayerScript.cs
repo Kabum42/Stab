@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityStandardAssets.ImageEffects;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using System;
 using System.Collections.Generic;
 
@@ -30,7 +31,8 @@ public class LocalPlayerScript : MonoBehaviour {
 	public GameObject materialCarrier;
 	private GameObject pelvis;
 
-	public bool receiveInput = true;
+	//public bool receiveInput = true;
+	public InputMode inputMode = InputMode.Playing;
 
 	private float notMoving = 0f;
 
@@ -96,11 +98,11 @@ public class LocalPlayerScript : MonoBehaviour {
 	private static float footStepCooldownMax = 0.35f;
 	private float footStepCooldown = footStepCooldownMax/2f;
 
-	public bool gameEnded = false;
-
 	private Material[] materials;
 
 	[HideInInspector] public bool firstRespawn = true;
+
+	[HideInInspector] public ChatManager chatManager;
 
 	void Awake () {
 
@@ -134,7 +136,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		inGameMenu = canvas.transform.FindChild ("InGameMenu").gameObject;
 		inGameMenu.SetActive (false);
-		inGameMenuManager = new InGameMenuManager (inGameMenu);
+		inGameMenuManager = new InGameMenuManager (this, inGameMenu);
 
 		crosshairHack = canvas.transform.FindChild ("CrosshairHack").gameObject;
 
@@ -228,6 +230,8 @@ public class LocalPlayerScript : MonoBehaviour {
 		firstPersonObjects = this.transform.FindChild ("PersonalCamera/FirstPersonCamera/FirstPersonObjects").gameObject;
 		armRight = this.transform.FindChild ("PersonalCamera/FirstPersonCamera/FirstPersonObjects/Arm_2").gameObject;
 
+		chatManager = new ChatManager(chatPanel);
+
 	}
 
 	void OnApplicationFocus(bool focusStatus) {
@@ -239,36 +243,122 @@ public class LocalPlayerScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
+		if (GlobalData.clientScript != null) {
+			dead = GlobalData.clientScript.myPlayer.dead;
+		}
+
 		handleDeadCamera ();
 
 		fillResources ();
 		updateUI ();
 		alertMockUp();
 
-		if (inGameMenuManager.active) {
-
-			inGameMenuManager.Update (Time.deltaTime);
-
-		} else {
-			if (!dead) {
-				
-				handleHack ();
-				handleIntercept();
-				//adjustFirstPersonObjects ();
-				handleRegularInput();
-
-			}
-			handleCameraChanges ();
-		}
+		handleInput ();
+		handleCameraChanges ();
 	
 	}
 
 	void FixedUpdate() {
 
-		if (!inGameMenuManager.active && !dead) {
+		if (inputMode == InputMode.Playing /* !inGameMenuManager.active && !dead */) {
 			handleMovementInput ();
 		}
 
+	}
+
+	void handleInput() {
+
+		if (inputMode == InputMode.Playing) {
+
+			if (!dead) {
+
+				handleHack ();
+				handleIntercept ();
+				handleRegularInput ();
+
+			}
+
+		} else if (inputMode == InputMode.Menu) {
+
+			inGameMenuManager.Update (Time.deltaTime);
+
+		} else if (inputMode == InputMode.Chat) {
+			
+			updateChat ();
+
+		}
+
+		if (GlobalData.clientScript != null) {
+			checkIfActivateChat ();
+		}
+		chatManager.lastTimeChatInputFocused = chatManager.chatInputField.GetComponent<InputField> ().isFocused;
+
+	}
+
+	void checkIfActivateChat() {
+
+		if (EventSystem.current.currentSelectedGameObject == chatManager.chatInputField) {
+			chatManager.lastChatPannelInteraction = 0f;
+		} else if (chatManager.lastChatPannelInteraction < chatManager.chatPannelInteractionThreshold) {
+			chatManager.lastChatPannelInteraction += Time.deltaTime;
+		}
+			
+
+		if (Input.GetKeyDown (KeyCode.Return) && inputMode == LocalPlayerScript.InputMode.Playing && !chatManager.lastTimeChatInputFocused) {
+
+			chatManager.chatPanel.SetActive(true);
+			chatManager.lastChatPannelInteraction = 0f;
+
+			inputMode = LocalPlayerScript.InputMode.Chat;
+
+			EventSystem.current.SetSelectedGameObject(chatManager.chatInputField, null);
+			chatManager.chatInputField.GetComponent<InputField> ().OnPointerClick(new PointerEventData(EventSystem.current));
+
+		}
+
+		if (Input.GetKeyDown (KeyCode.Escape) && inputMode == LocalPlayerScript.InputMode.Chat) {
+
+			chatManager.chatInputField.GetComponent<InputField> ().text = "";
+			EventSystem.current.SetSelectedGameObject(null);
+			GetComponent<LocalPlayerScript> ().inputMode = LocalPlayerScript.InputMode.Playing;
+
+		}
+
+	}
+
+	void updateChat() {
+
+		if (Input.GetKeyDown(KeyCode.Return) && chatManager.lastTimeChatInputFocused) {
+
+			if (chatManager.chatInputField.GetComponent<InputField> ().text != "") {
+
+				string info = chatManager.chatInputField.GetComponent<InputField> ().text;
+				GlobalData.clientScript.writeInChat (info);
+
+				chatManager.chatInputField.GetComponent<InputField> ().text = "";
+
+			}
+
+			EventSystem.current.SetSelectedGameObject(null);
+			inputMode = InputMode.Playing;
+
+		}
+
+		if (inputMode != LocalPlayerScript.InputMode.Playing && EventSystem.current.currentSelectedGameObject != chatManager.chatInputField) {
+			// ESTO ES PARA EVITAR BUGS EN LOS QUE DEJAS DE TENER FOCUSEADO EL JUEGO
+			EventSystem.current.SetSelectedGameObject(chatManager.chatInputField);
+			StartCoroutine(CaretToEnd());
+		}
+
+		// THIS IS TO ADJUST THE HEIGHT
+		chatManager.Update ();
+
+	}
+
+	private IEnumerator CaretToEnd() {
+		// Doing a WateForSeconds(0f) forces to be executed next frame
+		yield return new WaitForSeconds(0f);
+		chatManager.chatInputField.GetComponent<InputField> ().MoveTextEnd (true);
 	}
 
 	void handleDeadCamera() {
@@ -347,9 +437,9 @@ public class LocalPlayerScript : MonoBehaviour {
 			float distanceToHacked = float.MaxValue;
 			distanceText.SetActive (false);
 
-			if (GlobalData.clientScript.myPlayer.hackingPlayerCode != -1) {
+			if (GlobalData.clientScript.myPlayer.hackingNetworkPlayer != GlobalData.clientScript.myPlayer.networkPlayer) {
 				// I'M HACKING SOMEONE
-				hackedPlayer = GlobalData.clientScript.PlayerByCode(GlobalData.clientScript.myPlayer.hackingPlayerCode);
+				hackedPlayer = GlobalData.clientScript.PlayerByNetworkPlayer(GlobalData.clientScript.myPlayer.hackingNetworkPlayer);
 				distanceToHacked = Vector3.Distance(personalCamera.transform.position, hackedPlayer.cameraMockup.transform.position);
 			}
 				
@@ -364,7 +454,7 @@ public class LocalPlayerScript : MonoBehaviour {
 					distanceText.GetComponent<Text> ().text = "KILL";
 					crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 					textTargeted.SetActive(true);
-					textTargeted.GetComponent<Text>().text = "<Player "+hackedPlayer.playerCode+">";
+					textTargeted.GetComponent<Text>().text = "<Player "+hackedPlayer.networkPlayer.ToString()+">";
 				}
 			}
 
@@ -372,7 +462,7 @@ public class LocalPlayerScript : MonoBehaviour {
 				// SOMEONE ON THE CROSSHAIR && TEXTTARGETED IS NOT ACTIVE
 				crosshairHackDot.GetComponent<Image>().color = new Color(1f, 0f, 0f);
 				textTargeted.SetActive(true);
-				textTargeted.GetComponent<Text>().text = "<Player "+crosshairPlayer.playerCode+">";
+				textTargeted.GetComponent<Text>().text = "<Player "+crosshairPlayer.networkPlayer.ToString()+">";
 			}
 
 			if (hackedPlayer != null) {
@@ -496,11 +586,11 @@ public class LocalPlayerScript : MonoBehaviour {
 				List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, ClientScript.interceptKillDistance, "bigCrosshair", true);
 
 				foreach (ClientScript.Player player in playersInside) {
-					if (player.hackingPlayerCode == GlobalData.clientScript.myCode) {
+					if (player.hackingNetworkPlayer == GlobalData.clientScript.myPlayer.networkPlayer) {
 						if (Network.isServer) {
-							GlobalData.clientScript.serverScript.interceptAttack (GlobalData.clientScript.myCode, player.playerCode);
+							GlobalData.clientScript.serverScript.interceptAttack (GlobalData.clientScript.myPlayer.networkPlayer, player.networkPlayer);
 						} else {
-							GlobalData.clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, player.playerCode);
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("interceptAttackRPC", RPCMode.Server, player.networkPlayer);
 						}
 					}
 				}
@@ -536,7 +626,7 @@ public class LocalPlayerScript : MonoBehaviour {
 			if (GlobalData.clientScript != null) {
 
 				bool usedHack = false;
-				ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByCode (GlobalData.clientScript.myPlayer.hackingPlayerCode);
+				ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByNetworkPlayer (GlobalData.clientScript.myPlayer.hackingNetworkPlayer);
 
 				if (hackedPlayer != null) {
 					// TRIES TO KILL HIM
@@ -545,9 +635,9 @@ public class LocalPlayerScript : MonoBehaviour {
 					if (playersInside.Contains (hackedPlayer)) {
 						usedHack = true;
 						if (Network.isServer) {
-							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, hackedPlayer.playerCode, true);
+							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myPlayer.networkPlayer, hackedPlayer.networkPlayer, true);
 						} else {
-							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackKillRPC", RPCMode.Server, GlobalData.clientScript.myCode, hackedPlayer.playerCode);
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackKillRPC", RPCMode.Server, hackedPlayer.networkPlayer);
 						}
 					}
 						
@@ -559,9 +649,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 					if (crosshairPlayer != null) {
 						if (Network.isServer) {
-							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myCode, crosshairPlayer.playerCode, false);
+							GlobalData.clientScript.serverScript.hackAttack (GlobalData.clientScript.myPlayer.networkPlayer, crosshairPlayer.networkPlayer, false);
 						} else {
-							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, GlobalData.clientScript.myCode, crosshairPlayer.playerCode);
+							GlobalData.clientScript.GetComponent<NetworkView>().RPC("hackAttackRPC", RPCMode.Server, crosshairPlayer.networkPlayer);
 						}
 					}
 				}
@@ -577,7 +667,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		if (GlobalData.clientScript != null) {
 
 			ClientScript.Player auxPlayer = null;
-			ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByCode (GlobalData.clientScript.myPlayer.hackingPlayerCode);
+			ClientScript.Player hackedPlayer = GlobalData.clientScript.PlayerByNetworkPlayer (GlobalData.clientScript.myPlayer.hackingNetworkPlayer);
 
 			if (hackedPlayer != null) {
 				List<ClientScript.Player> playersInside = GlobalData.clientScript.insideBigCrosshair (GlobalData.clientScript.myPlayer, ClientScript.hackKillDistance, "bigCrosshair", false);
@@ -634,6 +724,7 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	}
 
+	/*
 	void adjustFirstPersonObjects() {
 
 		float difference = 0f;
@@ -650,13 +741,14 @@ public class LocalPlayerScript : MonoBehaviour {
 		firstPersonObjects.transform.localPosition = new Vector3 (0f, difference*maxAmount, 0f);
 
 	}
+	*/
 
 	void handleRegularInput() {
 
-		if (receiveInput) {
+		if (inputMode == InputMode.Playing) {
 
 			if (Input.GetKeyDown (KeyCode.Escape)) {
-				inGameMenuManager.active = true;
+				inputMode = InputMode.Menu;
 			}
 
 			if (Input.GetKeyDown(KeyCode.LeftShift) && blinkResource >= 1f && !blinking) {
@@ -697,6 +789,11 @@ public class LocalPlayerScript : MonoBehaviour {
 					blinkEnd = blinkStart + direction * (distanceToBlock - colliderOffset);
 				}
 
+				//AudioSource audio = Hacks.GetAudioSource ("Sound/Effects/blink");
+				//audio.pitch = 1f;
+				//audio.volume = 1f;
+				//audio.Play ();
+
 			}
 
 			if (Input.GetKeyDown(KeyCode.Space) && IsGrounded()) {
@@ -735,20 +832,17 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		Vector2 movement = new Vector3 (0, 0);
 
-		if (receiveInput) {
-
-			if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
-				movement = new Vector3(movement.x, 1f);
-			} 
-			else if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow)) {
-				movement = new Vector3(movement.x, -1f);
-			}
-			if (Input.GetKey (KeyCode.A) || Input.GetKey (KeyCode.LeftArrow)) {
-				movement = new Vector3(movement.x +1f, movement.y);
-			}
-			if (Input.GetKey (KeyCode.D) || Input.GetKey (KeyCode.RightArrow)) {
-				movement = new Vector3(movement.x -1f, movement.y);
-			}
+		if (Input.GetKey (KeyCode.W) || Input.GetKey (KeyCode.UpArrow)) {
+			movement = new Vector3(movement.x, 1f);
+		} 
+		else if (Input.GetKey (KeyCode.S) || Input.GetKey (KeyCode.DownArrow)) {
+			movement = new Vector3(movement.x, -1f);
+		}
+		if (Input.GetKey (KeyCode.A) || Input.GetKey (KeyCode.LeftArrow)) {
+			movement = new Vector3(movement.x +1f, movement.y);
+		}
+		if (Input.GetKey (KeyCode.D) || Input.GetKey (KeyCode.RightArrow)) {
+			movement = new Vector3(movement.x -1f, movement.y);
 		}
 
 		bool falling = false;
@@ -865,7 +959,9 @@ public class LocalPlayerScript : MonoBehaviour {
 	void handleCameraChanges() {
 
 		// 0.75f IS A CONSTANT TO MAKE SENSITIVITY AS CLOSE TO CS:GO ONE AS POSSIBLE, MORE STANDARD FOR PLAYERS
-		cameraValueY += (Input.GetAxisRaw("Mouse Y"))*GlobalData.mouseSensitivity*0.75f;
+		if (inputMode == InputMode.Playing) {
+			cameraValueY += (Input.GetAxisRaw("Mouse Y"))*GlobalData.mouseSensitivity*0.75f;
+		}
 
 
 		//cameraValueY = Mathf.Clamp (cameraValueY, -60f, 60f);
@@ -889,7 +985,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 
 		float changeX = 0f;
-		changeX = (Input.GetAxisRaw("Mouse X"))*GlobalData.mouseSensitivity*0.75f; 
+		if (inputMode == InputMode.Playing) {
+			changeX = (Input.GetAxisRaw("Mouse X"))*GlobalData.mouseSensitivity*0.75f; 
+		}
 
 		this.gameObject.transform.localEulerAngles = new Vector3 (this.gameObject.transform.localEulerAngles.x, this.gameObject.transform.localEulerAngles.y +changeX, this.gameObject.transform.localEulerAngles.z);
 
@@ -933,6 +1031,13 @@ public class LocalPlayerScript : MonoBehaviour {
 		}
 
     }
+
+	public enum InputMode
+	{
+		Playing,
+		Menu,
+		Chat
+	};
 
 	public class Vector3Nullable {
 

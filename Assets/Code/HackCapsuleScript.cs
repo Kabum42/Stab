@@ -81,7 +81,7 @@ public class HackCapsuleScript : MonoBehaviour {
 					ClientScript.Player auxPlayer2 = getPlayerFromGameObject(hitInfo.collider.gameObject);
 
 					if (auxPlayer == auxPlayer2) {
-						if (!auxPlayer.dead && auxPlayer.hackingPlayerCode != GlobalData.clientScript.myCode) {
+						if (!auxPlayer.dead && auxPlayer.hackingNetworkPlayer != GlobalData.clientScript.myPlayer.networkPlayer) {
 							return auxPlayer;
 						}
 					} else {
