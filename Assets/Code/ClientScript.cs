@@ -579,6 +579,22 @@ public class ClientScript : MonoBehaviour {
 
 	}
 
+	public bool NetworkPlayerIsServer(NetworkPlayer nPlayer) {
+
+		if (Network.isServer) {
+			if (nPlayer == Network.player) {
+				return true;
+			}
+		} else {
+			if (Network.connections [0] == nPlayer) {
+				return true;
+			}
+		}
+
+		return false;
+
+	}
+
 	private GameObject GetVisualAvatar() {
 
 		GameObject visualAvatar;
@@ -706,7 +722,7 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void addChatMessageRPC(string text, NetworkMessageInfo info)
 	{
-		NetworkPlayer sender = info.sender;         
+		NetworkPlayer sender = info.sender;
 		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
 		if(sender.ToString() == "-1") { sender = Network.player; }
 
@@ -728,29 +744,43 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void removePlayerRPC(NetworkPlayer networkPlayer) {
+	void removePlayerRPC(NetworkPlayer networkPlayer, NetworkMessageInfo info) {
 
-		Player player = PlayerByNetworkPlayer (networkPlayer);
+		NetworkPlayer sender = info.sender;
+		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
+		if(sender.ToString() == "-1") { sender = Network.player; }
 
-		if (player != null) {
-			player.visualAvatar.SetActive (false);
-			visualAvatarsPool.Add (player.visualAvatar);
+		if (NetworkPlayerIsServer (sender)) {
+			Player player = PlayerByNetworkPlayer (networkPlayer);
 
-			listPlayers.Remove (player);
+			if (player != null) {
+				player.visualAvatar.SetActive (false);
+				visualAvatarsPool.Add (player.visualAvatar);
 
-			localPlayer.chatManager.Add(new ChatMessage("System", "Player "+player.networkPlayer.ToString()+" has left the game."));
+				listPlayers.Remove (player);
+
+				localPlayer.chatManager.Add(new ChatMessage("System", "Player "+player.networkPlayer.ToString()+" has left the game."));
+			}
 		}
 
 	}
 
 	[RPC]
-	void updateRankingRPC(NetworkPlayer networkPlayer, int kills, int ping)
+	void updateRankingRPC(NetworkPlayer networkPlayer, int kills, int ping, NetworkMessageInfo info)
 	{
-		Player player = PlayerByNetworkPlayer (networkPlayer);
-		if (player != null) {
-			player.kills = kills;
-			player.ping = ping;
+		
+		NetworkPlayer sender = info.sender;
+		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
+		if(sender.ToString() == "-1") { sender = Network.player; }
+
+		if (NetworkPlayerIsServer (sender)) {
+			Player player = PlayerByNetworkPlayer (networkPlayer);
+			if (player != null) {
+				player.kills = kills;
+				player.ping = ping;
+			}
 		}
+
 	}
 
 	[RPC]
@@ -769,91 +799,113 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updateHackDataRPC(NetworkPlayer networkPlayer, NetworkPlayer hackedNetWorkPlayer, bool justHacked)
+	void updateHackDataRPC(NetworkPlayer networkPlayer, NetworkPlayer hackedNetWorkPlayer, bool justHacked, NetworkMessageInfo info)
 	{
-		Player player = PlayerByNetworkPlayer (networkPlayer);
-		Player hackedPlayer = PlayerByNetworkPlayer (hackedNetWorkPlayer);
 
-		if (hackedPlayer != null) {
-			player.immune = 0f;
-			if (justHacked) {
-				player.hackingTimer = hackingTimerMax;
-				if (hackedNetWorkPlayer == Network.player) {
-					// ALERT
-					localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+		NetworkPlayer sender = info.sender;
+		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
+		if(sender.ToString() == "-1") { sender = Network.player; }
+
+		if (NetworkPlayerIsServer (sender)) {
+			Player player = PlayerByNetworkPlayer (networkPlayer);
+			Player hackedPlayer = PlayerByNetworkPlayer (hackedNetWorkPlayer);
+
+			if (hackedPlayer != null) {
+				player.immune = 0f;
+				if (justHacked) {
+					player.hackingTimer = hackingTimerMax;
+					if (hackedNetWorkPlayer == Network.player) {
+						// ALERT
+						localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+					}
 				}
 			}
-		}
 
-		player.hackingNetworkPlayer = hackedNetWorkPlayer;
+			player.hackingNetworkPlayer = hackedNetWorkPlayer;
+		}
 
 	}
 
 	[RPC]
-	void killRPC(NetworkPlayer assassinNetworkPlayer, NetworkPlayer victimNetworkPlayer)
+	void killRPC(NetworkPlayer assassinNetworkPlayer, NetworkPlayer victimNetworkPlayer, NetworkMessageInfo info)
 	{
-		Player assassinPlayer = PlayerByNetworkPlayer (assassinNetworkPlayer);
-		Player victimPlayer = PlayerByNetworkPlayer (victimNetworkPlayer);
 
-		assassinPlayer.immune = 0f;
+		NetworkPlayer sender = info.sender;
+		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
+		if(sender.ToString() == "-1") { sender = Network.player; }
 
-		if (assassinPlayer == myPlayer) {
-			// YOU SLAYED VICTIMCODE
-			textBigAlpha = 1f;
-			textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimPlayer.networkPlayer.ToString()+"</color>";
-		} else if (victimPlayer == myPlayer) {
-			// SLAYED BY ASSASSINCODE
-			textBigAlpha = 1f;
-			textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinPlayer.networkPlayer.ToString()+"</color>";
+		if (NetworkPlayerIsServer (sender)) {
+			Player assassinPlayer = PlayerByNetworkPlayer (assassinNetworkPlayer);
+			Player victimPlayer = PlayerByNetworkPlayer (victimNetworkPlayer);
+
+			assassinPlayer.immune = 0f;
+
+			if (assassinPlayer == myPlayer) {
+				// YOU SLAYED VICTIMCODE
+				textBigAlpha = 1f;
+				textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimPlayer.networkPlayer.ToString()+"</color>";
+			} else if (victimPlayer == myPlayer) {
+				// SLAYED BY ASSASSINCODE
+				textBigAlpha = 1f;
+				textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinPlayer.networkPlayer.ToString()+"</color>";
+			}
+			assassinPlayer.lastKillRemainingSeconds = remainingSeconds;
+
+			victimPlayer.dead = true;
+			victimPlayer.visualAvatar.GetComponent<RagdollScript> ().Enable ();
+			// HACKING ITSELF REPRESENTS HACKING NO ONE
+			victimPlayer.hackingNetworkPlayer = victimPlayer.networkPlayer;
+
+			if (victimPlayer != myPlayer)
+			{
+				for (int i = 0; i < victimPlayer.visualMaterials.Length; i++)
+				{
+					victimPlayer.visualMaterials[i].SetFloat("_Cutoff", 0f);
+				}
+			}
+
+			Vector3 forceDirection = victimPlayer.cameraMockup.transform.position - assassinPlayer.cameraMockup.transform.position;
+			forceDirection.Normalize ();
+			victimPlayer.visualAvatar.GetComponent<RagdollScript> ().rootGameObject.GetComponent<Rigidbody> ().AddForce (forceDirection * 7000f);
 		}
-		assassinPlayer.lastKillRemainingSeconds = remainingSeconds;
 
-		victimPlayer.dead = true;
-		victimPlayer.visualAvatar.GetComponent<RagdollScript> ().Enable ();
-		// HACKING ITSELF REPRESENTS HACKING NO ONE
-		victimPlayer.hackingNetworkPlayer = victimPlayer.networkPlayer;
-
-        if (victimPlayer != myPlayer)
-        {
-            for (int i = 0; i < victimPlayer.visualMaterials.Length; i++)
-            {
-                victimPlayer.visualMaterials[i].SetFloat("_Cutoff", 0f);
-            }
-        }
-
-		Vector3 forceDirection = victimPlayer.cameraMockup.transform.position - assassinPlayer.cameraMockup.transform.position;
-		forceDirection.Normalize ();
-		victimPlayer.visualAvatar.GetComponent<RagdollScript> ().rootGameObject.GetComponent<Rigidbody> ().AddForce (forceDirection * 7000f);
 	}
 		
 
 	[RPC]
-	void respawnRPC(NetworkPlayer networkPlayer, Vector3 position, Vector3 eulerAngles)
+	void respawnRPC(NetworkPlayer networkPlayer, Vector3 position, Vector3 eulerAngles, NetworkMessageInfo info)
 	{
-		Player player = PlayerByNetworkPlayer (networkPlayer);
+		
+		NetworkPlayer sender = info.sender;
+		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
+		if(sender.ToString() == "-1") { sender = Network.player; }
 
-		if (player == myPlayer) {
-			localPlayer.respawn ();
-			localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
-			localPlayer.transform.position = position;
-			localPlayer.transform.eulerAngles = eulerAngles;
-			myPlayer.targetPosition = position;
-			myPlayer.targetAvatarEulerY = eulerAngles.y;
-			localPlayer.hackResource = 3f;
-			localPlayer.interceptResource = 3f;
-			localPlayer.blinkResource = 3f;
-			justRespawned = true;
-		} else if (player != null) {
-			player.visualAvatar.transform.position = position;
-			player.targetPosition = position;
-			player.visualAvatar.transform.eulerAngles = eulerAngles;
-			player.targetAvatarEulerY = eulerAngles.y;
-		}
+		if (NetworkPlayerIsServer (sender)) {
+			Player player = PlayerByNetworkPlayer (networkPlayer);
 
-		if (player != null) {
-			player.visualAvatar.GetComponent<RagdollScript> ().Disable ();
-			player.immune = immuneTimeAtRespawn;
-			player.dead = false;
+			if (player == myPlayer) {
+				localPlayer.respawn ();
+				localPlayer.GetComponent<Rigidbody> ().velocity = new Vector3 (0f, 0f, 0f);
+				localPlayer.transform.position = position;
+				localPlayer.transform.eulerAngles = eulerAngles;
+				myPlayer.targetPosition = position;
+				myPlayer.targetAvatarEulerY = eulerAngles.y;
+				localPlayer.hackResource = 3f;
+				localPlayer.interceptResource = 3f;
+				localPlayer.blinkResource = 3f;
+				justRespawned = true;
+			} else if (player != null) {
+				player.visualAvatar.transform.position = position;
+				player.targetPosition = position;
+				player.visualAvatar.transform.eulerAngles = eulerAngles;
+				player.targetAvatarEulerY = eulerAngles.y;
+			}
+
+			if (player != null) {
+				player.visualAvatar.GetComponent<RagdollScript> ().Disable ();
+				player.immune = immuneTimeAtRespawn;
+				player.dead = false;
+			}
 		}
 
 	}
