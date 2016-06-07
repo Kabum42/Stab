@@ -9,6 +9,8 @@ public class ClientScript : MonoBehaviour {
 
 	[HideInInspector] public ServerScript serverScript;
 
+	private NetworkView networkView;
+
 	private int positionUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
@@ -48,26 +50,31 @@ public class ClientScript : MonoBehaviour {
 	void Awake () {
 
 		GlobalData.clientScript = this;
+		networkView = GetComponent<NetworkView> ();
 
 		map = this.gameObject;
 
 		localPlayer = Instantiate (Resources.Load("Prefabs/LocalPlayer") as GameObject).GetComponent<LocalPlayerScript>();
 
-		// YOU JOIN AS PLAYER
-		myPlayer = new Player(Network.player, localPlayer.visualAvatar);
-		localPlayer.visualAvatar.GetComponent<PlayerMarker>().player = myPlayer;
-
-		listPlayers.Add(myPlayer);
-
 		// SERVER RELATED
 		if (Network.isServer) {
+			// YOU JOIN AS PLAYER
+			myPlayer = new Player(0, localPlayer.visualAvatar);
+			listPlayers.Add(myPlayer);
+			myPlayer.networkPlayer = Network.player;
+			localPlayer.visualAvatar.GetComponent<PlayerMarker>().player = myPlayer;
+
 			serverScript = gameObject.AddComponent<ServerScript> ();
 			serverScript.initialize (this);
 			lockedRemainingSeconds = true;
 		} else {
 			Destroy(map.transform.FindChild ("RespawnPoints").gameObject);
-			GetComponent<NetworkView> ().RPC ("sayHi", RPCMode.Others);
+			myPlayer = new Player(-1, localPlayer.visualAvatar);
+			listPlayers.Add(myPlayer);
+			localPlayer.visualAvatar.GetComponent<PlayerMarker>().player = myPlayer;
 		}
+
+
 
 		GameObject auxCameraHolder = new GameObject ();
 		auxCamera = auxCameraHolder.AddComponent<Camera> ();
@@ -78,6 +85,8 @@ public class ClientScript : MonoBehaviour {
 		rankingBackground = localPlayer.rankingBackground;
 
 		textBig = localPlayer.canvas.transform.FindChild("TextBig").gameObject;
+
+		networkView.RPC("sayHiRPC", RPCMode.Server);
 
 	}
 	
@@ -101,13 +110,13 @@ public class ClientScript : MonoBehaviour {
 				if (Network.isServer) {
 					gameEnded = true;
 					sortList ();
-					GetComponent<NetworkView> ().RPC ("winnerRPC", RPCMode.All, listPlayers[0].networkPlayer);
+					networkView.RPC ("winnerRPC", RPCMode.All, listPlayers[0].networkPlayer);
 				}
 			} else if (winnerPlayer.networkPlayer == Network.player) {
 				textBig.GetComponent<Text>().text = "<color=#44FF44>CONGRATULATIONS!</color> YOU WON";
 				textBigAlpha = 1f;
 			} else {
-				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+winnerPlayer.networkPlayer.ToString()+"</color> HAS WON";
+				textBig.GetComponent<Text>().text = "<color=#FF4444>#"+winnerPlayer.name+"</color> HAS WON";
 				textBigAlpha = 1f;
 			}
 		}
@@ -348,13 +357,13 @@ public class ClientScript : MonoBehaviour {
 
 			currentUpdateCooldown = 0f;
 
-			if (localPlayer != null && GetComponent<NetworkView> () != null && !localPlayer.firstRespawn) {
+			if (localPlayer != null && networkView != null && !localPlayer.firstRespawn) {
 
 				if (justRespawned) {
 					justRespawned = false;
-					GetComponent<NetworkView> ().RPC ("updatePlayerInstantRPC", RPCMode.Others, localPlayer.visualAvatar.transform.position);
+					networkView.RPC ("updatePlayerInstantRPC", RPCMode.Others, localPlayer.visualAvatar.transform.position);
 				} else {
-					GetComponent<NetworkView>().RPC("updatePlayerRPC", RPCMode.Others, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
+					networkView.RPC("updatePlayerRPC", RPCMode.Others, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
 				}
 
 			}
@@ -426,7 +435,7 @@ public class ClientScript : MonoBehaviour {
 		// FIRST CRITERION :  KILLS, FROM BIGGER TO SMALLER
 		// SECOND CRITERION :  LASTKILLREMAININGSECONDS, FROM SMALLER TO BIGGER
 		// THIRD CRITERION :  PLAYERCODE, JUST TO HAVE A UNIQUE ARBITRARY PARAMETER TO ORDER THEM IF THERE'S A DRAW
-		listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.lastKillRemainingSeconds).ThenBy(o=>int.Parse(o.networkPlayer.ToString())).ToList();
+		listPlayers = listPlayers.OrderByDescending(o=>o.kills).ThenBy(o=>o.lastKillRemainingSeconds).ThenBy(o=>o.ID).ToList();
 
 	}
 
@@ -448,10 +457,10 @@ public class ClientScript : MonoBehaviour {
 			foreach (Player player in listPlayers) {
 
 				if (player.networkPlayer == Network.player) {
-					auxPlayers += "<color=#D7D520>" + "Player"+player.networkPlayer.ToString() + "</color>";
+					auxPlayers += "<color=#D7D520>" + player.name + "</color>";
 				}
 				else {
-					auxPlayers += "Player"+player.networkPlayer.ToString();
+					auxPlayers += player.name;
 				}
 				auxKills += "<color=#FF8C8CFF>"+ player.kills + "</color>";
 				auxPings += player.ping +"";
@@ -538,7 +547,7 @@ public class ClientScript : MonoBehaviour {
 	public void writeInChat(string info) {
 
 		if (!hasCommands (info)) {
-			GetComponent<NetworkView>().RPC("addChatMessageRPC", RPCMode.All, info);
+			networkView.RPC("addChatMessageRPC", RPCMode.All, info);
 		}
 
 	}
@@ -571,6 +580,18 @@ public class ClientScript : MonoBehaviour {
 
 		foreach (Player player in listPlayers) {
 			if (player.networkPlayer == nPlayer) {
+				return player;
+			}
+		}
+
+		return null;
+
+	}
+
+	public Player PlayerByID(int ID) {
+
+		foreach (Player player in listPlayers) {
+			if (player.ID == ID) {
 				return player;
 			}
 		}
@@ -651,20 +672,58 @@ public class ClientScript : MonoBehaviour {
 
 	// CLIENT RPCs
 	[RPC]
-	void sayHi(NetworkMessageInfo info) {
+	void sayHiRPC(NetworkMessageInfo info) {
 
-		if (Network.isServer) {
-			Player auxPlayer = PlayerByNetworkPlayer(info.sender);
-			if (auxPlayer == null) {
-				// LE ASIGNAMOS UN SITIO DONDE APARECER
-				serverScript.respawn(info.sender);
-				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
-				GetComponent<NetworkView>().RPC("sendRemainingSecondsRPC", RPCMode.Others, remainingSeconds);
-			}
+		// ADD THE NEW PLAYER TO EVERYONE
+		networkView.RPC ("addPlayerRPC", RPCMode.All, info.sender, int.Parse(info.sender.ToString()));
+
+	}
+
+	[RPC]
+	void firstSpawnRPC(NetworkMessageInfo info) {
+
+		Player player = PlayerByNetworkPlayer (info.sender);
+		if (player != null) {
+			// LE ASIGNAMOS UN SITIO DONDE APARECER
+			serverScript.respawn(player.ID);
 		}
 
-		if (info.sender != Network.player) {
-			localPlayer.chatManager.Add(new ChatMessage("System", "Player " + info.sender.ToString() + " has joined the game."));
+	}
+
+	[RPC]
+	void addPlayerRPC(NetworkPlayer nPlayer, int ID, NetworkMessageInfo info) {
+
+		NetworkPlayer sender = info.sender;
+		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
+		if(sender.ToString() == "-1") { sender = Network.player; }
+
+		if (NetworkPlayerIsServer (sender)) {
+
+			if (nPlayer != Network.player) {
+				Player newPlayer = new Player(ID);
+				newPlayer.networkPlayer = nPlayer;
+				listPlayers.Add(newPlayer);
+				localPlayer.chatManager.Add (new ChatMessage ("System", "Player " + ID + " has joined the game."));
+			} else {
+				// YOU JOIN AS PLAYER
+				myPlayer.Initialize(ID);
+				myPlayer.networkPlayer = nPlayer;
+				networkView.RPC("firstSpawnRPC", RPCMode.Server);
+			}
+
+			if (Network.isServer) {
+				// LE DECIMOS CUANTOS SEGUNDOS DE PARTIDA QUEDAN
+				networkView.RPC("sendRemainingSecondsRPC", nPlayer, remainingSeconds);
+				// SEND EVERYONE TO THE NEW PLAYER
+				foreach (Player player in listPlayers) {
+					if (player.networkPlayer != nPlayer) {
+						networkView.RPC("addPlayerRPC", nPlayer, player.networkPlayer, player.ID);
+					}
+				}
+				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
+				serverScript.sendRankingData();
+			}
+
 		}
 
 	}
@@ -672,7 +731,6 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void updatePlayerRPC(Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation, NetworkMessageInfo info)
 	{
-		bool foundPlayer = false;
 
 		Player player = PlayerByNetworkPlayer (info.sender);
 
@@ -684,22 +742,6 @@ public class ClientScript : MonoBehaviour {
 				player.cameraForward = cameraForward;
 				player.targetCameraEulerX = cameraEulerX;
 				player.SmartCrossfade(currentAnimation);
-			}
-
-		} else {
-
-			player = new Player(info.sender);
-			listPlayers.Add(player);
-			player.visualAvatar.transform.position = position;
-			player.visualAvatar.transform.eulerAngles = new Vector3(0f, avatarEulerY, 0f);
-			player.targetPosition = position;
-			player.targetAvatarEulerY = avatarEulerY;
-			player.SmartCrossfade(currentAnimation);
-			player.currentCameraEulerX = cameraEulerX;
-
-			if (Network.isServer) {
-				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
-				serverScript.sendRankingData();
 			}
 
 		}
@@ -729,7 +771,7 @@ public class ClientScript : MonoBehaviour {
 		Player player = PlayerByNetworkPlayer (sender);
 
 		if (player != null) {
-			string owner = "Player " + player.networkPlayer.ToString();
+			string owner = player.name;
 			if (player == myPlayer) { owner = "You"; }
 
 			localPlayer.chatManager.Add (new ChatMessage (owner, text));
@@ -744,14 +786,14 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void removePlayerRPC(NetworkPlayer networkPlayer, NetworkMessageInfo info) {
+	void removePlayerRPC(int ID, NetworkMessageInfo info) {
 
 		NetworkPlayer sender = info.sender;
 		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
 		if(sender.ToString() == "-1") { sender = Network.player; }
 
 		if (NetworkPlayerIsServer (sender)) {
-			Player player = PlayerByNetworkPlayer (networkPlayer);
+			Player player = PlayerByID (ID);
 
 			if (player != null) {
 				player.visualAvatar.SetActive (false);
@@ -759,14 +801,14 @@ public class ClientScript : MonoBehaviour {
 
 				listPlayers.Remove (player);
 
-				localPlayer.chatManager.Add(new ChatMessage("System", "Player "+player.networkPlayer.ToString()+" has left the game."));
+				localPlayer.chatManager.Add(new ChatMessage("System", "Player "+player.name+" has left the game."));
 			}
 		}
 
 	}
 
 	[RPC]
-	void updateRankingRPC(NetworkPlayer networkPlayer, int kills, int ping, NetworkMessageInfo info)
+	void updateRankingRPC(int ID, int kills, int ping, NetworkMessageInfo info)
 	{
 		
 		NetworkPlayer sender = info.sender;
@@ -774,7 +816,7 @@ public class ClientScript : MonoBehaviour {
 		if(sender.ToString() == "-1") { sender = Network.player; }
 
 		if (NetworkPlayerIsServer (sender)) {
-			Player player = PlayerByNetworkPlayer (networkPlayer);
+			Player player = PlayerByID (ID);
 			if (player != null) {
 				player.kills = kills;
 				player.ping = ping;
@@ -799,7 +841,7 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updateHackDataRPC(NetworkPlayer networkPlayer, NetworkPlayer hackedNetWorkPlayer, bool justHacked, NetworkMessageInfo info)
+	void updateHackDataRPC(int ID, NetworkPlayer hackedNetWorkPlayer, bool justHacked, NetworkMessageInfo info)
 	{
 
 		NetworkPlayer sender = info.sender;
@@ -807,27 +849,30 @@ public class ClientScript : MonoBehaviour {
 		if(sender.ToString() == "-1") { sender = Network.player; }
 
 		if (NetworkPlayerIsServer (sender)) {
-			Player player = PlayerByNetworkPlayer (networkPlayer);
+			Player player = PlayerByID (ID);
 			Player hackedPlayer = PlayerByNetworkPlayer (hackedNetWorkPlayer);
 
-			if (hackedPlayer != null) {
-				player.immune = 0f;
-				if (justHacked) {
-					player.hackingTimer = hackingTimerMax;
-					if (hackedNetWorkPlayer == Network.player) {
-						// ALERT
-						localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+			if (player != null) {
+				if (hackedPlayer != null) {
+					player.immune = 0f;
+					if (justHacked) {
+						player.hackingTimer = hackingTimerMax;
+						if (hackedNetWorkPlayer == Network.player) {
+							// ALERT
+							localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+						}
 					}
 				}
+
+				player.hackingNetworkPlayer = hackedNetWorkPlayer;
 			}
 
-			player.hackingNetworkPlayer = hackedNetWorkPlayer;
 		}
 
 	}
 
 	[RPC]
-	void killRPC(NetworkPlayer assassinNetworkPlayer, NetworkPlayer victimNetworkPlayer, NetworkMessageInfo info)
+	void killRPC(int assassinID, int victimID, NetworkMessageInfo info)
 	{
 
 		NetworkPlayer sender = info.sender;
@@ -835,19 +880,19 @@ public class ClientScript : MonoBehaviour {
 		if(sender.ToString() == "-1") { sender = Network.player; }
 
 		if (NetworkPlayerIsServer (sender)) {
-			Player assassinPlayer = PlayerByNetworkPlayer (assassinNetworkPlayer);
-			Player victimPlayer = PlayerByNetworkPlayer (victimNetworkPlayer);
+			Player assassinPlayer = PlayerByID (assassinID);
+			Player victimPlayer = PlayerByID (victimID);
 
 			assassinPlayer.immune = 0f;
 
 			if (assassinPlayer == myPlayer) {
 				// YOU SLAYED VICTIMCODE
 				textBigAlpha = 1f;
-				textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> PLAYER <color=#FF4444>#"+victimPlayer.networkPlayer.ToString()+"</color>";
+				textBig.GetComponent<Text>().text = "<color=#77FF77>YOU KILLED</color> <color=#FF4444>#"+victimPlayer.name+"</color>";
 			} else if (victimPlayer == myPlayer) {
 				// SLAYED BY ASSASSINCODE
 				textBigAlpha = 1f;
-				textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY PLAYER <color=#FF4444>#"+assassinPlayer.networkPlayer.ToString()+"</color>";
+				textBig.GetComponent<Text>().text = "<color=#FF7777>KILLED</color> BY <color=#FF4444>#"+assassinPlayer.name+"</color>";
 			}
 			assassinPlayer.lastKillRemainingSeconds = remainingSeconds;
 
@@ -873,7 +918,7 @@ public class ClientScript : MonoBehaviour {
 		
 
 	[RPC]
-	void respawnRPC(NetworkPlayer networkPlayer, Vector3 position, Vector3 eulerAngles, NetworkMessageInfo info)
+	void respawnRPC(int ID, Vector3 position, Vector3 eulerAngles, NetworkMessageInfo info)
 	{
 		
 		NetworkPlayer sender = info.sender;
@@ -881,7 +926,8 @@ public class ClientScript : MonoBehaviour {
 		if(sender.ToString() == "-1") { sender = Network.player; }
 
 		if (NetworkPlayerIsServer (sender)) {
-			Player player = PlayerByNetworkPlayer (networkPlayer);
+
+			Player player = PlayerByID (ID);
 
 			if (player == myPlayer) {
 				localPlayer.respawn ();
@@ -921,7 +967,7 @@ public class ClientScript : MonoBehaviour {
 	public class Player {
 
 		public string name;
-		//public int playerCode;
+		public int ID = -1;
 		public NetworkPlayer networkPlayer;
 		public GameObject visualAvatar;
 		public GameObject cameraMockup;
@@ -944,27 +990,33 @@ public class ClientScript : MonoBehaviour {
 		public float targetCameraEulerX;
 		public float currentCameraEulerX;
 
-		public Player(NetworkPlayer auxNetworPlayer) {
+		public Player(int ID) {
 
 			visualAvatar = GlobalData.clientScript.GetVisualAvatar();
-			Initialize(auxNetworPlayer, visualAvatar);
+			Initialize(ID, visualAvatar);
 
 		}
 
-		public Player(NetworkPlayer auxNetworkPlayer, GameObject visualAvatar) {
+		public Player(int ID, GameObject visualAvatar) {
 
-			Initialize(auxNetworkPlayer, visualAvatar);
+			Initialize(ID, visualAvatar);
 
 		}
 
-		public void Initialize (NetworkPlayer auxNetworkPlayer, GameObject visualAvatar) {
+		public void Initialize (int ID) {
+			
+			Initialize (ID, visualAvatar);
 
-			name = "Player" + auxNetworkPlayer.ToString ();
-			networkPlayer = auxNetworkPlayer;
+		}
+
+		public void Initialize (int ID, GameObject visualAvatar) {
+
+			this.ID = ID;
+			name = "Player" + ID;
 			hackingNetworkPlayer = networkPlayer;
 			this.visualAvatar = visualAvatar;
 			visualAvatar.SetActive (true);
-			visualAvatar.name = "VisualAvatar "+ networkPlayer.ToString();
+			visualAvatar.name = "VisualAvatar "+ ID;
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
 			visualMaterials = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().materials;
 
