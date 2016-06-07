@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public class ServerScript : MonoBehaviour {
 
 	[HideInInspector] public ClientScript clientScript;
+	private NetworkView networkView;
+
 	[HideInInspector] public List<RespawnLocation> listRespawnLocations = new List<RespawnLocation> ();
 	private float oldestTimeUsed;
 
@@ -17,7 +19,9 @@ public class ServerScript : MonoBehaviour {
 	public List<string> bannedIPs = new List<string>();
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
+
+		networkView = GetComponent<NetworkView> ();
 
 	}
 	
@@ -36,7 +40,7 @@ public class ServerScript : MonoBehaviour {
 		GameObject respawnPoints = clientScript.map.transform.FindChild ("RespawnPoints").gameObject;
 		createRespawnPoints (respawnPoints);
 
-		respawn (clientScript.myPlayer.networkPlayer);
+		respawn (clientScript.myPlayer.ID);
 
 	}
 
@@ -62,7 +66,7 @@ public class ServerScript : MonoBehaviour {
 
 			// THIS CHECKS IF SOMEONE IS FALLING INTO THE ETERNAL VOID OF THE BUGSPHERE
 			if (player.targetPosition.y < -100f) {
-				respawn (player.networkPlayer);
+				respawn (player.ID);
 			}
 
 			// THIS CHECKS IF SOMEONE IS DEAD AS RAGDOLL FOR TOO MUCH AND MUST RESPAWN
@@ -70,7 +74,7 @@ public class ServerScript : MonoBehaviour {
 				player.deadTime -= Time.deltaTime;
 				if (player.deadTime <= 0f) {
 					player.deadTime = 0f;
-					respawn (player.networkPlayer);
+					respawn (player.ID);
 				}
 			}
 
@@ -78,7 +82,7 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	public void respawn(NetworkPlayer networkPlayer) {
+	public void respawn(int ID) {
 
         List<int> possibleRespawns = new List<int>();
         float cooldown = 5f;
@@ -105,7 +109,7 @@ public class ServerScript : MonoBehaviour {
         int chosenRespawn = possibleRespawns[UnityEngine.Random.Range(0, possibleRespawns.Count)];
         listRespawnLocations[chosenRespawn].lastTimeUsed = Time.realtimeSinceStartup;
 
-		GetComponent<NetworkView> ().RPC ("respawnRPC", RPCMode.All, networkPlayer, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
+		networkView.RPC ("respawnRPC", RPCMode.All, ID, listRespawnLocations [chosenRespawn].position, listRespawnLocations [chosenRespawn].eulerAngles);
 
         // UPDATE NEW OLDEST_TIME
         oldestTimeUsed = listRespawnLocations[0].lastTimeUsed;
@@ -144,7 +148,7 @@ public class ServerScript : MonoBehaviour {
 
 			player.ping = Network.GetAveragePing(player.networkPlayer);
 			if (player.ping < 0) { player.ping = 0; }
-			GetComponent<NetworkView>().RPC("updateRankingRPC", RPCMode.Others, player.networkPlayer, player.kills, player.ping);
+			GetComponent<NetworkView>().RPC("updateRankingRPC", RPCMode.Others, player.ID, player.kills, player.ping);
 
 		}
 
@@ -156,7 +160,7 @@ public class ServerScript : MonoBehaviour {
 
 		foreach (ClientScript.Player player in clientScript.listPlayers) {
 
-			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, player.networkPlayer, player.hackingNetworkPlayer, player.justHacked);
+			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, player.ID, player.hackingNetworkPlayer, player.justHacked);
 
 			if (player.justHacked && player.hackingNetworkPlayer == Network.player) {
 				clientScript.localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
@@ -183,7 +187,7 @@ public class ServerScript : MonoBehaviour {
 					attackerPlayer.kills++;
 					// HACKING ITSELF MEANS THAT ISN'T HACKING ANYONE
 					attackerPlayer.hackingNetworkPlayer = attackerPlayer.networkPlayer;
-					GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.networkPlayer, victimPlayer.networkPlayer);
+					networkView.RPC ("killRPC", RPCMode.All, attackerPlayer.ID, victimPlayer.ID);
 
 					victimPlayer.deadTime = 3f;
 
@@ -213,7 +217,7 @@ public class ServerScript : MonoBehaviour {
 				// IT'S POSSIBLE
 
 				attackerPlayer.kills++;
-				GetComponent<NetworkView> ().RPC ("killRPC", RPCMode.All, attackerPlayer.networkPlayer, victimPlayer.networkPlayer);
+				networkView.RPC ("killRPC", RPCMode.All, attackerPlayer.ID, victimPlayer.ID);
 
 				victimPlayer.deadTime = 3f;
 
@@ -227,10 +231,10 @@ public class ServerScript : MonoBehaviour {
 	}
 
 	// NETWORK RELATED
-	void OnPlayerConnected(NetworkPlayer player) {
+	void OnPlayerConnected(NetworkPlayer nPlayer) {
 
-		if (bannedIPs.Contains (player.ipAddress)) {
-			Network.CloseConnection (player, true);
+		if (bannedIPs.Contains (nPlayer.ipAddress)) {
+			Network.CloseConnection (nPlayer, true);
 		} else {
 			if (clientScript.lockedRemainingSeconds) {
 				clientScript.lockedRemainingSeconds = false;
@@ -239,10 +243,16 @@ public class ServerScript : MonoBehaviour {
 
 	}
 
-	void OnPlayerDisconnected(NetworkPlayer player) {
-		Debug.Log("Clean up after player " + player);
-		Network.RemoveRPCs(player);
-		GetComponent<NetworkView>().RPC("removePlayerRPC", RPCMode.All, player);
+	void OnPlayerDisconnected(NetworkPlayer nPlayer) {
+
+		Debug.Log("Clean up after player " + nPlayer);
+		Network.RemoveRPCs(nPlayer);
+
+		ClientScript.Player player = clientScript.PlayerByNetworkPlayer (nPlayer);
+		if (player != null) {
+			GetComponent<NetworkView>().RPC("removePlayerRPC", RPCMode.All, player.ID);
+		}
+
 	}
 
 	// CLASSES
