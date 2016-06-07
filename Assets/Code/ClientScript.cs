@@ -107,7 +107,7 @@ public class ClientScript : MonoBehaviour {
 				textBig.GetComponent<Text>().text = "<color=#44FF44>CONGRATULATIONS!</color> YOU WON";
 				textBigAlpha = 1f;
 			} else {
-				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+winnerPlayer.ToString()+"</color> HAS WON";
+				textBig.GetComponent<Text>().text = "PLAYER <color=#FF4444>#"+winnerPlayer.networkPlayer.ToString()+"</color> HAS WON";
 				textBigAlpha = 1f;
 			}
 		}
@@ -706,14 +706,18 @@ public class ClientScript : MonoBehaviour {
 	[RPC]
 	void addChatMessageRPC(string text, NetworkMessageInfo info)
 	{
-		Player player = PlayerByNetworkPlayer (info.sender);
+		NetworkPlayer sender = info.sender;         
+		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
+		if(sender.ToString() == "-1") { sender = Network.player; }
+
+		Player player = PlayerByNetworkPlayer (sender);
+
 		if (player != null) {
 			string owner = "Player " + player.networkPlayer.ToString();
 			if (player == myPlayer) { owner = "You"; }
 
 			localPlayer.chatManager.Add (new ChatMessage (owner, text));
 		}
-
 	}
 
 	// SERVER RPCs
