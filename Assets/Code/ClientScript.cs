@@ -11,7 +11,7 @@ public class ClientScript : MonoBehaviour {
 
 	private NetworkView networkView;
 
-	private int positionUpdatesPerSecond = 15;
+	private int netUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
 	[HideInInspector] public float remainingSeconds = (8f)*(60f); // 8 MINUTES
@@ -353,7 +353,7 @@ public class ClientScript : MonoBehaviour {
 	void updateMyInfoInOtherClients() {
 
 
-		if (currentUpdateCooldown >= 1f / (float)positionUpdatesPerSecond) {
+		if (currentUpdateCooldown >= 1f / (float)netUpdatesPerSecond) {
 
 			currentUpdateCooldown = 0f;
 
@@ -363,7 +363,7 @@ public class ClientScript : MonoBehaviour {
 					justRespawned = false;
 					networkView.RPC ("updatePlayerInstantRPC", RPCMode.Others, myPlayer.ID, localPlayer.visualAvatar.transform.position);
 				} else {
-					networkView.RPC("updatePlayerRPC", RPCMode.Others, myPlayer.ID, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
+					networkView.RPC("updatePlayerRPC", RPCMode.Others, myPlayer.ID, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, (int)localPlayer.lastAnimationOrder);
 				}
 
 			}
@@ -704,7 +704,7 @@ public class ClientScript : MonoBehaviour {
 				newPlayer.networkPlayer = nPlayer;
 				listPlayers.Add(newPlayer);
 				if (isNew) {
-					localPlayer.chatManager.Add (new ChatMessage ("System", "Player " + ID + " has joined the game."));
+					localPlayer.chatManager.Add (new ChatMessage ("System", newPlayer.name + " has joined the game."));
 				}
 			} else {
 				// YOU JOIN AS PLAYER
@@ -731,7 +731,7 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updatePlayerRPC(int ID, Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation, NetworkMessageInfo info)
+	void updatePlayerRPC(int ID, Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, int currentAnimation, NetworkMessageInfo info)
 	{
 
 		Player player = PlayerByID (ID);
@@ -749,7 +749,7 @@ public class ClientScript : MonoBehaviour {
 				player.targetAvatarEulerY = avatarEulerY;
 				player.cameraForward = cameraForward;
 				player.targetCameraEulerX = cameraEulerX;
-				player.SmartCrossfade(currentAnimation);
+				player.SmartCrossfade(LocalPlayerScript.AnimationString[currentAnimation]);
 			}
 
 		}

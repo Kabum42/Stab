@@ -25,7 +25,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float turboSpeed = baseSpeed*(1.5f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
 	private float characterSpeed = baseSpeed;
 
-	public string lastAnimationOrder = "Idle01";
+	public Animation lastAnimationOrder = Animation.Idle;
 
 	public GameObject visualAvatar;
 	public GameObject materialCarrier;
@@ -848,14 +848,14 @@ public class LocalPlayerScript : MonoBehaviour {
 		bool falling = false;
 		if (!IsGrounded ()) {
 			falling = true;
-			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Fall");
+			SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Fall);
 		}
 
 
 		if (movement.x == 0 && movement.y == 0) {
 			// NO INPUT
 			if (!falling) {
-				SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle");
+				SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Idle);
 			}
 
 
@@ -880,12 +880,12 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (!falling) {
 				if (Mathf.Abs (movement.x) >= Mathf.Abs(movement.y)) {
-					if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_L"); }
-					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_R"); }
+					if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Move_L); }
+					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Move_R); }
 				}
 				else {
-					if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_F"); }
-					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_B"); }
+					if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Move_F); }
+					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Move_B); }
 				}
 			}
 
@@ -947,10 +947,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		return Vector3.up;
 	}
 
-	void SmartCrossfade(Animator animator, string animation) {
+	void SmartCrossfade(Animator animator, Animation animation) {
 
-		if (lastAnimationOrder != animation && !animator.GetCurrentAnimatorStateInfo(0).IsName(animation)) {
-			animator.CrossFadeInFixedTime(animation, GlobalData.crossfadeAnimation);
+		if (lastAnimationOrder != animation && !animator.GetCurrentAnimatorStateInfo(0).IsName(AnimationString[(int)animation])) {
+			animator.CrossFadeInFixedTime(AnimationString[(int)animation], GlobalData.crossfadeAnimation);
 			lastAnimationOrder = animation;
 		}
 
@@ -1037,6 +1037,26 @@ public class LocalPlayerScript : MonoBehaviour {
 		Playing,
 		Menu,
 		Chat
+	};
+
+	public enum Animation
+	{
+		Idle,
+		Fall,
+		Move_F,
+		Move_B,
+		Move_R,
+		Move_L
+	};
+
+	public static string[] AnimationString = new string[] 
+	{ 
+		"Idle",
+		"Fall",
+		"Move_F",
+		"Move_B",
+		"Move_R",
+		"Move_L"
 	};
 
 	public class Vector3Nullable {
