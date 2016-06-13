@@ -25,7 +25,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float turboSpeed = baseSpeed*(1.5f); // 70% ES LO QUE AUMENTA LA VELOCIDAD EL SPRINT DEL PICARO EN EL WOW
 	private float characterSpeed = baseSpeed;
 
-	public string lastAnimationOrder = "Idle01";
+	public Animation lastAnimationOrder = Animation.Idle;
 
 	public GameObject visualAvatar;
 	public GameObject materialCarrier;
@@ -179,13 +179,14 @@ public class LocalPlayerScript : MonoBehaviour {
             float aux = (float)i / (float)num_intercept_charges;
             newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
             Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
-            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 670f;
+            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 345f;
             newCharge.name = "Charge_" + (i + 1);
             newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
             crosshairHackInterceptCharges.Add(newCharge);
             crosshairHackInterceptChargesFull.Add(newCharge.transform.FindChild("Full").gameObject);
         }
-        Destroy(sourceInterceptCharge);
+		sourceInterceptCharge.SetActive (false);
+        //Destroy(sourceInterceptCharge);
 
 		crosshairHackSkull = crosshairHack.transform.FindChild("Skull").gameObject;
 		crosshairHackSkull.SetActive (false);
@@ -523,7 +524,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		// TODAS VACIAS
 		for (int i = 0; i < crosshairHackInterceptCharges.Count; i++)
 		{
-			crosshairHackInterceptChargesFull[i].SetActive(false);
+			crosshairHackInterceptChargesFull [i].GetComponent<Image> ().enabled = false;
 		}
 
 		float auxResource = interceptResource;
@@ -532,7 +533,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		// SE LLENAN LAS QUE TOCAN
 		while (auxResource >= 1f)
 		{
-			crosshairHackInterceptChargesFull[auxNext].SetActive(true);
+			crosshairHackInterceptChargesFull[auxNext].GetComponent<Image> ().enabled = true;
 			auxResource -= 1f;
 			auxNext++;
 			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
@@ -848,14 +849,14 @@ public class LocalPlayerScript : MonoBehaviour {
 		bool falling = false;
 		if (!IsGrounded ()) {
 			falling = true;
-			SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Fall");
+			SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Fall);
 		}
 
 
 		if (movement.x == 0 && movement.y == 0) {
 			// NO INPUT
 			if (!falling) {
-				SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Idle");
+				SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Idle);
 			}
 
 
@@ -880,12 +881,12 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (!falling) {
 				if (Mathf.Abs (movement.x) >= Mathf.Abs(movement.y)) {
-					if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_L"); }
-					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_R"); }
+					if (movement.x > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Move_L); }
+					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Move_R); }
 				}
 				else {
-					if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_F"); }
-					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), "Move_B"); }
+					if (movement.y > 0) { SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Move_F); }
+					else { SmartCrossfade(visualAvatar.GetComponent<Animator>(), Animation.Move_B); }
 				}
 			}
 
@@ -947,10 +948,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		return Vector3.up;
 	}
 
-	void SmartCrossfade(Animator animator, string animation) {
+	void SmartCrossfade(Animator animator, Animation animation) {
 
-		if (lastAnimationOrder != animation && !animator.GetCurrentAnimatorStateInfo(0).IsName(animation)) {
-			animator.CrossFadeInFixedTime(animation, GlobalData.crossfadeAnimation);
+		if (lastAnimationOrder != animation && !animator.GetCurrentAnimatorStateInfo(0).IsName(AnimationString[(int)animation])) {
+			animator.CrossFadeInFixedTime(AnimationString[(int)animation], GlobalData.crossfadeAnimation);
 			lastAnimationOrder = animation;
 		}
 
@@ -1037,6 +1038,26 @@ public class LocalPlayerScript : MonoBehaviour {
 		Playing,
 		Menu,
 		Chat
+	};
+
+	public enum Animation
+	{
+		Idle,
+		Fall,
+		Move_F,
+		Move_B,
+		Move_R,
+		Move_L
+	};
+
+	public static string[] AnimationString = new string[] 
+	{ 
+		"Idle",
+		"Fall",
+		"Move_F",
+		"Move_B",
+		"Move_R",
+		"Move_L"
 	};
 
 	public class Vector3Nullable {

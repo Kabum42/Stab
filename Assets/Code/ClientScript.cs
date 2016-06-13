@@ -11,7 +11,7 @@ public class ClientScript : MonoBehaviour {
 
 	private NetworkView networkView;
 
-	private int positionUpdatesPerSecond = 15;
+	private int netUpdatesPerSecond = 15;
 	private float currentUpdateCooldown = 0f;
 
 	[HideInInspector] public float remainingSeconds = (8f)*(60f); // 8 MINUTES
@@ -110,7 +110,7 @@ public class ClientScript : MonoBehaviour {
 				if (Network.isServer) {
 					gameEnded = true;
 					sortList ();
-					networkView.RPC ("winnerRPC", RPCMode.All, listPlayers[0].networkPlayer);
+					networkView.RPC ("winnerRPC", RPCMode.All, listPlayers[0].ID);
 				}
 			} else if (winnerPlayer.networkPlayer == Network.player) {
 				textBig.GetComponent<Text>().text = "<color=#44FF44>CONGRATULATIONS!</color> YOU WON";
@@ -353,7 +353,7 @@ public class ClientScript : MonoBehaviour {
 	void updateMyInfoInOtherClients() {
 
 
-		if (currentUpdateCooldown >= 1f / (float)positionUpdatesPerSecond) {
+		if (currentUpdateCooldown >= 1f / (float)netUpdatesPerSecond) {
 
 			currentUpdateCooldown = 0f;
 
@@ -361,9 +361,9 @@ public class ClientScript : MonoBehaviour {
 
 				if (justRespawned) {
 					justRespawned = false;
-					networkView.RPC ("updatePlayerInstantRPC", RPCMode.Others, localPlayer.visualAvatar.transform.position);
+					networkView.RPC ("updatePlayerInstantRPC", RPCMode.Others, myPlayer.ID, localPlayer.visualAvatar.transform.position);
 				} else {
-					networkView.RPC("updatePlayerRPC", RPCMode.Others, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, localPlayer.lastAnimationOrder);
+					networkView.RPC("updatePlayerRPC", RPCMode.Others, myPlayer.ID, localPlayer.visualAvatar.transform.position, localPlayer.visualAvatar.transform.eulerAngles.y, localPlayer.personalCamera.transform.forward, localPlayer.personalCamera.transform.eulerAngles.x, (int)localPlayer.lastAnimationOrder);
 				}
 
 			}
@@ -547,7 +547,7 @@ public class ClientScript : MonoBehaviour {
 	public void writeInChat(string info) {
 
 		if (!hasCommands (info)) {
-			networkView.RPC("addChatMessageRPC", RPCMode.All, info);
+			networkView.RPC("addChatMessageRPC", RPCMode.All, myPlayer.ID, info);
 		}
 
 	}
@@ -675,7 +675,7 @@ public class ClientScript : MonoBehaviour {
 	void sayHiRPC(NetworkMessageInfo info) {
 
 		// ADD THE NEW PLAYER TO EVERYONE
-		networkView.RPC ("addPlayerRPC", RPCMode.All, info.sender, int.Parse(info.sender.ToString()));
+		networkView.RPC ("addPlayerRPC", RPCMode.All, info.sender, int.Parse(info.sender.ToString()), true);
 
 	}
 
@@ -691,7 +691,7 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void addPlayerRPC(NetworkPlayer nPlayer, int ID, NetworkMessageInfo info) {
+	void addPlayerRPC(NetworkPlayer nPlayer, int ID, bool isNew, NetworkMessageInfo info) {
 
 		NetworkPlayer sender = info.sender;
 		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
@@ -703,7 +703,9 @@ public class ClientScript : MonoBehaviour {
 				Player newPlayer = new Player(ID);
 				newPlayer.networkPlayer = nPlayer;
 				listPlayers.Add(newPlayer);
-				localPlayer.chatManager.Add (new ChatMessage ("System", "Player " + ID + " has joined the game."));
+				if (isNew) {
+					localPlayer.chatManager.Add (new ChatMessage ("System", newPlayer.name + " has joined the game."));
+				}
 			} else {
 				// YOU JOIN AS PLAYER
 				myPlayer.Initialize(ID);
@@ -717,7 +719,7 @@ public class ClientScript : MonoBehaviour {
 				// SEND EVERYONE TO THE NEW PLAYER
 				foreach (Player player in listPlayers) {
 					if (player.networkPlayer != nPlayer) {
-						networkView.RPC("addPlayerRPC", nPlayer, player.networkPlayer, player.ID);
+						networkView.RPC("addPlayerRPC", nPlayer, player.networkPlayer, player.ID, false);
 					}
 				}
 				// SE ACABA DE UNIR UN JUGADOR, ASI QUE LES DECIMOS A TODOS LA NUEVA SITUACION DEL RANKING
@@ -729,19 +731,25 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updatePlayerRPC(Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, string currentAnimation, NetworkMessageInfo info)
+	void updatePlayerRPC(int ID, Vector3 position, float avatarEulerY, Vector3 cameraForward, float cameraEulerX, int currentAnimation, NetworkMessageInfo info)
 	{
 
-		Player player = PlayerByNetworkPlayer (info.sender);
+		Player player = PlayerByID (ID);
 
 		if (player != null) {
+
+			if (Network.isServer && player.networkPlayer != info.sender) {
+				serverScript.bannedIPs.Add (info.sender.ipAddress);
+				Network.CloseConnection(info.sender, true);
+				return;
+			}
 
 			if (!player.dead) {
 				player.targetPosition = position;
 				player.targetAvatarEulerY = avatarEulerY;
 				player.cameraForward = cameraForward;
 				player.targetCameraEulerX = cameraEulerX;
-				player.SmartCrossfade(currentAnimation);
+				player.SmartCrossfade(LocalPlayerScript.AnimationString[currentAnimation]);
 			}
 
 		}
@@ -749,28 +757,43 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void updatePlayerInstantRPC(Vector3 position, NetworkMessageInfo info)
+	void updatePlayerInstantRPC(int ID, Vector3 position, NetworkMessageInfo info)
 	{
 
 		Player player = PlayerByNetworkPlayer (info.sender);
 
 		if (player != null) {
+
+			if (Network.isServer && player.networkPlayer != info.sender) {
+				serverScript.bannedIPs.Add (info.sender.ipAddress);
+				Network.CloseConnection(info.sender, true);
+				return;
+			}
+
 			player.visualAvatar.transform.position = position;
 			player.targetPosition = position;
+
 		}
 
 	}
 
 	[RPC]
-	void addChatMessageRPC(string text, NetworkMessageInfo info)
+	void addChatMessageRPC(int ID, string text, NetworkMessageInfo info)
 	{
 		NetworkPlayer sender = info.sender;
 		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
 		if(sender.ToString() == "-1") { sender = Network.player; }
 
-		Player player = PlayerByNetworkPlayer (sender);
+		Player player = PlayerByID (ID);
 
 		if (player != null) {
+
+			if (Network.isServer && player.networkPlayer != info.sender) {
+				serverScript.bannedIPs.Add (info.sender.ipAddress);
+				Network.CloseConnection(info.sender, true);
+				return;
+			}
+
 			string owner = player.name;
 			if (player == myPlayer) { owner = "You"; }
 
@@ -957,10 +980,18 @@ public class ClientScript : MonoBehaviour {
 	}
 
 	[RPC]
-	void winnerRPC(NetworkPlayer auxWinnerPlayer)
+	void winnerRPC(int ID, NetworkMessageInfo info)
 	{
-		winnerPlayer = PlayerByNetworkPlayer(auxWinnerPlayer);
-		gameEnded = true;
+
+		NetworkPlayer sender = info.sender;
+		//handle the fact that unity is a bit dumb and calls the local player "-1" instead of its real networkplayer!!
+		if(sender.ToString() == "-1") { sender = Network.player; }
+
+		if (NetworkPlayerIsServer (sender)) {
+			winnerPlayer = PlayerByID(ID);
+			gameEnded = true;
+		}
+
 	}
 
 	// CLASSES
