@@ -179,13 +179,14 @@ public class LocalPlayerScript : MonoBehaviour {
             float aux = (float)i / (float)num_intercept_charges;
             newCharge.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, (aux * 360f) + 60f);
             Vector2 upVector2 = new Vector2(newCharge.GetComponent<RectTransform>().up.x, newCharge.GetComponent<RectTransform>().up.y);
-            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 670f;
+            newCharge.GetComponent<RectTransform>().anchoredPosition = upVector2 * 345f;
             newCharge.name = "Charge_" + (i + 1);
             newCharge.GetComponent<RectTransform>().localScale = new Vector3(1f, 1f, 1f);
             crosshairHackInterceptCharges.Add(newCharge);
             crosshairHackInterceptChargesFull.Add(newCharge.transform.FindChild("Full").gameObject);
         }
-        Destroy(sourceInterceptCharge);
+		sourceInterceptCharge.SetActive (false);
+        //Destroy(sourceInterceptCharge);
 
 		crosshairHackSkull = crosshairHack.transform.FindChild("Skull").gameObject;
 		crosshairHackSkull.SetActive (false);
@@ -523,7 +524,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		// TODAS VACIAS
 		for (int i = 0; i < crosshairHackInterceptCharges.Count; i++)
 		{
-			crosshairHackInterceptChargesFull[i].SetActive(false);
+			crosshairHackInterceptChargesFull [i].GetComponent<Image> ().enabled = false;
 		}
 
 		float auxResource = interceptResource;
@@ -532,7 +533,7 @@ public class LocalPlayerScript : MonoBehaviour {
 		// SE LLENAN LAS QUE TOCAN
 		while (auxResource >= 1f)
 		{
-			crosshairHackInterceptChargesFull[auxNext].SetActive(true);
+			crosshairHackInterceptChargesFull[auxNext].GetComponent<Image> ().enabled = true;
 			auxResource -= 1f;
 			auxNext++;
 			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
