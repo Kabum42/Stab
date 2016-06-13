@@ -154,7 +154,7 @@ public class ClientScript : MonoBehaviour {
 				if (player == myPlayer) {
 					float aux = 1f - player.hackingTimer/hackingTimerMax;
 					localPlayer.crosshairHackTimer.SetActive (true);
-					localPlayer.crosshairHackTimer.GetComponent<Image>().material.SetFloat("_Cutoff", aux);
+					localPlayer.crosshairHackTimer.transform.FindChild("Full").gameObject.GetComponent<Image>().material.SetFloat("_Cutoff", aux);
 				}
 
 			}
