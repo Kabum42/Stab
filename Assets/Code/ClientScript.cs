@@ -1001,6 +1001,7 @@ public class ClientScript : MonoBehaviour {
 		public int ID = -1;
 		public NetworkPlayer networkPlayer;
 		public GameObject visualAvatar;
+		public GameObject spine;
 		public GameObject cameraMockup;
 		public GameObject[] vitalPoints;
 		public string lastAnimationOrder = "Idle01";
@@ -1050,6 +1051,7 @@ public class ClientScript : MonoBehaviour {
 			visualAvatar.name = "VisualAvatar "+ ID;
 			visualAvatar.GetComponent<PlayerMarker>().player = this;
 			visualMaterials = visualAvatar.transform.FindChild("Mesh").GetComponent<SkinnedMeshRenderer>().materials;
+			spine = visualAvatar.transform.FindChild ("Armature/Pelvis/Spine").gameObject;
 
 			targetPosition = visualAvatar.transform.position;
 			targetAvatarEulerY = visualAvatar.transform.eulerAngles.y;
