@@ -669,12 +669,14 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	void updateUIHitinfo() {
 
+		crosshairHackHitinfo.transform.localScale = Vector3.Lerp (crosshairHackHitinfo.transform.localScale, new Vector3 (1f, 1f, 1f), Time.deltaTime * 10f);
+
 		Vector3 idealRotation = Hacks.EulerAnglesLookAt (personalCamera.transform.position, hitinfoWorldPosition);
 		float angle = personalCamera.transform.eulerAngles.y - idealRotation.y;
 
 		crosshairHackHitinfo.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, angle);
 		Vector2 upVector2 = new Vector2(crosshairHackHitinfo.GetComponent<RectTransform>().up.x, crosshairHackHitinfo.GetComponent<RectTransform>().up.y);
-		crosshairHackHitinfo.GetComponent<RectTransform>().anchoredPosition = upVector2 * 130f;
+		crosshairHackHitinfo.GetComponent<RectTransform>().anchoredPosition = upVector2 * (100f + 30f * crosshairHackHitinfo.transform.localScale.x);
 
 		crosshairHackHitinfo.GetComponent<Image> ().color = new Color (crosshairHackHitinfo.GetComponent<Image> ().color.r, crosshairHackHitinfo.GetComponent<Image> ().color.g, crosshairHackHitinfo.GetComponent<Image> ().color.b, crosshairHackHitinfo.GetComponent<Image> ().color.a - Time.deltaTime * 1.5f);
 		crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, crosshairHackHitinfo.GetComponent<Image> ().color.a, 1f);
@@ -686,12 +688,14 @@ public class LocalPlayerScript : MonoBehaviour {
 		alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
 		hitinfoWorldPosition = positionAttacker;
 
+		crosshairHackHitinfo.transform.localScale = new Vector3 (2f, 2f, 2f);
+
 		Vector3 idealRotation = Hacks.EulerAnglesLookAt (personalCamera.transform.position, hitinfoWorldPosition);
 		float angle = personalCamera.transform.eulerAngles.y - idealRotation.y;
 
 		crosshairHackHitinfo.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, angle);
 		Vector2 upVector2 = new Vector2(crosshairHackHitinfo.GetComponent<RectTransform>().up.x, crosshairHackHitinfo.GetComponent<RectTransform>().up.y);
-		crosshairHackHitinfo.GetComponent<RectTransform>().anchoredPosition = upVector2 * 130f;
+		crosshairHackHitinfo.GetComponent<RectTransform>().anchoredPosition = upVector2 * (100f + 30f * crosshairHackHitinfo.transform.localScale.x);
 
 		crosshairHackHitinfo.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.GetComponent<Image> ().color, 1f, 1f);
 		crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, 1f, 1f);
