@@ -163,7 +163,7 @@ public class ServerScript : MonoBehaviour {
 			GetComponent<NetworkView>().RPC("updateHackDataRPC", RPCMode.Others, player.ID, player.hackingNetworkPlayer, player.justHacked);
 
 			if (player.justHacked && player.hackingNetworkPlayer == Network.player) {
-				clientScript.localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+				clientScript.localPlayer.hacked (clientScript.PlayerByID (player.ID).targetPosition);
 			}
 
 			player.justHacked = false;

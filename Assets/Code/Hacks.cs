@@ -6,6 +6,8 @@ public static class Hacks {
 
 	private static List<AudioSource> hacksAudioSources = new List<AudioSource> ();
 	private static GameObject parentAudioSources;
+	public static GameObject gameObject1 = new GameObject();
+	public static GameObject gameObject2 = new GameObject();
 
     // TEXT ALPHA
     public static void TextAlpha(GameObject g, float a)
@@ -295,6 +297,25 @@ public static class Hacks {
 		hexString = r.ToString ("X2") + g.ToString ("X2") + b.ToString ("X2") + a.ToString ("X2");
 
 		return hexString;
+
+	}
+
+	public static Vector3 EulerAnglesLookAt(Vector3 origin, Vector3 destination) {
+
+		if (gameObject1 == null) {
+			gameObject1 = new GameObject ();
+		}
+
+		if (gameObject2 == null) {
+			gameObject2 = new GameObject ();
+		}
+
+		gameObject1.transform.position = origin;
+		gameObject2.transform.position = destination;
+
+		gameObject1.transform.LookAt (gameObject2.transform);
+
+		return gameObject1.transform.eulerAngles;
 
 	}
 
