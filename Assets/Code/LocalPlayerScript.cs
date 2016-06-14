@@ -87,6 +87,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private float crosshairHackSmallTargetZ = 0f;
 
 	private float crosshairHackBigOldZ = 0f;
+	private float hackBigAux = 3f;
     private float crosshairHackBigTargetZ = 0f;
 
 	private GameObject firstPersonObjects;
@@ -547,25 +548,29 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		float timePerPhase = (0.5f/3f);
 
-		if (crosshairHackBigOldZ > crosshairHackBigTargetZ) {
-			if (crosshairHackParentIntercept.transform.localScale.x > 0.98f) {
-				float scale = crosshairHackParentIntercept.transform.localScale.x - Time.deltaTime * (1f - 0.98f) * (1f/timePerPhase);
-				if (scale <= 0.98f) {
-					scale = 0.98f;
-				}
+		if (hackBigAux < 3f) {
+
+			hackBigAux += Time.deltaTime * (1f / timePerPhase);
+
+			if (hackBigAux < 1f) {
+
+				float scale = Mathf.Lerp(crosshairHackParentIntercept.transform.localScale.x, 0.98f, Time.deltaTime*10f);
 				crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
+
+			} else if (hackBigAux < 2f) {
+
+				crosshairHackBigOldZ = Mathf.Lerp (crosshairHackBigOldZ, crosshairHackBigTargetZ, Time.deltaTime * 30f);
+				crosshairHackParentIntercept.GetComponent<RectTransform> ().eulerAngles = new Vector3 (0f, 0f, crosshairHackBigOldZ);
+
 			} else {
-				crosshairHackBigOldZ -= Time.deltaTime * (360f/3f) * (1f/timePerPhase);
-				if (crosshairHackBigOldZ < crosshairHackBigTargetZ) { crosshairHackBigOldZ = crosshairHackBigTargetZ; }
-				crosshairHackParentIntercept.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackBigOldZ);
+				
+				float scale = Mathf.Lerp(crosshairHackParentIntercept.transform.localScale.x, 1f, Time.deltaTime*10f);
+				crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
+
 			}
-		} else {
-			float scale = crosshairHackParentIntercept.transform.localScale.x + Time.deltaTime * (1f - 0.98f) * (1f/timePerPhase);
-			if (scale > 1f) {
-				scale = 1f;
-			}
-			crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
 		}
+
+
 
 
 	}
@@ -606,6 +611,12 @@ public class LocalPlayerScript : MonoBehaviour {
 
 			if (crosshairHackBigOldZ < crosshairHackBigTargetZ) {
 				crosshairHackBigOldZ += 360f;
+			}
+
+			if (hackBigAux > 1f && hackBigAux < 2f) {
+				hackBigAux = 1f;
+			} else if (hackBigAux > 2f) {
+				hackBigAux = 0f;
 			}
 
 
