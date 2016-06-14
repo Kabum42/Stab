@@ -63,6 +63,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public List<GameObject> crosshairHackBlinkCurrent = new List<GameObject>();
 	[HideInInspector] public List<GameObject> crosshairHackBlinkDisappearing = new List<GameObject>();
 	[HideInInspector] public GameObject crosshairHackHitinfo;
+	[HideInInspector] public GameObject crosshairHackTargetTag;
 	[HideInInspector] public GameObject crosshairHackSkull;
 	[HideInInspector] public GameObject inGameMenu;
 	[HideInInspector] public GameObject fade;
@@ -215,6 +216,8 @@ public class LocalPlayerScript : MonoBehaviour {
 		crosshairHackHitinfo.GetComponent<Image> ().color = new Color (crosshairHackHitinfo.GetComponent<Image> ().color.r, crosshairHackHitinfo.GetComponent<Image> ().color.g, crosshairHackHitinfo.GetComponent<Image> ().color.b, 0f);
 		crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, crosshairHackHitinfo.GetComponent<Image> ().color.a, 1f);
 
+		crosshairHackTargetTag = canvas.transform.FindChild("TargetTag").gameObject;
+		crosshairHackTargetTag.SetActive (false);
 
 		crosshairHackSkull = crosshairHack.transform.FindChild("Skull").gameObject;
 		crosshairHackSkull.SetActive (false);
@@ -504,18 +507,12 @@ public class LocalPlayerScript : MonoBehaviour {
 			}
 
 		}
-
-		// HACK_
+			
 		updateUIHack();
-
-		// INTERCEPT
 		updateUIIntercept();
-
-		// BLINK
 		updateUIBlink();
-
-		// HITINFO
 		updateUIHitinfo();
+		updateUITargetTag ();
 
 	}
 
@@ -699,6 +696,37 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		crosshairHackHitinfo.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.GetComponent<Image> ().color, 1f, 1f);
 		crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, 1f, 1f);
+
+	}
+
+	void updateUITargetTag() {
+
+		if (GlobalData.clientScript != null) {
+
+			if (GlobalData.clientScript.myPlayer.hackingNetworkPlayer != Network.player) {
+
+				Vector3 hackedPosition = GlobalData.clientScript.PlayerByNetworkPlayer (GlobalData.clientScript.myPlayer.hackingNetworkPlayer).spine.transform.position;
+				Vector3 hackedPositionScreen = Camera.main.WorldToScreenPoint (hackedPosition);
+				crosshairHackTargetTag.transform.position = hackedPositionScreen;
+
+				if (hackedPositionScreen.z > 0f) {
+					
+					crosshairHackTargetTag.SetActive (true);
+
+					float scale = (1f / Vector3.Distance(personalCamera.transform.position, hackedPosition))*2f;
+					crosshairHackTargetTag.transform.localScale = new Vector3 (scale, scale, scale);
+
+				} else {
+					crosshairHackTargetTag.SetActive (false);
+				}
+
+			} else {
+				crosshairHackTargetTag.SetActive (false);
+			}
+
+			crosshairHackTargetTag.transform.Rotate (new Vector3(0f, 0f, 1f)* Time.deltaTime * -360f);
+
+		}
 
 	}
 
