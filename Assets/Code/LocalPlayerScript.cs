@@ -550,24 +550,29 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		if (hackBigAux < 3f) {
 
-			hackBigAux += Time.deltaTime * (1f / timePerPhase);
-
 			if (hackBigAux < 1f) {
 
+				hackBigAux += Time.deltaTime * (1f / timePerPhase);
 				float scale = Mathf.Lerp(crosshairHackParentIntercept.transform.localScale.x, 0.98f, Time.deltaTime*10f);
 				crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
 
 			} else if (hackBigAux < 2f) {
 
-				crosshairHackBigOldZ = Mathf.Lerp (crosshairHackBigOldZ, crosshairHackBigTargetZ, Time.deltaTime * 30f);
+				crosshairHackBigOldZ -= Time.deltaTime * (360f / 3f) * (1f / timePerPhase);
+				if (crosshairHackBigOldZ <= crosshairHackBigTargetZ) {
+					crosshairHackBigOldZ = crosshairHackBigTargetZ;
+					hackBigAux = 2f;
+				}
 				crosshairHackParentIntercept.GetComponent<RectTransform> ().eulerAngles = new Vector3 (0f, 0f, crosshairHackBigOldZ);
 
 			} else {
-				
+
+				hackBigAux += Time.deltaTime * (1f / timePerPhase);
 				float scale = Mathf.Lerp(crosshairHackParentIntercept.transform.localScale.x, 1f, Time.deltaTime*10f);
 				crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
 
 			}
+
 		}
 
 
