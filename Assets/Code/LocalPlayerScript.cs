@@ -58,6 +58,10 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public List<GameObject> crosshairHackChargesFull = new List<GameObject>();
 	[HideInInspector] public List<GameObject> crosshairHackInterceptCharges = new List<GameObject>();
 	[HideInInspector] public List<GameObject> crosshairHackInterceptChargesFull = new List<GameObject>();
+	private GameObject sourceBlinkCharge;
+	[HideInInspector] public List<GameObject> crosshairHackBlinkPool = new List<GameObject>();
+	[HideInInspector] public List<GameObject> crosshairHackBlinkCurrent = new List<GameObject>();
+	[HideInInspector] public List<GameObject> crosshairHackBlinkDisappearing = new List<GameObject>();
 	[HideInInspector] public GameObject crosshairHackSkull;
 	[HideInInspector] public GameObject inGameMenu;
 	[HideInInspector] public GameObject fade;
@@ -71,7 +75,6 @@ public class LocalPlayerScript : MonoBehaviour {
     public float interceptResource = 3f;
 
 	public GameObject textTargeted;
-	public GameObject blinkText;
 	public GameObject distanceText;
 
 	//public AnimationCurve attackCameraDistance;
@@ -186,8 +189,26 @@ public class LocalPlayerScript : MonoBehaviour {
             crosshairHackInterceptCharges.Add(newCharge);
             crosshairHackInterceptChargesFull.Add(newCharge.transform.FindChild("Full").gameObject);
         }
-		sourceInterceptCharge.SetActive (false);
-        //Destroy(sourceInterceptCharge);
+        Destroy(sourceInterceptCharge);
+
+
+		sourceBlinkCharge = crosshairHack.transform.FindChild("BlinkCharge").gameObject;
+		int num_blink_charges = 3;
+		for (int i = 0; i < num_blink_charges; i++)
+		{
+			GameObject newCharge = Instantiate(sourceBlinkCharge);
+			newCharge.transform.SetParent(crosshairHack.transform);
+			crosshairHackBlinkCurrent.Add (newCharge);
+
+			float positionY = 280f - 40f * i;
+			float relative = positionY / (280f);
+
+			newCharge.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -positionY);
+			newCharge.GetComponent<RectTransform>().localScale = new Vector3(relative, relative, relative);
+		}
+		sourceBlinkCharge.SetActive (false);
+
+		//crosshairHackBlinkCurrent
 
 		crosshairHackSkull = crosshairHack.transform.FindChild("Skull").gameObject;
 		crosshairHackSkull.SetActive (false);
@@ -200,8 +221,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		alertHacked = canvas.transform.FindChild ("Alert").gameObject;
         alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f);
-
-		blinkText = canvas.transform.FindChild ("ImpulseText").gameObject;
 
 		distanceText = canvas.transform.FindChild ("DistanceText").gameObject;
 		distanceText.SetActive (false);
@@ -416,7 +435,6 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		// BLINK
 		blinkResource = Mathf.Min (3f, blinkResource + Time.deltaTime*(1f/4f));
-		blinkText.GetComponent<Text> ().text = blinkResource.ToString ("0.#");
 
 	}
 
@@ -486,6 +504,9 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		// INTERCEPT
 		updateUIIntercept();
+
+		// BLINK
+		updateUIBlink();
 
 	}
 
@@ -575,8 +596,65 @@ public class LocalPlayerScript : MonoBehaviour {
 
 		}
 
+	}
 
+	void updateUIBlink() {
 
+		List <GameObject> auxList = new List<GameObject> ();
+
+		foreach (GameObject g in crosshairHackBlinkDisappearing) {
+			GameObject full = g.transform.FindChild ("Full").gameObject;
+			full.GetComponent<Image> ().color = new Color (full.GetComponent<Image> ().color.r, full.GetComponent<Image> ().color.g, full.GetComponent<Image> ().color.b, full.GetComponent<Image> ().color.a - Time.deltaTime*7.5f);
+			g.transform.localScale = Vector3.Lerp(g.transform.localScale, new Vector3(1.5f, 1.5f, 1.5f), Time.deltaTime*10f);
+			if (full.GetComponent<Image> ().color.a <= 0f) {
+				auxList.Add (g);
+			}
+		}
+
+		foreach (GameObject g in auxList) {
+			crosshairHackBlinkDisappearing.Remove (g);
+			g.SetActive (false);
+			crosshairHackBlinkPool.Add (g);
+		}
+
+		int num_blink_charges = (int) Mathf.Floor (blinkResource);
+		for (int i = 0; i < num_blink_charges; i++)
+		{
+
+			if (crosshairHackBlinkCurrent.Count < (i + 1)) {
+				addBlinkCharge ();
+				crosshairHackBlinkCurrent [i].transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackBlinkCurrent [i].transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, 0f, 1f);
+				crosshairHackBlinkCurrent [i].GetComponent<RectTransform> ().anchoredPosition = new Vector2 (0f, -(280f - 40f * (i + 1)));
+			}
+
+			GameObject charge = crosshairHackBlinkCurrent [i];
+
+			float targetPositionY = 280f - 40f * i;
+			charge.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, Mathf.Lerp(charge.GetComponent<RectTransform>().anchoredPosition.y, -targetPositionY, Time.deltaTime*10f));
+
+			float relative = -charge.GetComponent<RectTransform>().anchoredPosition.y / (280f);
+			charge.GetComponent<RectTransform>().localScale = new Vector3(relative, relative, relative);
+
+			charge.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (charge.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, 0.5f, Time.deltaTime*10f);
+
+			charge.SetActive (true);
+		}
+
+	}
+
+	void addBlinkCharge() {
+
+		GameObject charge;
+
+		if (crosshairHackBlinkPool.Count > 0) {
+			charge = crosshairHackBlinkPool [0];
+			crosshairHackBlinkPool.RemoveAt (0);
+		} else {
+			charge = Instantiate(sourceBlinkCharge);
+			charge.transform.SetParent(crosshairHack.transform);
+		}
+			
+		crosshairHackBlinkCurrent.Add (charge);
 
 	}
 
@@ -800,6 +878,10 @@ public class LocalPlayerScript : MonoBehaviour {
 				blinking = true;
 				
 				blinkResource -= 1f;
+
+				GameObject firstBlinkCharge = crosshairHackBlinkCurrent [0];
+				crosshairHackBlinkDisappearing.Add (firstBlinkCharge);
+				crosshairHackBlinkCurrent.Remove (firstBlinkCharge);
 
 				blinkStart = this.transform.GetComponent<Rigidbody> ().position;
 
