@@ -881,8 +881,8 @@ public class ClientScript : MonoBehaviour {
 					if (justHacked) {
 						player.hackingTimer = hackingTimerMax;
 						if (hackedNetWorkPlayer == Network.player) {
-							// ALERT
-							localPlayer.alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+							// JUST HACKED
+							localPlayer.hacked (player.targetPosition);
 						}
 					}
 				}

@@ -62,6 +62,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	[HideInInspector] public List<GameObject> crosshairHackBlinkPool = new List<GameObject>();
 	[HideInInspector] public List<GameObject> crosshairHackBlinkCurrent = new List<GameObject>();
 	[HideInInspector] public List<GameObject> crosshairHackBlinkDisappearing = new List<GameObject>();
+	[HideInInspector] public GameObject crosshairHackHitinfo;
 	[HideInInspector] public GameObject crosshairHackSkull;
 	[HideInInspector] public GameObject inGameMenu;
 	[HideInInspector] public GameObject fade;
@@ -73,6 +74,8 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	private int nextInterceptCharge = 1;
     public float interceptResource = 3f;
+
+	private Vector3 hitinfoWorldPosition = Vector3.zero;
 
 	public GameObject textTargeted;
 	public GameObject distanceText;
@@ -96,7 +99,7 @@ public class LocalPlayerScript : MonoBehaviour {
 	private GameObject firstPersonObjects;
 	private GameObject armRight;
 
-    public GameObject alertHacked;
+    private GameObject alertHacked;
 
 	private bool lastTimeGrounded = true;
 	private static float footStepCooldownMax = 0.35f;
@@ -208,7 +211,10 @@ public class LocalPlayerScript : MonoBehaviour {
 		}
 		sourceBlinkCharge.SetActive (false);
 
-		//crosshairHackBlinkCurrent
+		crosshairHackHitinfo = crosshairHack.transform.FindChild("HitInfo").gameObject;
+		crosshairHackHitinfo.GetComponent<Image> ().color = new Color (crosshairHackHitinfo.GetComponent<Image> ().color.r, crosshairHackHitinfo.GetComponent<Image> ().color.g, crosshairHackHitinfo.GetComponent<Image> ().color.b, 0f);
+		crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, crosshairHackHitinfo.GetComponent<Image> ().color.a, 1f);
+
 
 		crosshairHackSkull = crosshairHack.transform.FindChild("Skull").gameObject;
 		crosshairHackSkull.SetActive (false);
@@ -508,6 +514,9 @@ public class LocalPlayerScript : MonoBehaviour {
 		// BLINK
 		updateUIBlink();
 
+		// HITINFO
+		updateUIHitinfo();
+
 	}
 
 	void updateUIHack() {
@@ -658,6 +667,37 @@ public class LocalPlayerScript : MonoBehaviour {
 
 	}
 
+	void updateUIHitinfo() {
+
+		Vector3 idealRotation = Hacks.EulerAnglesLookAt (personalCamera.transform.position, hitinfoWorldPosition);
+		float angle = personalCamera.transform.eulerAngles.y - idealRotation.y;
+
+		crosshairHackHitinfo.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, angle);
+		Vector2 upVector2 = new Vector2(crosshairHackHitinfo.GetComponent<RectTransform>().up.x, crosshairHackHitinfo.GetComponent<RectTransform>().up.y);
+		crosshairHackHitinfo.GetComponent<RectTransform>().anchoredPosition = upVector2 * 130f;
+
+		crosshairHackHitinfo.GetComponent<Image> ().color = new Color (crosshairHackHitinfo.GetComponent<Image> ().color.r, crosshairHackHitinfo.GetComponent<Image> ().color.g, crosshairHackHitinfo.GetComponent<Image> ().color.b, crosshairHackHitinfo.GetComponent<Image> ().color.a - Time.deltaTime * 1.5f);
+		crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, crosshairHackHitinfo.GetComponent<Image> ().color.a, 1f);
+
+	}
+
+	public void hacked(Vector3 positionAttacker) {
+
+		alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", 1f - Time.deltaTime);
+		hitinfoWorldPosition = positionAttacker;
+
+		Vector3 idealRotation = Hacks.EulerAnglesLookAt (personalCamera.transform.position, hitinfoWorldPosition);
+		float angle = personalCamera.transform.eulerAngles.y - idealRotation.y;
+
+		crosshairHackHitinfo.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, angle);
+		Vector2 upVector2 = new Vector2(crosshairHackHitinfo.GetComponent<RectTransform>().up.x, crosshairHackHitinfo.GetComponent<RectTransform>().up.y);
+		crosshairHackHitinfo.GetComponent<RectTransform>().anchoredPosition = upVector2 * 130f;
+
+		crosshairHackHitinfo.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.GetComponent<Image> ().color, 1f, 1f);
+		crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color = Hacks.ColorLerpAlpha (crosshairHackHitinfo.transform.FindChild ("Full").gameObject.GetComponent<Image> ().color, 1f, 1f);
+
+	}
+
     void alertMockUp()
     {
 
@@ -670,6 +710,7 @@ public class LocalPlayerScript : MonoBehaviour {
             if (cutoff <= min) { cutoff = 1f; }
             alertHacked.GetComponent<Image>().material.SetFloat("_Cutoff", cutoff);
         }
+
 
     }
 
