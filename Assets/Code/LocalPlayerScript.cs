@@ -545,14 +545,29 @@ public class LocalPlayerScript : MonoBehaviour {
 			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
 		}
 
+		float timePerPhase = (0.5f/3f);
+
 		if (Mathf.Abs (crosshairHackBigOldZ - crosshairHackBigTargetZ) > 2f) {
-			crosshairHackParentIntercept.transform.localScale = Vector3.Lerp (crosshairHackParentIntercept.transform.localScale, new Vector3 (0.98f, 0.98f, 0.98f), Time.deltaTime * 20f);
+			if (crosshairHackParentIntercept.transform.localScale.x > 0.98f) {
+				float scale = crosshairHackParentIntercept.transform.localScale.x - Time.deltaTime * (1f - 0.98f) * (1f/timePerPhase);
+				if (scale <= 0.98f) {
+					scale = 0.98f;
+				}
+				crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
+			} else {
+				crosshairHackBigOldZ -= Time.deltaTime * (360f/3f) * (1f/timePerPhase);
+				if (crosshairHackBigOldZ < crosshairHackBigTargetZ) { crosshairHackBigOldZ = crosshairHackBigTargetZ; }
+				crosshairHackParentIntercept.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackBigOldZ);
+			}
 		} else {
-			crosshairHackParentIntercept.transform.localScale = Vector3.Lerp (crosshairHackParentIntercept.transform.localScale, new Vector3 (1f, 1f, 1f), Time.deltaTime * 20f);
+			float scale = crosshairHackParentIntercept.transform.localScale.x + Time.deltaTime * (1f - 0.98f) * (1f/timePerPhase);
+			if (scale > 1f) {
+				scale = 1f;
+			}
+			crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
 		}
 
-		crosshairHackBigOldZ = Mathf.Lerp (crosshairHackBigOldZ, crosshairHackBigTargetZ, Time.deltaTime * 5f);
-		crosshairHackParentIntercept.GetComponent<RectTransform>().eulerAngles = new Vector3(0f, 0f, crosshairHackBigOldZ);
+
 	}
 
     void alertMockUp()
