@@ -788,7 +788,7 @@ public class ClientScript : MonoBehaviour {
 
 		if (player != null) {
 
-			if (Network.isServer && player.networkPlayer != info.sender) {
+			if (Network.isServer && player.networkPlayer != sender) {
 				serverScript.bannedIPs.Add (info.sender.ipAddress);
 				Network.CloseConnection(info.sender, true);
 				return;
