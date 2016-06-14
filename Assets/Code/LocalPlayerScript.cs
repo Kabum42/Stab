@@ -545,8 +545,8 @@ public class LocalPlayerScript : MonoBehaviour {
 			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
 		}
 
-		if (Mathf.Abs (crosshairHackBigOldZ - crosshairHackBigTargetZ) > 5f) {
-			crosshairHackParentIntercept.transform.localScale = Vector3.Lerp (crosshairHackParentIntercept.transform.localScale, new Vector3 (0.95f, 0.95f, 0.95f), Time.deltaTime * 20f);
+		if (Mathf.Abs (crosshairHackBigOldZ - crosshairHackBigTargetZ) > 2f) {
+			crosshairHackParentIntercept.transform.localScale = Vector3.Lerp (crosshairHackParentIntercept.transform.localScale, new Vector3 (0.98f, 0.98f, 0.98f), Time.deltaTime * 20f);
 		} else {
 			crosshairHackParentIntercept.transform.localScale = Vector3.Lerp (crosshairHackParentIntercept.transform.localScale, new Vector3 (1f, 1f, 1f), Time.deltaTime * 20f);
 		}
