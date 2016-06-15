@@ -573,34 +573,9 @@ public class LocalPlayerScript : MonoBehaviour {
 			if (auxNext >= crosshairHackInterceptCharges.Count) { auxNext = 0; }
 		}
 
-		float timePerPhase = (0.5f/3f);
 
-		if (hackBigAux < 3f) {
-
-			if (hackBigAux < 1f) {
-
-				hackBigAux += Time.deltaTime * (1f / timePerPhase);
-				float scale = Mathf.Lerp(crosshairHackParentIntercept.transform.localScale.x, 0.98f, Time.deltaTime*10f);
-				crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
-
-			} else if (hackBigAux < 2f) {
-
-				crosshairHackBigOldZ -= Time.deltaTime * (360f / 3f) * (1f / timePerPhase);
-				if (crosshairHackBigOldZ <= crosshairHackBigTargetZ) {
-					crosshairHackBigOldZ = crosshairHackBigTargetZ;
-					hackBigAux = 2f;
-				}
-				crosshairHackParentIntercept.GetComponent<RectTransform> ().eulerAngles = new Vector3 (0f, 0f, crosshairHackBigOldZ);
-
-			} else {
-
-				hackBigAux += Time.deltaTime * (1f / timePerPhase);
-				float scale = Mathf.Lerp(crosshairHackParentIntercept.transform.localScale.x, 1f, Time.deltaTime*10f);
-				crosshairHackParentIntercept.transform.localScale = new Vector3 (scale, scale, scale);
-
-			}
-
-		}
+		crosshairHackBigOldZ = Mathf.Lerp(crosshairHackBigOldZ, crosshairHackBigTargetZ, Time.deltaTime*10f);
+		crosshairHackParentIntercept.GetComponent<RectTransform> ().eulerAngles = new Vector3 (0f, 0f, crosshairHackBigOldZ);
 
 	}
 
@@ -724,7 +699,7 @@ public class LocalPlayerScript : MonoBehaviour {
 				crosshairHackTargetTag.SetActive (false);
 			}
 
-			crosshairHackTargetTag.transform.Rotate (new Vector3(0f, 0f, 1f)* Time.deltaTime * -360f);
+			crosshairHackTargetTag.transform.Rotate (new Vector3(0f, 0f, 1f)* Time.deltaTime * -270f);
 
 		}
 
